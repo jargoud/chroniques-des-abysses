@@ -41,18 +41,34 @@ Dans les fenêtres : flèches pour naviguer, Entrée pour valider, X pour jeter 
 - **Armes** : un emplacement mêlée (dague, épée, hache, masse, lance, espadon) et un emplacement distance (arc court, arc long, arbalète, javelots), avec alternance en jeu.
 - **Équipement** : 9 emplacements présentés sur une poupée d'équipement, 4 raretés, affixes aléatoires, amélioration et sertissage d'artefacts chez le forgeron.
 - **Comparateur** : au survol d'un objet du sac ou de la boutique, écart de statistiques avec l'objet porté (vert = hausse, rouge = baisse).
-- **Camp** : chef de quêtes, forgeron et marchand devant leurs bâtiments, portail des donjons, et camp d'entraînement avec mannequins (XP jusqu'au niveau 3).
+- **Camp** : chef de quêtes, forgeron et marchand devant leurs bâtiments, portail des donjons, et camp d'entraînement avec mannequins à briser (XP, or et potions jusqu'au niveau 6).
 - **Donjons** : 8 biomes générés aléatoirement, chacun débloqué à partir d'un niveau requis ; le portail apparaît sur la minicarte.
 - **Ennemis** : 8 comportements (combattant, tireur, mage, invocateur, chargeur, nuée, kamikaze, colosse), 41 types d'ennemis aux ornements propres à leur biome, élites avec affixes et halo. Leur puissance suit le niveau du héros.
 - **Boss** : 16 boss (2 par biome) avec halo lumineux et attaques spéciales annoncées à l'avance (onde de choc, nova, rafale, charge, invocation).
 - **Quêtes** : objectifs de chasse ou d'artefacts, triées par niveau du donjon, récompenses à valider au camp.
-- **Rendu** : pixel art 16-bit, éclairage dynamique, torches, particules, tremblements d'écran.
-- **Audio** : musiques chiptune (camp, donjon, boss) et bruitages synthétisés en direct, sans fichier audio.
+- **Rendu** : pixel art 16-bit avec sols, murs, décors et ambiance lumineuse propres à chaque biome (intérieurs éclairés aux torches, extérieurs de jour ou de nuit), particules, tremblements d'écran.
+- **Audio** : musiques chiptune (camp, une par biome, boss) et bruitages synthétisés en direct, sans fichier audio.
 - **Sauvegarde** : automatique dans le navigateur (`localStorage`).
 
 ## Structure
 
-Le jeu tient dans un seul fichier, `index.html`, qui contient le HTML, le CSS et le JavaScript. Aucune étape de compilation.
+Aucune étape de compilation : `index.html` charge la feuille de style puis les scripts dans l'ordre, sous forme de `<script>` classiques qui partagent leurs variables globales (pas de modules ES, pour que le jeu s'ouvre aussi par double-clic).
+
+| Fichier | Contenu |
+|---|---|
+| `index.html` | Structure de la page : écran titre, HUD, fenêtres |
+| `css/style.css` | Styles propres au jeu (en complément de Tailwind) |
+| `js/data.js` | Gestionnaire d'erreurs, données de référence (classes, talents, biomes, ennemis, artefacts), état global |
+| `js/hero.js` | Générateur d'équipements, calcul des statistiques du héros |
+| `js/world.js` | Quêtes, camp, génération des donjons, apparition des ennemis |
+| `js/combat.js` | Combat, butin, mannequins, IA des ennemis, simulation |
+| `js/render.js` | Canvas, sprites et tuiles pixel art, décors, éclairage, minicarte |
+| `js/ui.js` | Interface : HUD et fenêtres |
+| `js/game.js` | Actions du joueur, sauvegarde |
+| `js/audio.js` | Musiques et bruitages synthétisés |
+| `js/main.js` | Contrôles clavier et souris, boucle de jeu, démarrage |
+
+L'ordre des scripts compte : un fichier peut utiliser au chargement ce qui est défini dans les précédents.
 
 ## Historique
 

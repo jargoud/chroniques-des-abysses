@@ -4,6 +4,26 @@ Toutes les évolutions notables du projet sont consignées dans ce fichier.
 
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
+## [0.3.0] - 2026-11-13
+
+### Ajouté
+
+- Une musique d'exploration par biome, chacune avec sa gamme, son tempo, son instrument principal et sa rythmique : marche royale au Château, orgue funèbre au Caveau, mode hijaz et darbouka à la Pyramide, rituel pentatonique au Temple, percussions tribales dans la Jungle, flûte folk dans la Forêt, basse infernale aux Catacombes. La Prison garde la musique de donjon existante ; le thème de boss reste commun.
+- Rendu propre à chaque biome : sols, murs, décors au sol, couleur des torches, voile de lumière et particules d'ambiance.
+  - Prison : dalles jointoyées, grilles de cellule, os, chaînes, flaques.
+  - Château : remparts lierrés et fissurés, pavés envahis d'herbe, nuit au clair de lune.
+  - Caveau : carrelage fissuré, niches à crânes, bougies violettes.
+  - Pyramide : grès gravé de hiéroglyphes, sable, urnes, torches dorées.
+  - Temple : dalles incrustées d'or, pilastres sculptés, braseros et runes lumineuses.
+  - Jungle (extérieur, en plein jour) : herbe haute, canopée tropicale, fougères et fleurs.
+  - Forêt (extérieur, de nuit) : mousse, sapins noirs, champignons luminescents, lucioles.
+  - Catacombes : murs d'ossements, roche craquelée de lave, braises qui montent.
+
+### Modifié
+
+- Code découpé en plusieurs fichiers : `index.html` pour la page, `css/style.css` et 9 scripts dans `js/`. Le jeu s'ouvre toujours sans compilation.
+- Camp d'entraînement : les mannequins se brisent en une dizaine de coups et réapparaissent 8 s plus tard. Sous le niveau 6, chaque coup rapporte environ 1/60 du niveau suivant, et briser un mannequin donne un bonus d'XP plus de l'or (70 %) ou une potion (30 %). Au-delà, ils servent seulement à s'exercer.
+
 ## [0.2.0] - 2026-11-13
 
 ### Ajouté
@@ -52,3 +72,7 @@ Première version publiée.
 - Menus modernes en verre dépoli, police Inter pour la lisibilité.
 - Musiques chiptune (camp, donjon, boss) avec réverbération et écho, et bruitages synthétisés ; son coupable avec la touche M.
 - Les murs bloquent les attaques, les sorts de zone et la détection des ennemis.
+
+[0.3.0]: https://github.com/jargoud/chroniques-des-abysses/compare/0.2.0...0.3.0
+[0.2.0]: https://github.com/jargoud/chroniques-des-abysses/compare/0.1.0...0.2.0
+[0.1.0]: https://github.com/jargoud/chroniques-des-abysses/releases/tag/0.1.0
