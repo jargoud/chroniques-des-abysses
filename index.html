@@ -205,9 +205,9 @@
             Appuyez sur [E] ou [Entrée] pour interagir
         </div>
 
-        <!-- Barre Inférieure : Vie, Mana, XP, Compétences & Raccourcis -->
+        <!-- Barre Inférieure : Vie, Rage, XP, Compétences & Raccourcis -->
         <div class="self-center w-full max-w-3xl pointer-events-auto rpg-panel rounded-2xl p-2.5 sm:p-3 flex flex-col gap-2">
-            <!-- Jauges Vie / XP / Mana -->
+            <!-- Jauges Vie / XP / Rage -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
                 <!-- Vie -->
                 <div class="bg-black/70 rounded-lg p-1.5 border border-red-900/50">
@@ -223,14 +223,14 @@
                 <!-- Barre de Compétences & Potions -->
                 <div class="flex items-center justify-center gap-1.5" id="skillBarContainer"></div>
 
-                <!-- Mana -->
-                <div class="bg-black/70 rounded-lg p-1.5 border border-blue-900/50">
+                <!-- Rage -->
+                <div class="bg-black/70 rounded-lg p-1.5 border border-orange-900/50">
                     <div class="flex justify-between text-[11px] font-semibold px-1 mb-0.5">
-                        <span class="text-blue-300">💧 Mana</span>
-                        <span id="hudMpText" class="text-blue-200">40 / 40</span>
+                        <span class="text-orange-300">🔥 Rage</span>
+                        <span id="hudMpText" class="text-orange-200">0 / 100</span>
                     </div>
-                    <div class="w-full h-2.5 bg-blue-950 rounded-full overflow-hidden">
-                        <div id="hudMpBar" class="h-full bg-gradient-to-r from-blue-700 to-cyan-400 transition-all duration-150" style="width: 100%"></div>
+                    <div class="w-full h-2.5 bg-orange-950 rounded-full overflow-hidden">
+                        <div id="hudMpBar" class="h-full bg-gradient-to-r from-red-700 to-orange-400 transition-all duration-150" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
@@ -262,7 +262,7 @@
                     <span class="text-amber-300">ZQSD/Flèches</span> Bouger •
                     <span class="text-amber-300">Espace/CG</span> Attaquer •
                     <span class="text-amber-300">Tab</span> Changer d’arme •
-                    <span class="text-amber-300">1-4/A</span> Sorts •
+                    <span class="text-amber-300">1-4/Clic droit</span> Sorts •
                     <span class="text-amber-300">R/F</span> Potions •
                     <span class="text-amber-300">E</span> Interagir •
                     <span class="text-amber-300">M</span> Son
@@ -400,12 +400,12 @@ const CLASSES = {
 
 const SKILL_TREES = {
     warrior: [
-        { id: 'war_cleave', tier: 1, reqLvl: 1, name: 'Fendoir Sanglant', icon: '🪓', mana: 8, cd: 1.8, desc: 'Large arc d’acier infligeant 145% (+18%/rang) dégâts physiques devant vous.' },
-        { id: 'war_ironskin', tier: 1, reqLvl: 1, name: 'Cuirasse de Fer', icon: '🛡️', mana: 0, cd: 0, passive: true, desc: 'Passif : +12% (+6%/rang) Armure totale et +15 (+10/rang) Vie Max.' },
-        { id: 'war_charge', tier: 2, reqLvl: 5, name: 'Charge Héroïque', icon: '💨', mana: 14, cd: 4.5, desc: 'Bondit vers la cible, infligeant 135% (+20%/rang) dégâts et étourdissant 1.5s.' },
-        { id: 'war_whirlwind', tier: 2, reqLvl: 5, name: 'Tourbillon d’Acier', icon: '🌪️', mana: 18, cd: 4.0, desc: 'Frappe tous les ennemis autour de vous pour 165% (+25%/rang) dégâts.' },
-        { id: 'war_berserk', tier: 3, reqLvl: 10, name: 'Fureur du Titan', icon: '🔥', mana: 0, cd: 0, passive: true, desc: 'Ultime Passif : +15% (+5%/rang) Dégâts physiques et +3% Vol de vie.' },
-        { id: 'war_earthquake', tier: 3, reqLvl: 10, name: 'Séisme Dévastateur', icon: '🌋', mana: 28, cd: 8.0, desc: 'Ultime : Brise le sol sur un large rayon (270% +45%/rang dégâts + étourdissement 2s).' }
+        { id: 'war_cleave', tier: 1, reqLvl: 1, name: 'Fendoir Sanglant', icon: '🪓', rage: 15, cd: 1.8, desc: 'Large arc d’acier infligeant 145% (+18%/rang) dégâts physiques devant vous.' },
+        { id: 'war_ironskin', tier: 1, reqLvl: 1, name: 'Cuirasse de Fer', icon: '🛡️', rage: 0, cd: 0, passive: true, desc: 'Passif : +12% (+6%/rang) Armure totale et +15 (+10/rang) Vie Max.' },
+        { id: 'war_charge', tier: 2, reqLvl: 5, name: 'Charge Héroïque', icon: '💨', rage: 20, cd: 4.5, desc: 'Bondit vers la cible, infligeant 135% (+20%/rang) dégâts et étourdissant 1.5s.' },
+        { id: 'war_whirlwind', tier: 2, reqLvl: 5, name: 'Tourbillon d’Acier', icon: '🌪️', rage: 25, cd: 4.0, desc: 'Frappe tous les ennemis autour de vous pour 165% (+25%/rang) dégâts.' },
+        { id: 'war_berserk', tier: 3, reqLvl: 10, name: 'Fureur du Titan', icon: '🔥', rage: 0, cd: 0, passive: true, desc: 'Ultime Passif : +15% (+5%/rang) Dégâts physiques et +3% Vol de vie.' },
+        { id: 'war_earthquake', tier: 3, reqLvl: 10, name: 'Séisme Dévastateur', icon: '🌋', rage: 40, cd: 8.0, desc: 'Ultime : Brise le sol sur un large rayon (270% +45%/rang dégâts + étourdissement 2s).' }
     ]
 };
 
@@ -440,107 +440,107 @@ const BOSS_WINDUP = { slam: 0.9, nova: 0.7, volley: 0.55, charge: 0.6, summon: 0
 const BIOME_FOES = {
     dungeon: {
         enemies: [
-            { name: 'Geôlier Squelette', kind: 'melee', body: 'hum', color: '#d6d3d1' },
+            { name: 'Geôlier Squelette', kind: 'melee', body: 'hum', color: '#d6d3d1', deco: ['skull'] },
             { name: 'Rat Géant', kind: 'swarm', body: 'swarm', color: '#a8a29e' },
-            { name: 'Arbalétrier Déchu', kind: 'ranged', body: 'hum', color: '#78716c' },
-            { name: 'Brute Enchaînée', kind: 'charger', body: 'mon', color: '#b45309' },
+            { name: 'Arbalétrier Déchu', kind: 'ranged', body: 'hum', color: '#78716c', deco: ['hood'] },
+            { name: 'Brute Enchaînée', kind: 'charger', body: 'mon', color: '#b45309', deco: ['chains'] },
             { name: 'Gelée Putride', kind: 'bomber', body: 'bomb', color: '#84cc16' }
         ],
         bosses: [
-            { name: 'Malakor le Geôlier', body: 'hum', color: '#f97316', patterns: ['slam', 'summon'] },
-            { name: 'Bourreau Krog', body: 'mon', color: '#dc2626', patterns: ['charge', 'slam'] }
+            { name: 'Malakor le Geôlier', body: 'hum', color: '#f97316', patterns: ['slam', 'summon'], deco: ['helm', 'chains'] },
+            { name: 'Bourreau Krog', body: 'mon', color: '#dc2626', patterns: ['charge', 'slam'], deco: ['hood', 'chains'] }
         ]
     },
     castle: {
         enemies: [
-            { name: 'Chevalier Déchu', kind: 'tank', body: 'hum', color: '#94a3b8' },
-            { name: 'Arbalétrier Royal', kind: 'ranged', body: 'hum', color: '#60a5fa' },
-            { name: 'Gargouille de Pierre', kind: 'charger', body: 'mon', color: '#64748b' },
+            { name: 'Chevalier Déchu', kind: 'tank', body: 'hum', color: '#94a3b8', deco: ['helm'] },
+            { name: 'Arbalétrier Royal', kind: 'ranged', body: 'hum', color: '#60a5fa', deco: ['helm', 'plume'] },
+            { name: 'Gargouille de Pierre', kind: 'charger', body: 'mon', color: '#64748b', deco: ['stone', 'wings'] },
             { name: 'Chauve-souris des Remparts', kind: 'swarm', body: 'swarm', color: '#7c3aed' },
-            { name: 'Mage de Cour', kind: 'caster', body: 'hum', color: '#818cf8' }
+            { name: 'Mage de Cour', kind: 'caster', body: 'hum', color: '#818cf8', deco: ['wizard'] }
         ],
         bosses: [
-            { name: 'Seigneur Vane', body: 'hum', color: '#e11d48', patterns: ['charge', 'volley'] },
-            { name: 'Reine Spectrale Elyndra', body: 'hum', color: '#c4b5fd', patterns: ['nova', 'summon'] }
+            { name: 'Seigneur Vane', body: 'hum', color: '#e11d48', patterns: ['charge', 'volley'], deco: ['helm', 'crown'] },
+            { name: 'Reine Spectrale Elyndra', body: 'hum', color: '#c4b5fd', patterns: ['nova', 'summon'], deco: ['ghost', 'crown'] }
         ]
     },
     crypt: {
         enemies: [
-            { name: 'Goule Affamée', kind: 'melee', body: 'mon', color: '#a3a3a3' },
-            { name: 'Spectre Hurleur', kind: 'caster', body: 'mon', color: '#a78bfa' },
-            { name: 'Nécromancien', kind: 'summoner', body: 'hum', color: '#7c3aed' },
-            { name: 'Crâne Volant', kind: 'swarm', body: 'swarm', color: '#e5e7eb' },
-            { name: 'Cadavre Gonflé', kind: 'bomber', body: 'bomb', color: '#65a30d' }
+            { name: 'Goule Affamée', kind: 'melee', body: 'mon', color: '#a3a3a3', deco: ['bones'] },
+            { name: 'Spectre Hurleur', kind: 'caster', body: 'mon', color: '#a78bfa', deco: ['ghost'] },
+            { name: 'Nécromancien', kind: 'summoner', body: 'hum', color: '#7c3aed', deco: ['hood', 'runes'] },
+            { name: 'Crâne Volant', kind: 'swarm', body: 'swarm', color: '#e5e7eb', deco: ['skull'] },
+            { name: 'Cadavre Gonflé', kind: 'bomber', body: 'bomb', color: '#65a30d', deco: ['stitches'] }
         ],
         bosses: [
-            { name: 'Liche Morvath', body: 'hum', color: '#8b5cf6', patterns: ['nova', 'summon'] },
-            { name: 'Abomination Cousue', body: 'mon', color: '#be123c', patterns: ['slam', 'charge'] }
+            { name: 'Liche Morvath', body: 'hum', color: '#8b5cf6', patterns: ['nova', 'summon'], deco: ['skull', 'crown', 'runes'] },
+            { name: 'Abomination Cousue', body: 'mon', color: '#be123c', patterns: ['slam', 'charge'], deco: ['stitches', 'bones'] }
         ]
     },
     pyramid: {
         enemies: [
-            { name: 'Momie Gardienne', kind: 'tank', body: 'hum', color: '#d6c7a1' },
-            { name: 'Scarabée Géant', kind: 'swarm', body: 'swarm', color: '#0d9488' },
-            { name: 'Prêtre des Sables', kind: 'caster', body: 'hum', color: '#facc15' },
-            { name: 'Chacal d’Anubis', kind: 'charger', body: 'mon', color: '#78716c' },
-            { name: 'Archer du Désert', kind: 'ranged', body: 'hum', color: '#d97706' }
+            { name: 'Momie Gardienne', kind: 'tank', body: 'hum', color: '#d6c7a1', deco: ['bandage'] },
+            { name: 'Scarabée Géant', kind: 'swarm', body: 'swarm', color: '#0d9488', deco: ['beetle'] },
+            { name: 'Prêtre des Sables', kind: 'caster', body: 'hum', color: '#facc15', deco: ['nemes'] },
+            { name: 'Chacal d’Anubis', kind: 'charger', body: 'mon', color: '#78716c', deco: ['ears'] },
+            { name: 'Archer du Désert', kind: 'ranged', body: 'hum', color: '#d97706', deco: ['hood'] }
         ],
         bosses: [
-            { name: 'Pharaon Khépri', body: 'hum', color: '#eab308', patterns: ['volley', 'summon'] },
-            { name: 'Sphinx Ancestral', body: 'mon', color: '#ca8a04', patterns: ['nova', 'charge'] }
+            { name: 'Pharaon Khépri', body: 'hum', color: '#eab308', patterns: ['volley', 'summon'], deco: ['nemes', 'mask'] },
+            { name: 'Sphinx Ancestral', body: 'mon', color: '#ca8a04', patterns: ['nova', 'charge'], deco: ['nemes', 'wings'] }
         ]
     },
     temple: {
         enemies: [
-            { name: 'Cultiste Zélote', kind: 'melee', body: 'hum', color: '#c026d3' },
-            { name: 'Idole Animée', kind: 'tank', body: 'mon', color: '#a16207' },
-            { name: 'Prêtre de Sang', kind: 'summoner', body: 'hum', color: '#b91c1c' },
-            { name: 'Orbe Instable', kind: 'bomber', body: 'bomb', color: '#e879f9' },
-            { name: 'Lanceur de Runes', kind: 'caster', body: 'hum', color: '#22d3ee' }
+            { name: 'Cultiste Zélote', kind: 'melee', body: 'hum', color: '#c026d3', deco: ['hood'] },
+            { name: 'Idole Animée', kind: 'tank', body: 'mon', color: '#a16207', deco: ['stone', 'runes'] },
+            { name: 'Prêtre de Sang', kind: 'summoner', body: 'hum', color: '#b91c1c', deco: ['hood', 'horns'] },
+            { name: 'Orbe Instable', kind: 'bomber', body: 'bomb', color: '#e879f9', deco: ['runes'] },
+            { name: 'Lanceur de Runes', kind: 'caster', body: 'hum', color: '#22d3ee', deco: ['wizard', 'runes'] }
         ],
         bosses: [
-            { name: 'Archonte Xylar', body: 'hum', color: '#d946ef', patterns: ['nova', 'volley'] },
-            { name: 'Idole Dévoreuse', body: 'mon', color: '#f59e0b', patterns: ['slam', 'summon'] }
+            { name: 'Archonte Xylar', body: 'hum', color: '#d946ef', patterns: ['nova', 'volley'], deco: ['horns', 'runes', 'crown'] },
+            { name: 'Idole Dévoreuse', body: 'mon', color: '#f59e0b', patterns: ['slam', 'summon'], deco: ['stone', 'runes', 'crown'] }
         ]
     },
     jungle: {
         enemies: [
-            { name: 'Homme-Lézard', kind: 'melee', body: 'mon', color: '#16a34a' },
-            { name: 'Araignée Venimeuse', kind: 'swarm', body: 'swarm', color: '#4d7c0f' },
-            { name: 'Chaman Sauvage', kind: 'summoner', body: 'hum', color: '#f97316' },
-            { name: 'Rhino Cuirassé', kind: 'charger', body: 'mon', color: '#78716c' },
-            { name: 'Sarbacanier', kind: 'ranged', body: 'hum', color: '#65a30d' }
+            { name: 'Homme-Lézard', kind: 'melee', body: 'mon', color: '#16a34a', deco: ['spikes'] },
+            { name: 'Araignée Venimeuse', kind: 'swarm', body: 'swarm', color: '#4d7c0f', deco: ['spider'] },
+            { name: 'Chaman Sauvage', kind: 'summoner', body: 'hum', color: '#f97316', deco: ['feathers'] },
+            { name: 'Rhino Cuirassé', kind: 'charger', body: 'mon', color: '#78716c', deco: ['tusk'] },
+            { name: 'Sarbacanier', kind: 'ranged', body: 'hum', color: '#65a30d', deco: ['feathers'] }
         ],
         bosses: [
-            { name: 'Zul’Gath le Colosse', body: 'mon', color: '#15803d', patterns: ['slam', 'charge'] },
-            { name: 'Reine Arachnide Nyx', body: 'mon', color: '#7e22ce', patterns: ['summon', 'volley'] }
+            { name: 'Zul’Gath le Colosse', body: 'mon', color: '#15803d', patterns: ['slam', 'charge'], deco: ['spikes', 'tusk', 'feathers'] },
+            { name: 'Reine Arachnide Nyx', body: 'mon', color: '#7e22ce', patterns: ['summon', 'volley'], deco: ['eyes', 'crown'] }
         ]
     },
     forest: {
         enemies: [
-            { name: 'Loup-Garou', kind: 'charger', body: 'mon', color: '#57534e' },
-            { name: 'Tréant Corrompu', kind: 'tank', body: 'mon', color: '#3f6212' },
-            { name: 'Chasseur Maudit', kind: 'ranged', body: 'hum', color: '#047857' },
-            { name: 'Feu Follet', kind: 'bomber', body: 'bomb', color: '#5eead4' },
-            { name: 'Druide Noir', kind: 'caster', body: 'hum', color: '#166534' }
+            { name: 'Loup-Garou', kind: 'charger', body: 'mon', color: '#57534e', deco: ['ears'] },
+            { name: 'Tréant Corrompu', kind: 'tank', body: 'mon', color: '#3f6212', deco: ['antlers', 'leaves'] },
+            { name: 'Chasseur Maudit', kind: 'ranged', body: 'hum', color: '#047857', deco: ['hood'] },
+            { name: 'Feu Follet', kind: 'bomber', body: 'bomb', color: '#5eead4', deco: ['wisp'] },
+            { name: 'Druide Noir', kind: 'caster', body: 'hum', color: '#166534', deco: ['antlers'] }
         ],
         bosses: [
-            { name: 'Sylvanus le Déchu', body: 'mon', color: '#10b981', patterns: ['summon', 'nova'] },
-            { name: 'Grand Loup Fenris', body: 'mon', color: '#9ca3af', patterns: ['charge', 'slam'] }
+            { name: 'Sylvanus le Déchu', body: 'mon', color: '#10b981', patterns: ['summon', 'nova'], deco: ['antlers', 'leaves', 'runes'] },
+            { name: 'Grand Loup Fenris', body: 'mon', color: '#9ca3af', patterns: ['charge', 'slam'], deco: ['ears', 'spikes'] }
         ]
     },
     catacombs: {
         enemies: [
-            { name: 'Démon Mineur', kind: 'swarm', body: 'swarm', color: '#ef4444' },
-            { name: 'Seigneur Squelette', kind: 'tank', body: 'hum', color: '#e7e5e4' },
-            { name: 'Cultiste Abyssal', kind: 'summoner', body: 'hum', color: '#7f1d1d' },
-            { name: 'Diablotin Explosif', kind: 'bomber', body: 'bomb', color: '#f97316' },
-            { name: 'Sorcier du Néant', kind: 'caster', body: 'hum', color: '#6d28d9' },
-            { name: 'Molosse Infernal', kind: 'charger', body: 'mon', color: '#b91c1c' }
+            { name: 'Démon Mineur', kind: 'swarm', body: 'swarm', color: '#ef4444', deco: ['fire'] },
+            { name: 'Seigneur Squelette', kind: 'tank', body: 'hum', color: '#e7e5e4', deco: ['skull', 'horns'] },
+            { name: 'Cultiste Abyssal', kind: 'summoner', body: 'hum', color: '#7f1d1d', deco: ['hood', 'runes'] },
+            { name: 'Diablotin Explosif', kind: 'bomber', body: 'bomb', color: '#f97316', deco: ['horns'] },
+            { name: 'Sorcier du Néant', kind: 'caster', body: 'hum', color: '#6d28d9', deco: ['wizard', 'runes'] },
+            { name: 'Molosse Infernal', kind: 'charger', body: 'mon', color: '#b91c1c', deco: ['horns', 'fire'] }
         ],
         bosses: [
-            { name: 'Azazel, Fléau des Abysses', body: 'mon', color: '#dc2626', patterns: ['nova', 'slam', 'summon'] },
-            { name: 'Belzéroth le Dévoreur', body: 'mon', color: '#9f1239', patterns: ['charge', 'volley', 'slam'] }
+            { name: 'Azazel, Fléau des Abysses', body: 'mon', color: '#dc2626', patterns: ['nova', 'slam', 'summon'], deco: ['horns', 'wings', 'fire'] },
+            { name: 'Belzéroth le Dévoreur', body: 'mon', color: '#9f1239', patterns: ['charge', 'volley', 'slam'], deco: ['horns', 'spikes', 'fire'] }
         ]
     }
 };
@@ -551,7 +551,7 @@ const ARTIFACTS = {
     art_crest:   { id: 'art_crest',   name: 'Blason Royal Brisé',  icon: '🛡️', bonusStat: 'armor', val: 6, label: '+6 Armure' },
     art_soul:    { id: 'art_soul',    name: 'Cristal de Givre',    icon: '❄️', bonusStat: 'elemDmg', val: 6, label: '+6 Dégâts de Givre' },
     art_sun:     { id: 'art_sun',     name: 'Éclat Igné Solaire',  icon: '🔥', bonusStat: 'elemDmg', val: 8, label: '+8 Dégâts de Feu' },
-    art_rune:    { id: 'art_rune',    name: 'Essence Ancienne',    icon: '🔮', bonusStat: 'mp', val: 20, label: '+20 Mana Max' },
+    art_rune:    { id: 'art_rune',    name: 'Essence Ancienne',    icon: '🔮', bonusStat: 'mp', val: 20, label: '+20 Rage Max' },
     art_emerald: { id: 'art_emerald', name: 'Émeraude de Vitalité',icon: '💚', bonusStat: 'hp', val: 30, label: '+30 Vie Max' },
     art_amber:   { id: 'art_amber',   name: 'Ambre du Prédateur',  icon: '⚡', bonusStat: 'crit', val: 4, label: '+4% Chance Critique' },
     art_abyss:   { id: 'art_abyss',   name: 'Cœur des Abysses',    icon: '💎', bonusStat: 'allStats', val: 3, label: '+3 Tous Attributs' }
@@ -605,7 +605,8 @@ const State = {
         inventory: [],
         artifacts: {},
         hp: 115, maxHp: 115,
-        mp: 40, maxMp: 40,
+        // ponytail: champs mp / maxMp conservés pour la compatibilité des sauvegardes, ils portent la Rage
+        mp: 0, maxMp: 100,
         potionsHp: 3,
         potionsMp: 1,
         potionCd: 0
@@ -741,7 +742,7 @@ const ItemGen = {
 
         const affixPool = [
             { stat: 'hp', val: Math.max(6, Math.round(10 * scale)), label: (v) => '+' + v + ' Vie Max' },
-            { stat: 'mp', val: Math.max(4, Math.round(7 * scale)), label: (v) => '+' + v + ' Mana Max' },
+            { stat: 'mp', val: Math.max(4, Math.round(7 * scale)), label: (v) => '+' + v + ' Rage Max' },
             { stat: 'dmg', val: Math.max(1, Math.round(2 * scale)), label: (v) => '+' + v + ' Dégâts' },
             { stat: 'elemDmg', val: Math.max(1, Math.round(2.4 * scale)), label: (v) => '+' + v + ' Dégâts Élémentaires' },
             { stat: 'crit', val: Math.min(12, Math.max(1, Math.round(1.6 * rar.mult))), label: (v) => '+' + v + '% Critique' },
@@ -777,7 +778,6 @@ function computeHeroStats() {
     let moveSpeed = 205;
     let dodge = 0;
     let lifesteal = 0;
-    let manaRegen = 1.8;
     let weaponRange = 58;
     let weaponArc = 0.78;
     let projSpeed = 600;
@@ -832,14 +832,20 @@ function computeHeroStats() {
         lifesteal += 3;
     }
     // Base PV augmentée légèrement pour fluidifier les premiers combats
-    // Bonus de classe pure (+10 % PV/MP, +15 % dégâts), toujours actif depuis que seul le Guerrier existe
+    // Bonus de classe pure (+10 % PV, +15 % dégâts), toujours actif depuis que seul le Guerrier existe
     const maxHp = Math.round((55 + vit * 8 + h.level * 8 + bonusHp) * 1.10);
-    const maxMp = Math.round((22 + int * 4 + h.level * 3 + bonusMp) * 1.10);
+    // Rage : jauge fixe de 100 (+ bonus d'objets) ; l'Intelligence accélère son remplissage
+    const maxMp = 100 + bonusMp;
+    const rageGain = 1 + int * 0.02;
     const physDmg = Math.round(Math.max(3, Math.round((weaponDmg + bonusDmg) * (1 + str * 0.026 + dex * 0.012))) * 1.15);
-    const spellDmg = Math.round(Math.max(3, Math.round((weaponDmg * 0.55 + elemDmg) * (1 + int * 0.04))) * 1.15);
+    // Puissance élémentaire : dégâts élémentaires des objets / artefacts, amplifiés par l'Intelligence, ajoutés aux talents
+    const elemPower = Math.round(elemDmg * (1 + int * 0.04) * 1.15);
 
     critChance = Math.min(70, Math.round(critChance + dex * 0.25));
-    dodge = Math.min(50, Math.round(dodge + dex * 0.2));
+    // Esquive : la Dextérité rend le héros insaisissable (plafond 40 %)
+    dodge = Math.min(40, Math.round(dodge + dex * 0.35));
+    // Furtivité : Dextérité (pas léger) + Intelligence (ruse) réduisent la distance de détection des ennemis (plafond 45 %)
+    const stealth = Math.min(45, Math.round(dex * 0.3 + int * 0.3));
     armor = Math.round(armor + str * 0.35);
 
     h.maxHp = maxHp;
@@ -849,8 +855,8 @@ function computeHeroStats() {
 
     return {
         str, dex, int, vit,
-        physDmg, spellDmg, armor, critChance, critMult,
-        atkSpeed, moveSpeed, dodge, lifesteal, manaRegen,
+        physDmg, elemPower, armor, critChance, critMult,
+        atkSpeed, moveSpeed, dodge, stealth, lifesteal, rageGain,
         weaponType, weaponRange, weaponArc, projSpeed, pierce
     };
 }
@@ -898,7 +904,7 @@ const Quests = {
     ensureAvailable() {
         const active = State.quests.filter(q => !q.claimed);
         if (active.length >= 3) return;
-        const unlockedBiomes = BIOMES.filter(b => b.minLvl <= State.hero.level + 2);
+        const unlockedBiomes = BIOMES.filter(b => b.minLvl <= State.hero.level);
         const biome = unlockedBiomes[Math.floor(Math.random() * unlockedBiomes.length)] || BIOMES[0];
         const isArt = Math.random() < 0.45;
         if (isArt) {
@@ -986,10 +992,17 @@ const World = {
         Sound.music('town');
         State.currentBiome = null;
         const w = State.world;
-        w.cols = 26;
-        w.rows = 20;
+        // Camp compact : 15 × 10 tuiles praticables ; 2 = bâtiment (bloque le passage, dessiné à part)
+        w.cols = 17;
+        w.rows = 12;
+        w.buildings = [
+            { kind: 'hut', c: 2 },    // Chef Aldebaran : hutte au toit de chaume
+            { kind: 'forge', c: 7 },  // Forgeron Thrain : forge en pierre
+            { kind: 'stall', c: 12 }  // Marchand Barnabé : étal sous auvent
+        ];
         w.grid = Array.from({ length: w.rows }, (_, r) =>
-            Array.from({ length: w.cols }, (_, c) => (r === 0 || r === w.rows - 1 || c === 0 || c === w.cols - 1) ? 1 : 0)
+            Array.from({ length: w.cols }, (_, c) => (r === 0 || r === w.rows - 1 || c === 0 || c === w.cols - 1) ? 1
+                : (r <= 2 && w.buildings.some(b => c >= b.c && c < b.c + 3)) ? 2 : 0)
         );
         w.explored = Array.from({ length: w.rows }, () => Array(w.cols).fill(true));
         w.enemies = [];
@@ -999,18 +1012,27 @@ const World = {
         w.particles = [];
         w.portal = null;
 
-        w.player.x = 13 * w.tileSize;
-        w.player.y = 12 * w.tileSize;
+        w.player.x = 8.5 * w.tileSize;
+        w.player.y = 6.5 * w.tileSize;
 
+        // Chaque PNJ se tient devant son bâtiment
         w.npcs = [
-            { id: 'npc_chief', role: 'quests', name: 'Chef Aldebaran', icon: '📜', x: 9 * w.tileSize, y: 8 * w.tileSize, color: '#facc15' },
-            { id: 'npc_smith', role: 'blacksmith', name: 'Forgeron Thrain', icon: '⚒️', x: 17 * w.tileSize, y: 8 * w.tileSize, color: '#fb923c' },
-            { id: 'npc_merch', role: 'merchant', name: 'Marchand Barnabé', icon: '⚖️', x: 8 * w.tileSize, y: 14 * w.tileSize, color: '#4ade80' },
-            { id: 'npc_portal', role: 'portal', name: 'Portail des Donjons', icon: '🌀', x: 18 * w.tileSize, y: 14 * w.tileSize, color: '#38bdf8' }
+            { id: 'npc_chief', role: 'quests', name: 'Chef Aldebaran', icon: '📜', x: 3.5 * w.tileSize, y: 3.6 * w.tileSize, color: '#facc15' },
+            { id: 'npc_smith', role: 'blacksmith', name: 'Forgeron Thrain', icon: '⚒️', x: 8.5 * w.tileSize, y: 3.6 * w.tileSize, color: '#fb923c' },
+            { id: 'npc_merch', role: 'merchant', name: 'Marchand Barnabé', icon: '⚖️', x: 13.5 * w.tileSize, y: 3.6 * w.tileSize, color: '#4ade80' },
+            { id: 'npc_portal', role: 'portal', name: 'Portail des Donjons', icon: '🌀', x: 13.5 * w.tileSize, y: 8.5 * w.tileSize, color: '#38bdf8' }
         ];
 
+        // Camp d'entraînement : mannequins qui encaissent sans riposter
+        [[2.5, 8], [4.5, 8], [3.5, 9.8]].forEach(([c, r]) => {
+            const d = this.spawnEnemy(BIOMES[0], 1, c * w.tileSize, r * w.tileSize, false, false,
+                { name: 'Mannequin d’entraînement', kind: 'melee', body: 'dummy', color: '#d4a64a' });
+            d.dummy = true;
+            d.hp = d.maxHp = 9999;
+        });
+
         State.hero.hp = State.hero.maxHp;
-        State.hero.mp = State.hero.maxMp;
+        State.hero.mp = 0;
         this.refreshMerchantStock();
         UI.updateHud();
         Game.saveGame();
@@ -1018,13 +1040,17 @@ const World = {
 
     enterDungeon(biomeId) {
         const biome = BIOMES.find(b => b.id === biomeId) || BIOMES[0];
+        if (State.hero.level < biome.minLvl) {
+            UI.toast('🔒 ' + biome.name + ' : niveau ' + biome.minLvl + ' requis', 'red');
+            return;
+        }
         State.location = 'dungeon';
         Sound.music('dungeon');
         State.currentBiome = biome;
 
         const w = State.world;
-        w.cols = 38;
-        w.rows = 30;
+        w.cols = 54; // surface ×2 par rapport à la v0.1 (38 × 30)
+        w.rows = 42;
         w.grid = Array.from({ length: w.rows }, () => Array(w.cols).fill(1));
         w.explored = Array.from({ length: w.rows }, () => Array(w.cols).fill(false));
         w.rooms = [];
@@ -1035,8 +1061,9 @@ const World = {
         w.lootDrops = [];
         w.particles = [];
         w.portal = null;
+        w.buildings = [];
 
-        for (let attempt = 0; attempt < 40 && w.rooms.length < 7; attempt++) {
+        for (let attempt = 0; attempt < 150 && w.rooms.length < 14; attempt++) {
             const rw = 5 + Math.floor(Math.random() * 4);
             const rh = 5 + Math.floor(Math.random() * 4);
             const rx = 2 + Math.floor(Math.random() * (w.cols - rw - 4));
@@ -1129,8 +1156,13 @@ const World = {
         const hpMult = (isBoss ? 7.0 : (isElite ? 2.3 : (isEarlyGame ? 0.75 : 1.1)) * k.hp) * diffScale;
         const dmgMult = (isBoss ? 2.0 : (isElite ? 1.35 : (isEarlyGame ? 0.7 : 1.05)) * k.dmg) * (1 + (State.difficulty - 1) * 0.25);
 
-        const maxHp = Math.round((42 + level * 22) * hpMult);
-        const dmg = Math.round((8 + level * 4.0) * dmgMult);
+        // Croissance avec le niveau calquée sur celle du héros (équipement ×(1+0,14/niv), attributs ≈ +5 %/niv) :
+        // un donjon refait à plus haut niveau garde le même nombre de coups pour tuer / être tué.
+        // ponytail: courbes fixes, à recalibrer si l'équilibrage du héros change
+        const hpGrowth = (1 + (level - 1) * 0.14) * (1 + (level - 1) * 0.05);
+        const dmgGrowth = 1 + (level - 1) * 0.08;
+        const maxHp = Math.round((42 + level * 22) * hpMult * hpGrowth);
+        const dmg = Math.round((8 + level * 4.0) * dmgMult * dmgGrowth);
         const affix = (isElite && !isBoss) ? ELITE_AFFIXES[Math.floor(Math.random() * ELITE_AFFIXES.length)] : null;
 
         let speed = isBoss ? 110 : 128 * k.speed + Math.random() * 15;
@@ -1160,7 +1192,10 @@ const World = {
             attackCd: 0.6 + Math.random() * 0.7,
             stunTimer: 0,
             aggro: false,
-            color: isBoss ? def.color : (affix ? affix.color : (isElite ? '#facc15' : def.color))
+            color: def.color,
+            deco: def.deco || [],
+            // Halo des boss et mini-boss : le corps garde la couleur du biome
+            glow: isBoss ? Pixel.shade(def.color, 0.5) : (affix ? affix.color : (isElite ? '#facc15' : null))
         };
         State.world.enemies.push(enemy);
 
@@ -1239,11 +1274,11 @@ const Combat = {
                 State.world.projectiles.push({
                     x: p.x, y: p.y, vx: Math.cos(angle) * stats.projSpeed, vy: Math.sin(angle) * stats.projSpeed,
                     dmg: stats.physDmg, color: '#fde68a', radius: 5, life: stats.weaponRange / stats.projSpeed,
-                    fromHero: true, pierce: stats.pierce, hitList: []
+                    fromHero: true, basic: true, pierce: stats.pierce, hitList: []
                 });
                 Sound.play('bow');
             } else {
-                this.meleeArc(p.x, p.y, angle, stats.weaponRange + 14, Math.PI * stats.weaponArc, stats.physDmg, '#f3f4f6');
+                if (this.meleeArc(p.x, p.y, angle, stats.weaponRange + 14, Math.PI * stats.weaponArc, stats.physDmg, '#f3f4f6')) this.gainRage(8);
                 Sound.play('swing');
             }
             return;
@@ -1254,17 +1289,16 @@ const Combat = {
         if (!def || rank <= 0 || def.passive) return;
         if ((State.cooldowns[skillId] || 0) > 0) return;
 
-        let manaCost = def.mana;
-        if (h.mp < manaCost) {
-            UI.toast('Mana insuffisant !', 'blue');
+        if (h.mp < def.rage) {
+            UI.toast('Rage insuffisante ! Frappez ou encaissez pour la remplir.', 'red');
             return;
         }
 
-        h.mp -= manaCost;
+        h.mp -= def.rage;
         State.cooldowns[skillId] = def.cd;
         p.swingAnim = 0.24;
         Sound.play('skill');
-        const power = Math.max(stats.physDmg, stats.spellDmg);
+        const power = stats.physDmg + stats.elemPower;
 
         switch (skillId) {
             case 'war_cleave':
@@ -1287,8 +1321,16 @@ const Combat = {
         }
     },
 
+    // Rage : +n (× bonus d'Intelligence), plafonnée à la jauge max
+    gainRage(n) {
+        const h = State.hero;
+        h.mp = Math.min(h.maxMp, h.mp + n * computeHeroStats().rageGain);
+    },
+
+    // Renvoie le nombre d'ennemis touchés
     meleeArc(x, y, angle, radius, arcWidth, dmg, color) {
         this.spawnParticles(x + Math.cos(angle) * (radius * 0.6), y + Math.sin(angle) * (radius * 0.6), color, 10);
+        let hits = 0;
         State.world.enemies.slice().forEach(en => {
             const d = Math.hypot(en.x - x, en.y - y);
             if (d <= radius + en.radius) {
@@ -1297,9 +1339,11 @@ const Combat = {
                 if (diff > Math.PI) diff = Math.PI * 2 - diff;
                 if (diff <= arcWidth / 2 && World.hasLineOfSight(x, y, en.x, en.y)) {
                     this.damageEnemy(en, dmg, false, color);
+                    hits++;
                 }
             }
         });
+        return hits;
     },
 
     aoe(x, y, radius, dmg, color, effects) {
@@ -1337,6 +1381,14 @@ const Combat = {
 
         this.spawnParticles(en.x, en.y, color || '#facc15', isCrit ? 12 : 6);
         this.floatingText(en.x, en.y - en.radius - 6, (isCrit ? '💥 ' : '') + dmg, isCrit ? '#facc15' : '#ffffff', isCrit);
+
+        // Mannequin : indestructible ; donne un peu d'XP tant que le héros est sous le niveau 3
+        if (en.dummy) {
+            en.hp = en.maxHp;
+            en.aggro = false;
+            if (h.level < 3) this.gainXp(8);
+            return;
+        }
 
         if (en.hp <= 0) this.onEnemyDeath(en);
     },
@@ -1381,7 +1433,7 @@ const Combat = {
             w.lootDrops.push({
                 uid: 'drop_' + Math.random(), type: isHp ? 'potion_hp' : 'potion_mp',
                 x: en.x + (Math.random() - 0.5) * 24, y: en.y + (Math.random() - 0.5) * 24,
-                color: isHp ? '#ef4444' : '#3b82f6', label: isHp ? 'Potion Vie' : 'Potion Mana'
+                color: isHp ? '#ef4444' : '#f97316', label: isHp ? 'Potion Vie' : 'Potion Fureur'
             });
         }
 
@@ -1429,6 +1481,7 @@ const Combat = {
         Sound.play('hurt');
         FX.shake = Math.max(FX.shake, 3);
         this.floatingText(State.world.player.x, State.world.player.y - 22, '-' + dmg, '#ef4444');
+        this.gainRage(4 + 40 * dmg / h.maxHp);
 
         if (h.hp <= 0) {
             const lost = Math.floor(h.gold * 0.12);
@@ -1476,8 +1529,8 @@ const Combat = {
             h.potionsMp--;
             h.potionCd = 3.0; // Temps de recharge réduit à 3s
             Sound.play('potion');
-            h.mp = Math.min(h.maxMp, h.mp + Math.round(h.maxMp * 0.48));
-            this.spawnParticles(State.world.player.x, State.world.player.y, '#3b82f6', 12);
+            h.mp = Math.min(h.maxMp, h.mp + Math.round(h.maxMp * 0.5));
+            this.spawnParticles(State.world.player.x, State.world.player.y, '#f97316', 12);
         }
         UI.renderSkillBar();
     },
@@ -1500,7 +1553,7 @@ const Combat = {
             UI.renderSkillBar();
         } else if (drop.type === 'potion_mp') {
             h.potionsMp++;
-            this.floatingText(w.player.x, w.player.y - 22, '+1 Potion Mana', '#60a5fa');
+            this.floatingText(w.player.x, w.player.y - 22, '+1 Potion Fureur', '#fb923c');
             w.lootDrops.splice(index, 1);
             UI.renderSkillBar();
         } else if (drop.type === 'artifact') {
@@ -1619,6 +1672,7 @@ const EnemyAI = {
     update(en, dt) {
         const p = State.world.player;
         if (en.hitFlash > 0) en.hitFlash -= dt;
+        if (en.dummy) return;
         if (en.attackAnim > 0) en.attackAnim -= dt;
         if (en.stunTimer > 0) { en.stunTimer -= dt; en.action = null; return; }
         if (en.attackCd > 0) en.attackCd -= dt;
@@ -1627,7 +1681,10 @@ const EnemyAI = {
         const dToP = Math.hypot(p.x - en.x, p.y - en.y);
         const angleToP = Math.atan2(p.y - en.y, p.x - en.x);
         const los = World.hasLineOfSight(en.x, en.y, p.x, p.y);
-        if (dToP < 340 && los) en.aggro = true;
+        if (!en.aggro && los && dToP < 340 * (1 - computeHeroStats().stealth / 100)) {
+            en.aggro = true;
+            Combat.floatingText(en.x, en.y - 30, '!', '#facc15');
+        }
         if (!en.aggro) return;
         if (en.action) return this.runAction(en, dt, dToP, los);
 
@@ -1774,13 +1831,11 @@ function updateSimulation(dt) {
         if (State.cooldowns[k] > 0) State.cooldowns[k] = Math.max(0, State.cooldowns[k] - dt);
     });
 
-    h.mp = Math.min(h.maxMp, h.mp + stats.manaRegen * dt);
-    
+    // La Rage retombe (10/s) quand aucun ennemi en alerte n'est à moins de 500 px
+    if (!w.enemies.some(e => e.aggro && Math.hypot(e.x - p.x, e.y - p.y) < 500)) h.mp = Math.max(0, h.mp - 10 * dt);
+
     // Récupération hors combat plus accessible au camp de base
-    if (State.location === 'town') {
-        h.hp = Math.min(h.maxHp, h.hp + h.maxHp * 0.35 * dt);
-        h.mp = Math.min(h.maxMp, h.mp + h.maxMp * 0.35 * dt);
-    }
+    if (State.location === 'town') h.hp = Math.min(h.maxHp, h.hp + h.maxHp * 0.35 * dt);
 
     let mx = 0, my = 0;
     if (State.keys['KeyW'] || State.keys['KeyZ'] || State.keys['ArrowUp']) my -= 1;
@@ -1842,6 +1897,7 @@ function updateSimulation(dt) {
             if (en) {
                 prj.hitList.push(en.uid);
                 Combat.damageEnemy(en, prj.dmg, false, prj.color);
+                if (prj.basic) Combat.gainRage(6);
                 if (!prj.pierce) w.projectiles.splice(i, 1);
             }
         } else if (Math.hypot(prj.x - p.x, prj.y - p.y) < prj.radius + p.radius) {
@@ -1959,7 +2015,66 @@ const BOMB_ROWS = [
     '...oooooo...'
 ];
 
+const DUMMY_ROWS = [
+    '...oooo...',
+    '..oSSSSo..',
+    '..oSkSko..',
+    '..oSSSSo..',
+    '...oSSo...',
+    'oooobboooo',
+    'obbbbbbbbo',
+    'oooSSSSooo',
+    '..oSwwSo..',
+    '..oSrrSo..',
+    '..oSwwSo..',
+    '..oSSSSo..',
+    '...obbo...',
+    '...obbo...',
+    '..oobboo..'
+];
+
 const HERO_HAIR = '#9ca3af';
+
+// Ornements posés sur les silhouettes de base pour coller au biome : { silhouette: [x, y, lignes] }
+// (x, y) en pixels du sprite de base ; y négatif = au-dessus de la tête. Le sprite est agrandi de 4 px en haut, 3 px sur les côtés.
+const FLAME_ROWS = ['..F.....', '.fF..F..', '.ff.fFf.', 'fFffffff'];
+const WISP_ROWS = ['.C...C..', '.cC.cC.C', 'ccCccCcc'];
+const DECOS = {
+    skull:    { hum: [3, 3, ['wwwwww', 'wewwew', 'wwxxww', '.xwxw.']], swarm: [3, 2, ['.wwwww.', 'wwwwwww', '.ewwew.', '.wxwxw.']] },
+    hood:     { hum: [1, 0, ['..oxxxxo..', '.oxxxxxxo.', 'oxxxxxxxxo', 'oxxXXXXxxo', 'oxxeXXexxo', 'oxxXXXXxxo', '.oxxxxxxo.']] },
+    helm:     { hum: [2, 0, ['..ommo..', '.ommmmo.', 'ommmmmmo', 'ommmmmmo', 'oxexxexo', 'ommmmmmo']] },
+    plume:    { hum: [6, -3, ['.rr', 'rr.', 'r..']] },
+    wizard:   { hum: [2, -4, ['...oo...', '..okko..', '..okko..', '.okggko.', 'okkkkkko']] },
+    crown:    { hum: [3, -3, ['g.gg.g', 'gggggg', 'grggrg']], mon: [4, -1, ['g.gg.g', 'gggggg', 'grggrg']] },
+    horns:    { hum: [1, -3, ['N........N', 'n........n', 'nn......nn', '.nn....nn.']],
+                mon: [1, -3, ['N..........N', 'n..........n', 'nn........nn']],
+                bomb: [2, 0, ['n......n', 'nn....nn', '.nn..nn.']] },
+    nemes:    { hum: [1, 0, ['..oggggo..', '.ogagagao.', 'ogagagagao', 'oag....gao', 'oga....ago', 'oag....gao', '.og....go.']],
+                mon: [2, 2, ['.oggggggo.', 'ogagagagao', 'oga....ago', 'oa......ao', 'og......go', '.a......a.']] },
+    mask:     { hum: [3, 3, ['gggggg', 'geggeg', 'gggggg', '.gggg.']] },
+    feathers: { hum: [2, -3, ['r..FF..r', '.r.FF.r.', '.rrFFrr.', 'oggggggo']] },
+    antlers:  { hum: [1, -4, ['b.b....b.b', '.bb....bb.', '..b....b..', '..bb..bb..']],
+                mon: [2, -4, ['b.b....b.b', '.bb....bb.', '..b....b..', '..bb..bb..']] },
+    runes:    { hum: [4, 8, ['p..p', '.pp.', 'p..p']], mon: [5, 8, ['p..p', '.pp.', 'p..p']], bomb: [4, 8, ['p..p', '.pp.']] },
+    chains:   { hum: [1, 10, ['mMmMmMmMmM', '....M.....', '....m.....']], mon: [1, 8, ['mMmMmMmMmMmM', '.....M......', '.....m......']] },
+    stone:    { mon: [3, 3, ['..x.....', '..xx..x.', '...x..x.', '.......x']] },
+    wings:    { mon: [-3, 2, ['x..................x', 'xx................xx', 'xkx..............xkx', 'xkkx............xkkx', '.xkk............kkx.', '..xk............kx..']] },
+    bones:    { mon: [4, 0, ['w.w.w.w', 'w.w.w.w']] },
+    spikes:   { mon: [4, 0, ['x.x.x.x', 'x.x.x.x']] },
+    ears:     { mon: [2, -3, ['k........k', 'kk......kk', 'kC......Ck']] },
+    stitches: { mon: [4, 8, ['.x.x.x.', 'xxxxxxx', '.x.x.x.']], bomb: [3, 9, ['xxxxxx', '.x.x.x']] },
+    tusk:     { mon: [6, 4, ['w.', 'ww', 'ww']] },
+    eyes:     { mon: [4, 3, ['r.r.r.r']] },
+    leaves:   { mon: [3, 1, ['l.L..L.l', '.LlL.lL.']] },
+    fire:     { mon: [3, -2, FLAME_ROWS], swarm: [2, -4, FLAME_ROWS] },
+    wisp:     { bomb: [2, 0, WISP_ROWS] },
+    beetle:   { swarm: [3, 3, ['..xx..', 'C.xx.C']] },
+    spider:   { swarm: [0, 3, ['x..........x', '.x........x.', 'x..........x']] },
+    // Bandelettes de momie : rayures sur tout le corps
+    bandage:  { fn(px, W, H, i, x, y) { if (y % 2 === 0) px.set([239, 230, 207], i); else if ((x + y) % 4 === 0) px.set([138, 122, 90], i); } },
+    // Spectre : translucide, bas du corps effiloché
+    ghost:    { fn(px, W, H, i, x, y) { px[i + 3] = (y >= H - 2 || (y >= H - 4 && (x + y) % 2)) ? 0 : 170; }, all: true }
+};
 
 const Pixel = {
     cache: {},
@@ -2024,12 +2139,72 @@ const Pixel = {
         });
     },
 
-    // Sprite d'un ennemi selon sa silhouette
+    // Sprite d'un ennemi selon sa silhouette, ses ornements de biome et son halo (boss / élite)
     enemy(en) {
-        if (en.body === 'mon') return this.monster(en.color);
-        if (en.body === 'swarm') return this.swarm(en.color);
-        if (en.body === 'bomb') return this.bomb(en.color);
-        return this.humanoid(en.color, this.shade(en.color, -0.6), '#d6c7a8');
+        const key = 'en' + en.body + en.color + (en.deco || []).join() + (en.glow || '');
+        if (this.cache[key]) return this.cache[key];
+        let spr = en.body === 'dummy' ? this.sprite('dummy', DUMMY_ROWS, { o: '#140d12', S: '#d4a64a', k: '#5b3a1a', b: '#7c4a1e', w: '#f5f5f4', r: '#dc2626' })
+            : en.body === 'mon' ? this.monster(en.color)
+            : en.body === 'swarm' ? this.swarm(en.color)
+            : en.body === 'bomb' ? this.bomb(en.color)
+            : this.humanoid(en.color, this.shade(en.color, -0.6), '#d6c7a8');
+        if (en.deco && en.deco.length) spr = this.decorate(spr, en);
+        if (en.glow) spr = this.outline(spr, en.glow);
+        return (this.cache[key] = spr);
+    },
+
+    decorate(base, en) {
+        const S = 3, P = 4, c = en.color;
+        const pal = {
+            o: '#140d12', w: '#e7e5e4', x: this.shade(c, -0.6), X: this.shade(c, -0.8), k: this.shade(c, -0.45), c, C: this.shade(c, 0.35),
+            e: '#fde047', g: '#facc15', r: '#dc2626', m: '#9ca3af', M: '#4b5563', a: '#1d4ed8', b: '#78350f',
+            l: '#3f6212', L: '#84cc16', p: '#e879f9', f: '#f97316', F: '#fde047', n: '#78716c', N: '#f5f5f4'
+        };
+        const cv = document.createElement('canvas');
+        cv.width = base.width + S * 2;
+        cv.height = base.height + P;
+        const g = cv.getContext('2d');
+        g.drawImage(base, S, P);
+        en.deco.forEach(name => {
+            const d = DECOS[name];
+            if (!d) return;
+            if (d.fn) {
+                const img = g.getImageData(0, 0, cv.width, cv.height), px = img.data;
+                for (let y = 0; y < cv.height; y++) for (let x = 0; x < cv.width; x++) {
+                    const i = (y * cv.width + x) * 4;
+                    // Ignore le vide, et le contour / les yeux sombres sauf pour les effets globaux
+                    if (px[i + 3] && (d.all || px[i] + px[i + 1] + px[i + 2] > 120)) d.fn(px, cv.width, cv.height, i, x, y);
+                }
+                g.putImageData(img, 0, 0);
+                return;
+            }
+            const spec = d[en.body];
+            if (!spec) return;
+            const [ox, oy, rows] = spec;
+            rows.forEach((row, y) => [...row].forEach((ch, x) => {
+                if (pal[ch]) { g.fillStyle = pal[ch]; g.fillRect(ox + x + S, oy + y + P, 1, 1); }
+            }));
+        });
+        return cv;
+    },
+
+    // Contour lumineux d'1 px autour de la silhouette
+    outline(spr, col) {
+        const tint = document.createElement('canvas');
+        tint.width = spr.width;
+        tint.height = spr.height;
+        const t = tint.getContext('2d');
+        t.drawImage(spr, 0, 0);
+        t.globalCompositeOperation = 'source-in';
+        t.fillStyle = col;
+        t.fillRect(0, 0, tint.width, tint.height);
+        const c = document.createElement('canvas');
+        c.width = spr.width + 2;
+        c.height = spr.height + 2;
+        const g = c.getContext('2d');
+        [[0, 1], [2, 1], [1, 0], [1, 2]].forEach(([dx, dy]) => g.drawImage(tint, dx, dy));
+        g.drawImage(spr, 1, 1);
+        return c;
     },
 
     chest(opened) {
@@ -2102,6 +2277,87 @@ const Pixel = {
     }
 };
 
+// Décor du camp en pixels logiques (1 tuile = T px) : enclos d'entraînement, hutte, forge, étal
+function drawCamp(g, T, now, light, label) {
+    const R = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), w, h); };
+
+    // Enclos d'entraînement (tuiles 1 à 6 × 6 à 10) : terre battue + barrière ouverte côté camp
+    g.globalAlpha = 0.35;
+    R(T + 2, 6 * T + 2, 5.5 * T, 4.8 * T, '#a58a5a');
+    g.globalAlpha = 1;
+    const fy = 6 * T, fx = 6.6 * T;
+    R(T, fy + 1, fx - T, 1, '#8b5a2b');
+    R(T, fy + 4, fx - T, 1, '#6b4423');
+    for (let x = T; x <= fx; x += 8) R(x, fy - 2, 2, 8, '#5b3413');
+    for (let y = fy; y <= 11 * T - 4; y += 8) {
+        if (y > 7.4 * T && y < 9 * T) continue; // ouverture
+        R(fx, y - 2, 2, 8, '#5b3413');
+    }
+    R(fx - 1, fy, 1, 7.4 * T - fy, '#8b5a2b');
+    R(fx - 1, 9 * T, 1, 2 * T - 4, '#8b5a2b');
+    label('Camp d’entraînement', 3.8 * T, fy - 4, '#fcd34d');
+
+    State.world.buildings.forEach(b => {
+        const x0 = b.c * T, yb = 3 * T; // pied du bâtiment = haut de la rangée 3
+        if (b.kind === 'hut') {
+            R(x0 + 4, yb - 22, 40, 22, '#7c4a1e');
+            for (let y = yb - 19; y < yb; y += 4) R(x0 + 4, y, 40, 1, '#5b3413');
+            for (let k = 0; k <= 12; k++) R(x0 + 22 - k * 2, yb - 36 + k, 4 + k * 4, 1, k % 3 ? '#d4a64a' : '#b8862f');
+            R(x0 - 2, yb - 23, 52, 2, '#8a6420');
+            R(x0 + 20, yb - 12, 8, 12, '#3b2210');
+            R(x0 + 26, yb - 6, 1, 1, '#facc15');
+            R(x0 + 8, yb - 16, 6, 5, '#fde68a');
+            R(x0 + 10, yb - 16, 1, 5, '#5b3413');
+            light(x0 + 11, yb - 13, 14, '#fbbf24', 0.35);
+            // Panneau des quêtes
+            R(x0 + 33, yb - 17, 9, 8, '#5b3413');
+            R(x0 + 34, yb - 16, 7, 6, '#f5e6c8');
+            R(x0 + 35, yb - 14, 5, 1, '#78716c');
+            R(x0 + 35, yb - 12, 4, 1, '#78716c');
+        } else if (b.kind === 'forge') {
+            R(x0 + 2, yb - 24, 44, 24, '#57534e');
+            for (let y = yb - 24, i = 0; y < yb; y += 4, i++) {
+                R(x0 + 2, y, 44, 1, '#44403c');
+                for (let x = x0 + 2 + (i % 2) * 4; x < x0 + 46; x += 8) R(x, y, 1, 4, '#44403c');
+            }
+            R(x0, yb - 30, 48, 6, '#292524');
+            R(x0 + 3, yb - 33, 42, 3, '#3f3a36');
+            R(x0 + 34, yb - 44, 7, 12, '#44403c');
+            R(x0 + 33, yb - 45, 9, 2, '#292524');
+            for (let i = 0; i < 3; i++) { // fumée
+                const t = (now / 45 + i * 9) % 27;
+                g.globalAlpha = 0.5 * (1 - t / 27);
+                R(x0 + 35 + Math.sin(now * 0.002 + i) * 2, yb - 47 - t, 4, 4, '#a8a29e');
+            }
+            g.globalAlpha = 1;
+            R(x0 + 7, yb - 15, 14, 12, '#1c1917');
+            const fl = Math.floor(now / 110) % 2;
+            R(x0 + 9, yb - 10, 10, 7, fl ? '#f97316' : '#ea580c');
+            R(x0 + 11, yb - 8 - fl, 6, 4, '#fde047');
+            light(x0 + 14, yb - 8, 34, '#f97316', 0.55);
+            // Enclume
+            R(x0 + 28, yb - 7, 11, 3, '#9ca3af');
+            R(x0 + 31, yb - 4, 5, 4, '#4b5563');
+        } else {
+            R(x0 + 7, yb - 28, 34, 16, '#78350f');
+            R(x0 + 5, yb - 30, 2, 30, '#5b3413');
+            R(x0 + 41, yb - 30, 2, 30, '#5b3413');
+            for (let i = 0; i < 12; i++) {
+                R(x0 + i * 4, yb - 36, 4, 7, i % 2 ? '#f5f5f4' : '#16a34a');
+                R(x0 + i * 4 + 1, yb - 29, 2, 1, i % 2 ? '#d6d3d1' : '#15803d');
+            }
+            R(x0 + 4, yb - 12, 40, 12, '#92400e');
+            R(x0 + 3, yb - 13, 42, 2, '#b45309');
+            [['#ef4444', 10], ['#f97316', 14], ['#ef4444', 18]].forEach(([c, x]) => { R(x0 + x, yb - 17, 3, 4, c); R(x0 + x + 1, yb - 18, 1, 1, '#e7e5e4'); });
+            R(x0 + 26, yb - 19, 7, 6, '#a16207');
+            R(x0 + 26, yb - 17, 7, 1, '#78350f');
+            R(x0 + 35, yb - 18, 6, 5, '#d6c7a1');
+            R(x0 + 37, yb - 19, 2, 1, '#a8a29e');
+            light(x0 + 24, yb - 20, 20, '#fde68a', 0.2);
+        }
+    });
+}
+
 function renderWorld() {
     ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = '#07070a';
@@ -2155,7 +2411,7 @@ function renderWorld() {
         for (let c = startC; c <= endC; c++) {
             if (!w.explored[r][c]) continue;
             const x = c * T, y = r * T;
-            if (w.grid[r][c] === 0) {
+            if (w.grid[r][c] !== 1) {
                 g.drawImage(tiles.floors[((c * 7 + r * 13) ^ (c * r)) % 3], x, y);
                 if (isWall(r - 1, c)) {
                     g.fillStyle = 'rgba(0,0,0,0.35)';
@@ -2254,6 +2510,9 @@ function renderWorld() {
         label('Portail Camp [E]', L(w.portal.x), top - 1, '#7dd3fc');
     }
 
+    // --- Camp : enclos d'entraînement et bâtiments des PNJ ---
+    if (town) drawCamp(g, T, now, light, label);
+
     // --- PNJ ---
     w.npcs.forEach(npc => {
         const top = npc.role === 'portal'
@@ -2322,7 +2581,7 @@ function renderWorld() {
             g.globalAlpha = 1;
         }
 
-        const k = en.isBoss ? 2 : (en.kind === 'tank' ? 1.5 : 1);
+        const k = en.isBoss ? 2 : (en.kind === 'tank' ? 1.5 : 1) * (en.isElite ? 1.25 : 1);
         const spr = Pixel.enemy(en);
         const flap = en.body === 'swarm' ? 70 : 160;
         const bob = (en.aggro && en.stunTimer <= 0 && !(en.attackAnim > 0)) ? Math.floor(now / flap + en.x) % 2 : 0;
@@ -2339,6 +2598,7 @@ function renderWorld() {
             for (let i = 0; i < 3; i++) g.fillRect(Math.round(x + Math.cos(now * 0.008 + i * 2.1) * 5), top - 2, 1, 1);
         }
 
+        if (en.dummy) return;
         const bw = Math.round(en.radius * 2.2 / PX), bx = x - (bw >> 1), by = top - 4;
         g.fillStyle = '#000000';
         g.fillRect(bx - 1, by - 1, bw + 2, 4);
@@ -2554,9 +2814,20 @@ function renderMinimap(accentCol) {
     });
 
     w.enemies.forEach(e => {
+        if (e.dummy) return;
         miniCtx.fillStyle = e.isBoss ? '#f97316' : '#ef4444';
         miniCtx.fillRect((e.x / w.tileSize) * sx - 1.5, (e.y / w.tileSize) * sy - 1.5, 3, 3);
     });
+
+    // Portail (camp ou sortie de donjon après le boss) : anneau violet clignotant
+    const portal = w.portal || w.npcs.find(n => n.role === 'portal');
+    if (portal) {
+        miniCtx.strokeStyle = '#c084fc';
+        miniCtx.lineWidth = 2;
+        miniCtx.beginPath();
+        miniCtx.arc((portal.x / w.tileSize) * sx, (portal.y / w.tileSize) * sy, 3.5 + Math.sin(performance.now() * 0.008), 0, Math.PI * 2);
+        miniCtx.stroke();
+    }
 
     miniCtx.fillStyle = '#38bdf8';
     miniCtx.beginPath();
@@ -2680,7 +2951,7 @@ const UI = {
     renderSkillBar() {
         const h = State.hero;
         const bar = document.getElementById('skillBarContainer');
-        const labels = ['Esp', '1', '2', '3', '4/A'];
+        const labels = ['Esp', '1', '2', '3', '4/Clic droit'];
         const wpn = h.equipment[h.activeWeapon === 'ranged' && h.equipment.ranged ? 'ranged' : 'weapon'];
         let html = '<div onclick="Game.swapWeapon()" title="Changer d’arme [Tab]" class="relative w-10 h-10 rounded-lg bg-amber-950/70 border border-amber-400 flex items-center justify-center cursor-pointer hover:border-amber-200">' +
             '<span class="text-lg">' + (wpn ? wpn.icon : '✊') + '</span>' +
@@ -2701,8 +2972,8 @@ const UI = {
             '<span class="text-base">🧪</span><span class="absolute top-0.5 left-1 text-[9px] font-bold text-red-300">R</span>' +
             '<span class="absolute bottom-0.5 right-1 text-[10px] font-bold text-white">' + h.potionsHp + '</span></div>';
 
-        html += '<div onclick="Combat.usePotion(\'mp\')" class="relative w-10 h-10 rounded-lg bg-blue-950/60 border border-blue-500/60 flex items-center justify-center cursor-pointer">' +
-            '<span class="text-base">💧</span><span class="absolute top-0.5 left-1 text-[9px] font-bold text-blue-300">F</span>' +
+        html += '<div onclick="Combat.usePotion(\'mp\')" title="Potion de Fureur : +50 % de Rage" class="relative w-10 h-10 rounded-lg bg-orange-950/60 border border-orange-500/60 flex items-center justify-center cursor-pointer">' +
+            '<span class="text-base">🔥</span><span class="absolute top-0.5 left-1 text-[9px] font-bold text-orange-300">F</span>' +
             '<span class="absolute bottom-0.5 right-1 text-[10px] font-bold text-white">' + h.potionsMp + '</span></div>';
 
         bar.innerHTML = html;
@@ -2768,8 +3039,8 @@ const UI = {
         const s = computeHeroStats();
         const attrDefs = [
             { key: 'str', label: 'Force', desc: '+2.6% Dégâts Physiques & +0.35 Armure' },
-            { key: 'dex', label: 'Dextérité', desc: '+0.25% Critique, +0.2% Esquive & +1.2% Dégâts' },
-            { key: 'int', label: 'Intelligence', desc: '+4% Puissance Sorts & +4 Mana Max' },
+            { key: 'dex', label: 'Dextérité', desc: '+0.25% Critique, +0.35% Esquive, +0.3% Furtivité & +1.2% Dégâts' },
+            { key: 'int', label: 'Intelligence', desc: '+4% Puissance élémentaire, +2% Rage générée & +0.3% Furtivité' },
             { key: 'vit', label: 'Vitalité', desc: '+8 Santé Max' }
         ];
 
@@ -2794,10 +3065,11 @@ const UI = {
                     '<div class="font-bold uppercase text-amber-300 mb-2">Statistiques Calculées</div>' +
                     '<div class="flex justify-between"><span>Classe :</span><strong class="text-amber-200">' + CLASSES[h.classId].name + '</strong></div>' +
                     '<div class="flex justify-between"><span>Dégâts Physiques :</span><strong>' + s.physDmg + '</strong></div>' +
-                    '<div class="flex justify-between"><span>Puissance Magique :</span><strong class="text-blue-300">' + s.spellDmg + '</strong></div>' +
+                    '<div class="flex justify-between"><span title="Ajoutée aux dégâts des talents">Puissance élémentaire :</span><strong class="text-cyan-300">' + s.elemPower + '</strong></div>' +
                     '<div class="flex justify-between"><span>Armure :</span><strong>' + s.armor + '</strong></div>' +
                     '<div class="flex justify-between"><span>Chance Critique :</span><strong class="text-yellow-300">' + s.critChance + '% (x' + s.critMult.toFixed(2) + ')</strong></div>' +
                     '<div class="flex justify-between"><span>Esquive :</span><strong>' + s.dodge + '%</strong></div>' +
+                    '<div class="flex justify-between" title="Réduit la distance à laquelle les ennemis vous repèrent"><span>Furtivité :</span><strong class="text-emerald-300">' + s.stealth + '%</strong></div>' +
                     '<div class="flex justify-between"><span>Expérience :</span><strong>' + h.xp + ' / ' + h.xpNext + '</strong></div>' +
                 '</div>' +
             '</div>';
@@ -2833,7 +3105,7 @@ const UI = {
                             '<span class="text-xs font-bold text-gray-100">' + sk.icon + ' ' + sk.name + ' <span class="text-[10px] text-gray-400">(Palier ' + sk.tier + ' • Niv.' + sk.reqLvl + ')</span></span>' +
                             '<span class="text-xs font-bold text-amber-300">' + rank + '/5</span>' +
                         '</div>' +
-                        '<p class="text-[11px] text-gray-400 mt-1">' + sk.desc + '</p>' +
+                        '<p class="text-[11px] text-gray-400 mt-1">' + sk.desc + (sk.rage ? ' <span class="text-orange-300">🔥 ' + sk.rage + ' Rage</span>' : '') + '</p>' +
                     '</div>' +
                     '<div class="flex items-center justify-between pt-1 border-t border-gray-800/80">' +
                         (lockedTier3
@@ -2844,7 +3116,7 @@ const UI = {
                               [0, 1, 2, 3, 4].map(sl =>
                                 '<button onclick="Game.assignSkill(\'' + sk.id + '\', ' + sl + ')" class="px-1.5 py-0.5 rounded border ' +
                                 (h.skillBar[sl] === sk.id ? 'bg-amber-400 text-black font-bold border-amber-300' : 'bg-gray-900 border-gray-700 text-gray-300') + '">' +
-                                (sl === 0 ? 'Esp' : (sl === 4 ? '4/A' : sl)) + '</button>'
+                                (sl === 0 ? 'Esp' : (sl === 4 ? '4/Clic droit' : sl)) + '</button>'
                               ).join('') + '</div>'
                             : '<span class="text-[10px] text-gray-500">' + (sk.passive ? 'Passif' : 'Non appris') + '</span>') +
                     '</div>' +
@@ -2989,9 +3261,9 @@ const UI = {
         if (!it) return this.hideCompare();
         const { before, after, equipped } = this.compareItem(it);
         const rows = [
-            ['Vie Max', 'maxHp'], ['Mana Max', 'maxMp'], ['Dégâts Physiques', 'physDmg'], ['Puissance Magique', 'spellDmg'],
+            ['Vie Max', 'maxHp'], ['Rage Max', 'maxMp'], ['Dégâts Physiques', 'physDmg'], ['Puissance élémentaire', 'elemPower'],
             ['Vitesse d’attaque', 'atkPct', '%'], ['Portée', 'weaponRange'],
-            ['Armure', 'armor'], ['Chance Critique', 'critChance', '%'], ['Esquive', 'dodge', '%'],
+            ['Armure', 'armor'], ['Chance Critique', 'critChance', '%'], ['Esquive', 'dodge', '%'], ['Furtivité', 'stealth', '%'],
             ['Force', 'str'], ['Dextérité', 'dex'], ['Intelligence', 'int'], ['Vitalité', 'vit']
         ].map(([label, k, u = '']) => {
             const d = after[k] - before[k];
@@ -3030,12 +3302,21 @@ const UI = {
 
     renderQuestsModal() {
         Quests.ensureAvailable();
-        const active = State.quests.filter(q => !q.claimed);
+        // Donjon de la quête (chasse : biomeId, relique : biome qui détient l'artefact)
+        const biomeOf = q => BIOMES.find(b => b.id === q.biomeId || b.artifactId === q.artifactId) || BIOMES[0];
+        // Tri par niveau requis du donjon (BIOMES est rangé dans cet ordre)
+        const active = State.quests.filter(q => !q.claimed)
+            .sort((a, b) => BIOMES.indexOf(biomeOf(a)) - BIOMES.indexOf(biomeOf(b)));
         document.getElementById('questsModalBody').innerHTML = '<div class="space-y-3">' +
-            active.map(q =>
-                '<div class="bg-black/50 p-4 rounded-xl border ' + (q.completed ? 'border-emerald-500/60' : 'border-gray-800') + ' flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">' +
+            active.map(q => {
+                const b = biomeOf(q);
+                const locked = State.hero.level < b.minLvl;
+                return '<div class="bg-black/50 p-4 rounded-xl border ' + (q.completed ? 'border-emerald-500/60' : 'border-gray-800') + ' flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">' +
                     '<div>' +
-                        '<div class="text-sm font-bold text-amber-200">' + q.title + '</div>' +
+                        '<div class="flex flex-wrap items-center gap-2">' +
+                            '<span class="text-[10px] px-2 py-0.5 rounded ' + (locked ? 'bg-red-950 text-red-300' : 'bg-gray-900 text-gray-300') + '">' + (locked ? '🔒 ' : '') + 'Niv. ' + b.minLvl + '+ • ' + b.icon + ' ' + b.name + '</span>' +
+                            '<span class="text-sm font-bold text-amber-200">' + q.title + '</span>' +
+                        '</div>' +
                         '<p class="text-xs text-gray-300 mt-0.5">' + q.desc + '</p>' +
                         '<div class="text-[11px] text-amber-400 mt-1">Progression : ' + q.progress + ' / ' + q.target + ' • Récompense : ' + q.rewardGold + ' Or, ' + q.rewardXp + ' XP</div>' +
                     '</div>' +
@@ -3044,8 +3325,8 @@ const UI = {
                         : q.completed
                         ? '<button onclick="Quests.claim(\'' + q.id + '\')" class="rpg-btn px-4 py-2 rounded-lg text-xs font-bold text-emerald-300 border-emerald-500">Valider la Quête</button>'
                         : '<span class="text-xs text-gray-500 px-3 py-1.5 rounded bg-black/50">En cours</span>') +
-                '</div>'
-            ).join('') + '</div>';
+                '</div>';
+            }).join('') + '</div>';
     },
 
     renderBlacksmithModal() {
@@ -3112,7 +3393,7 @@ const UI = {
                 '<span class="text-xs text-yellow-300 font-bold">Votre Bourse : 🪙 ' + h.gold + ' Or</span>' +
                 '<div class="flex gap-2">' +
                     '<button onclick="Game.buyPotion(\'hp\')" ' + (h.gold < 40 ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-red-300">+🧪 Potion Vie (40 Or)</button>' +
-                    '<button onclick="Game.buyPotion(\'mp\')" ' + (h.gold < 40 ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-blue-300">+💧 Potion Mana (40 Or)</button>' +
+                    '<button onclick="Game.buyPotion(\'mp\')" ' + (h.gold < 40 ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-orange-300">+🔥 Potion Fureur (40 Or)</button>' +
                 '</div>' +
             '</div>' +
             '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
@@ -3129,16 +3410,19 @@ const UI = {
 
         const biomesHtml = BIOMES.map(b => {
             const art = ARTIFACTS[b.artifactId];
-            return '<div class="bg-black/50 p-3.5 rounded-xl border border-gray-800 hover:border-amber-400 flex flex-col justify-between gap-2">' +
+            const locked = State.hero.level < b.minLvl;
+            const btn = locked
+                ? '<button disabled class="rpg-btn w-full py-1.5 rounded-lg text-xs font-bold text-gray-500 mt-1 cursor-not-allowed">🔒 Niveau ' + b.minLvl + ' requis</button>'
+                : '<button onclick="UI.closeModals(); World.enterDungeon(\'' + b.id + '\');" class="rpg-btn w-full py-1.5 rounded-lg text-xs font-bold text-amber-200 mt-1">Entrer dans le Donjon</button>';
+            return '<div class="bg-black/50 p-3.5 rounded-xl border border-gray-800 flex flex-col justify-between gap-2 ' + (locked ? 'opacity-50' : 'hover:border-amber-400') + '">' +
                 '<div>' +
                     '<div class="flex justify-between items-center">' +
                         '<span class="font-cinzel font-bold text-sm text-amber-200">' + b.icon + ' ' + b.name + '</span>' +
-                        '<span class="text-[10px] px-2 py-0.5 rounded bg-gray-900 text-gray-300">Niv. ' + b.minLvl + '+</span>' +
+                        '<span class="text-[10px] px-2 py-0.5 rounded ' + (locked ? 'bg-red-950 text-red-300' : 'bg-gray-900 text-gray-300') + '">Niv. ' + b.minLvl + '+</span>' +
                     '</div>' +
                     '<div class="text-[11px] text-gray-400 mt-1">Boss : <span class="text-orange-300">' + b.bosses.map(bo => bo.name).join(' ou ') + '</span></div>' +
                     '<div class="text-[11px] text-cyan-300/90 mt-0.5">Artefact : ' + art.icon + ' ' + art.name + '</div>' +
-                '</div>' +
-                '<button onclick="UI.closeModals(); World.enterDungeon(\'' + b.id + '\');" class="rpg-btn w-full py-1.5 rounded-lg text-xs font-bold text-amber-200 mt-1">Entrer dans le Donjon</button>' +
+                '</div>' + btn +
             '</div>';
         }).join('');
 
@@ -3182,7 +3466,7 @@ const Game = {
 
         computeHeroStats();
         h.hp = h.maxHp;
-        h.mp = h.maxMp;
+        h.mp = 0;
 
         Quests.generateInitial();
         this.enterGameScreen();
@@ -3416,7 +3700,7 @@ const Game = {
         try {
             const raw = localStorage.getItem('chroniques_abysses_save_v3');
             if (!raw) return;
-            const data = JSON.parse(raw);
+            const data = JSON.parse(raw.replaceAll('Mana Max', 'Rage Max'));
             Object.assign(State.hero, data.hero);
             this.migrateToWarrior();
             State.quests = data.quests || [];
