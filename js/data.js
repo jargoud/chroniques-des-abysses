@@ -62,13 +62,13 @@ const UPGRADE_STEP = 0.12;
 // minLvl : niveau requis • maxLvl : plafond du niveau des ennemis et du butin (refaire un vieux donjon rapporte peu)
 const BIOMES = [
     { id: 'dungeon', name: 'Prison Souterraine', icon: 'chains', minLvl: 1, maxLvl: 4, floor: '#2a2622', wall: '#4a4440', accent: '#a8a29e', artifactId: 'art_iron' },
-    { id: 'castle', name: 'Château en Ruines', icon: 'tower', minLvl: 3, maxLvl: 6, floor: '#3a3f47', wall: '#5b6470', accent: '#94a3b8', artifactId: 'art_crest' },
-    { id: 'crypt', name: 'Caveau Funéraire', icon: 'coffin', minLvl: 5, maxLvl: 8, floor: '#1f1d24', wall: '#3b3842', accent: '#a78bfa', artifactId: 'art_soul' },
-    { id: 'pyramid', name: 'Pyramide Oubliée', icon: 'pyramid', minLvl: 7, maxLvl: 10, floor: '#5a4526', wall: '#8a6a35', accent: '#facc15', artifactId: 'art_sun' },
-    { id: 'temple', name: 'Temple Maudit', icon: 'torii', minLvl: 9, maxLvl: 12, floor: '#2e1a33', wall: '#5b2273', accent: '#e879f9', artifactId: 'art_rune' },
-    { id: 'jungle', name: 'Jungle Luxuriante', icon: 'palm', minLvl: 11, maxLvl: 14, floor: '#3d6b26', wall: '#1f6b2e', accent: '#4ade80', artifactId: 'art_emerald' },
-    { id: 'forest', name: 'Forêt Sombre', icon: 'pine', minLvl: 13, maxLvl: 16, floor: '#1a2a20', wall: '#2f6b45', accent: '#34d399', artifactId: 'art_amber' },
-    { id: 'catacombs', name: 'Catacombes Profondes', icon: 'skull', minLvl: 15, maxLvl: 20, floor: '#2b1414', wall: '#5c1a1a', accent: '#f87171', artifactId: 'art_abyss' }
+    { id: 'castle', name: 'Château en Ruines', icon: 'tower', minLvl: 2, maxLvl: 6, floor: '#3a3f47', wall: '#5b6470', accent: '#94a3b8', artifactId: 'art_crest' },
+    { id: 'crypt', name: 'Caveau Funéraire', icon: 'coffin', minLvl: 3, maxLvl: 8, floor: '#1f1d24', wall: '#3b3842', accent: '#a78bfa', artifactId: 'art_soul' },
+    { id: 'pyramid', name: 'Pyramide Oubliée', icon: 'pyramid', minLvl: 4, maxLvl: 10, floor: '#5a4526', wall: '#8a6a35', accent: '#facc15', artifactId: 'art_sun' },
+    { id: 'temple', name: 'Temple Maudit', icon: 'torii', minLvl: 5, maxLvl: 12, floor: '#2e1a33', wall: '#5b2273', accent: '#e879f9', artifactId: 'art_rune' },
+    { id: 'jungle', name: 'Jungle Luxuriante', icon: 'palm', minLvl: 6, maxLvl: 14, floor: '#3d6b26', wall: '#1f6b2e', accent: '#4ade80', artifactId: 'art_emerald' },
+    { id: 'forest', name: 'Forêt Sombre', icon: 'pine', minLvl: 7, maxLvl: 16, floor: '#1a2a20', wall: '#2f6b45', accent: '#34d399', artifactId: 'art_amber' },
+    { id: 'catacombs', name: 'Catacombes Profondes', icon: 'skull', minLvl: 8, maxLvl: 20, floor: '#2b1414', wall: '#5c1a1a', accent: '#f87171', artifactId: 'art_abyss' }
 ];
 
 // Ambiance de rendu par biome : style de sol et de mur, extérieur (pas de torches, murs = végétation),
