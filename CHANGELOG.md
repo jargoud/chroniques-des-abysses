@@ -4,6 +4,12 @@ Toutes les évolutions notables du projet sont consignées dans ce fichier.
 
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
+## [0.5.1] - 2026-11-14
+
+### Corrigé
+
+- Erreur « icon is not defined » qui bloquait le jeu à l'approche d'un objet, d'un coffre, d'un portail ou d'un PNJ.
+
 ## [0.5.0] - 2026-11-14
 
 ### Ajouté
@@ -137,6 +143,7 @@ Première version publiée.
 - Musiques chiptune (camp, donjon, boss) avec réverbération et écho, et bruitages synthétisés ; son coupable avec la touche M.
 - Les murs bloquent les attaques, les sorts de zone et la détection des ennemis.
 
+[0.5.1]: https://github.com/jargoud/chroniques-des-abysses/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/jargoud/chroniques-des-abysses/compare/0.4.2...0.5.0
 [0.4.2]: https://github.com/jargoud/chroniques-des-abysses/compare/0.4.1...0.4.2
 [0.4.1]: https://github.com/jargoud/chroniques-des-abysses/compare/0.4.0...0.4.1

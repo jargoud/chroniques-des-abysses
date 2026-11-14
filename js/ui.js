@@ -123,9 +123,7 @@ const UI = {
         else if (nearNpc) msg = '[E] Parler à ' + nearNpc.name;
 
         if (msg) {
-            el.className += ' flex items-center gap-1.5';
-        el.textContent = msg;
-        if (icon) el.insertAdjacentHTML('afterbegin', this.ic(icon, 'w-4 h-4'));
+            el.textContent = msg;
             el.classList.remove('hidden');
         } else {
             el.classList.add('hidden');
