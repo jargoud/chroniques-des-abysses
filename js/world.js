@@ -117,13 +117,21 @@ const Quests = {
         Game.saveGame();
     },
 
+    // Récompense fixée à l'accomplissement selon la Menace en cours (+25 %/cran) : changer de Menace avant de réclamer ne change rien
+    complete(q) {
+        const m = 1 + (State.difficulty - 1) * 0.25;
+        q.rewardGold = Math.round(q.rewardGold * m);
+        q.rewardXp = Math.round(q.rewardXp * m);
+        q.completed = true;
+    },
+
     onEnemyKilled(biomeId) {
         State.quests.forEach(q => {
             if (q.claimed || q.completed) return;
             if (q.type === 'kill' && q.biomeId === biomeId) {
                 q.progress = Math.min(q.target, q.progress + 1);
                 if (q.progress >= q.target) {
-                    q.completed = true;
+                    this.complete(q);
                     UI.toast('Quête accomplie : ' + q.title + ' !', 'amber', 'quests');
                 }
             }
@@ -138,7 +146,7 @@ const Quests = {
         State.quests.forEach(q => {
             if (q.claimed || q.completed || q.type !== 'boss' || q.bossId !== bossId) return;
             q.progress = 1;
-            q.completed = true;
+            this.complete(q);
             UI.toast('Quête accomplie : ' + q.title + ' !', 'amber', 'quests');
         });
         UI.updateHudQuest();
@@ -206,7 +214,7 @@ const World = {
 
     // Niveau des ennemis et du butin : niveau du héros borné à la plage du biome (+2 par cran de Menace)
     biomeLevel(biome) {
-        return Math.min(biome.maxLvl, Math.max(biome.minLvl, State.hero.level)) + (State.difficulty - 1) * 2;
+        return Math.min(biome.endless ? Infinity : biome.maxLvl, Math.max(biome.minLvl, State.hero.level)) + (State.difficulty - 1) * 2;
     },
 
     // Poids de tirage d'un biome pour « Partir en exploration » : les quêtes ouvertes attirent le tirage,
@@ -215,7 +223,7 @@ const World = {
         const h = State.hero;
         return Quests.unlocked().map(b => {
             const open = State.quests.filter(q => !q.claimed && !q.completed && q.biomeId === b.id);
-            let w = h.level > b.maxLvl ? 0.15 : 1;
+            let w = !b.endless && h.level > b.maxLvl ? 0.15 : 1;
             w += open.filter(q => q.type === 'boss').length * 3 + open.filter(q => q.type === 'kill').length * 2;
             return { biome: b, w };
         });
@@ -408,7 +416,8 @@ const World = {
         // Croissance avec le niveau calquée sur celle du héros (équipement ×(1+0,14/niv), attributs ≈ +5 %/niv) :
         // un donjon refait à plus haut niveau garde le même nombre de coups pour tuer / être tué.
         // ponytail: courbes fixes, à recalibrer si l'équilibrage du héros change
-        const hpGrowth = (1 + (level - 1) * 0.14) * (1 + (level - 1) * 0.05);
+        // + rampe « équipement attendu » (+3,5 %/niv, +60 % max) : compense rareté, forge, talents et trophées du milieu/fin de partie
+        const hpGrowth = (1 + (level - 1) * 0.14) * (1 + (level - 1) * 0.05) * (1 + Math.min(0.6, (level - 1) * 0.035));
         const dmgGrowth = 1 + (level - 1) * 0.08;
         const maxHp = Math.round((42 + level * 22) * hpMult * hpGrowth);
         const dmg = Math.round((8 + level * 4.0) * dmgMult * dmgGrowth);

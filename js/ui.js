@@ -552,7 +552,7 @@ const UI = {
         }
         if (it.armor > 0) parts.push('+' + Math.round(it.armor * upg) + ' Armure');
         it.affixes.forEach(a => parts.push(a.label));
-        if (it.socketed && ARTIFACTS[it.socketed]) parts.push(this.ic('gem') + ' ' + ARTIFACTS[it.socketed].label);
+        if (it.socketed && ARTIFACTS[it.socketed]) parts.push(this.ic('gem') + ' ' + ARTIFACTS[it.socketed].label.replace(/\d+/, artifactVal(ARTIFACTS[it.socketed], it)));
         return parts.join(' • ') || 'Équipement de base';
     },
 
@@ -663,7 +663,7 @@ const UI = {
             return '<div class="bg-black/50 p-4 rounded-xl border ' + (q.completed ? 'border-emerald-500/60' : q.type === 'boss' ? 'border-orange-500/40' : 'border-gray-800') + ' flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">' +
                 '<div>' +
                     '<div class="flex flex-wrap items-center gap-2">' +
-                        '<span class="text-[10px] px-2 py-0.5 rounded ' + (locked ? 'bg-red-950 text-red-300' : 'bg-gray-900 text-gray-300') + '">' + (locked ? this.ic('lock') + ' ' : '') + this.ic(b.icon) + ' ' + b.name + ' • Niv. ' + b.minLvl + '-' + b.maxLvl + '</span>' +
+                        '<span class="text-[10px] px-2 py-0.5 rounded ' + (locked ? 'bg-red-950 text-red-300' : 'bg-gray-900 text-gray-300') + '">' + (locked ? this.ic('lock') + ' ' : '') + this.ic(b.icon) + ' ' + b.name + ' • Niv. ' + b.minLvl + (b.endless ? '+' : '-' + b.maxLvl) + '</span>' +
                         '<span class="text-sm font-bold ' + (q.type === 'boss' ? 'text-orange-300' : 'text-amber-200') + '">' + this.ic(q.type === 'boss' ? 'skull' : 'dagger') + ' ' + q.title + '</span>' +
                     '</div>' +
                     '<p class="text-xs text-gray-300 mt-0.5">' + q.desc + '</p>' +
@@ -737,8 +737,8 @@ const UI = {
         return '<div class="flex flex-wrap gap-2 mb-4 items-center justify-between">' +
                 '<span class="text-xs text-gray-400">Le stock se renouvelle à chaque retour d’expédition. [Entrée] Acheter • [X] Vendre</span>' +
                 '<div class="flex gap-2">' +
-                    '<button onclick="Game.buyPotion(\'hp\')" ' + (h.gold < POTION_PRICE ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-red-300">+' + this.ic('potionHp') + ' Potion Vie (' + POTION_PRICE + ' Or)</button>' +
-                    '<button onclick="Game.buyPotion(\'mp\')" ' + (h.gold < POTION_PRICE ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-orange-300">+' + this.ic('potionRage') + ' Potion Fureur (' + POTION_PRICE + ' Or)</button>' +
+                    '<button onclick="Game.buyPotion(\'hp\')" ' + (h.gold < potionPrice() ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-red-300">+' + this.ic('potionHp') + ' Potion Vie (' + potionPrice() + ' Or)</button>' +
+                    '<button onclick="Game.buyPotion(\'mp\')" ' + (h.gold < potionPrice() ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-orange-300">+' + this.ic('potionRage') + ' Potion Fureur (' + potionPrice() + ' Or)</button>' +
                 '</div>' +
             '</div>' +
             '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
@@ -777,7 +777,7 @@ const UI = {
                 '<div class="flex justify-between items-center gap-2">' +
                     '<span class="font-cinzel font-bold text-sm text-amber-200">' + this.ic(b.icon, 'w-5 h-5') + ' ' + b.name + '</span>' +
                     '<span class="text-[10px] px-2 py-0.5 rounded shrink-0 ' + (locked ? 'bg-red-950 text-red-300' : 'bg-gray-900 text-gray-300') + '">' +
-                        (locked ? this.ic('lock') + ' Niv. ' + b.minLvl : pct + ' % • Niv. ' + b.minLvl + '-' + b.maxLvl) + '</span>' +
+                        (locked ? this.ic('lock') + ' Niv. ' + b.minLvl : pct + ' % • Niv. ' + b.minLvl + (b.endless ? '+' : '-' + b.maxLvl)) + '</span>' +
                 '</div>' +
                 '<div class="text-[11px] mt-1.5 leading-relaxed">' + bosses + '</div>' +
                 (h.purified[b.id] ? '<div class="text-[11px] mt-1 text-emerald-300 font-semibold">' + this.ic('trophy') + ' Purifié • +2 % dégâts</div>' : '') +

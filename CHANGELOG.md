@@ -4,6 +4,21 @@ Toutes les évolutions notables du projet sont consignées dans ce fichier.
 
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
+## [0.7.0] - 2026-11-14
+
+Rééquilibrage du milieu et de la fin de partie, qui devenaient trop faciles avec un bon équipement. Le début de partie ne change pas.
+
+### Modifié
+
+- Armure : le seuil de réduction des dégâts suit désormais le niveau de l'attaquant (au lieu de celui du héros) et la croissance de l'équipement, et la réduction plafonne à 75 %. Elle approchait 90 % en fin de partie.
+- Ennemis : leur vie gagne +3,5 % par niveau (+60 % au plus, atteint vers le niveau 18) pour compenser la rareté, la forge, les talents et les trophées.
+- Catacombes : plus de plafond de niveau, les ennemis suivent le niveau du héros au-delà de 20. Le portail ne les considère plus comme dépassées, et l'onglet Expéditions affiche « Niv. 8+ ». Le légendaire de purification reste au niveau 20.
+- Potions : leur prix suit le niveau du héros (22 + 8 par niveau, soit 30 Or au niveau 1, 102 au niveau 10, 182 au niveau 20).
+- Vol de vie : réduit au tiers sur les attaques de zone (Tourbillon, Séisme, Pluie de Flèches), et plus de soin par les dégâts renvoyés de Représailles.
+- Artefacts sertis : leur bonus croît avec le niveau de l'objet hôte (+14 % par niveau), sauf la chance de critique et la Rage max. La fiche de l'objet affiche la valeur réelle.
+- Quêtes : or et XP augmentent de 25 % par cran de Menace, selon la Menace en cours au moment où la quête est accomplie.
+- Coffres piégés : leurs dégâts suivent la même progression que ceux des ennemis.
+
 ## [0.6.1] - 2026-11-14
 
 ### Modifié
@@ -164,6 +179,7 @@ Première version publiée.
 - Musiques chiptune (camp, donjon, boss) avec réverbération et écho, et bruitages synthétisés ; son coupable avec la touche M.
 - Les murs bloquent les attaques, les sorts de zone et la détection des ennemis.
 
+[0.7.0]: https://github.com/jargoud/chroniques-des-abysses/compare/0.6.1...0.7.0
 [0.6.1]: https://github.com/jargoud/chroniques-des-abysses/compare/0.6.0...0.6.1
 [0.6.0]: https://github.com/jargoud/chroniques-des-abysses/compare/0.5.1...0.6.0
 [0.5.1]: https://github.com/jargoud/chroniques-des-abysses/compare/0.5.0...0.5.1

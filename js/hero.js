@@ -118,6 +118,11 @@ const ItemGen = {
     }
 };
 
+// Bonus d'un artefact serti : croît comme l'objet hôte (+14 %/niv), sauf % de critique et Rage max
+function artifactVal(art, item) {
+    return ['crit', 'mp'].includes(art.bonusStat) ? art.val : Math.round(art.val * (1 + (item.level - 1) * 0.14));
+}
+
 // ==================== 4. CALCUL DES STATISTIQUES DU HÉROS ====================
 function computeHeroStats() {
     const h = State.hero;
@@ -173,13 +178,14 @@ function computeHeroStats() {
 
         if (item.socketed && ARTIFACTS[item.socketed]) {
             const art = ARTIFACTS[item.socketed];
-            if (art.bonusStat === 'allStats') { str += art.val; dex += art.val; int += art.val; vit += art.val; }
-            else if (art.bonusStat === 'hp') bonusHp += art.val;
-            else if (art.bonusStat === 'mp') bonusMp += art.val;
-            else if (art.bonusStat === 'dmg') bonusDmg += art.val;
-            else if (art.bonusStat === 'elemDmg') elemDmg += art.val;
-            else if (art.bonusStat === 'crit') critChance += art.val;
-            else if (art.bonusStat === 'armor') armor += art.val;
+            const v = artifactVal(art, item);
+            if (art.bonusStat === 'allStats') { str += v; dex += v; int += v; vit += v; }
+            else if (art.bonusStat === 'hp') bonusHp += v;
+            else if (art.bonusStat === 'mp') bonusMp += v;
+            else if (art.bonusStat === 'dmg') bonusDmg += v;
+            else if (art.bonusStat === 'elemDmg') elemDmg += v;
+            else if (art.bonusStat === 'crit') critChance += v;
+            else if (art.bonusStat === 'armor') armor += v;
         }
     });
 

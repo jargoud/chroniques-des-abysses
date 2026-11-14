@@ -141,12 +141,13 @@ const Combat = {
         State.world.enemies.slice().forEach(en => {
             if (Math.hypot(en.x - x, en.y - y) <= radius + en.radius && World.hasLineOfSight(x, y, en.x, en.y)) {
                 if (effects && effects.stun) en.stunTimer = Math.max(en.stunTimer, effects.stun);
-                this.damageEnemy(en, dmg, false, color);
+                this.damageEnemy(en, dmg, false, color, 1 / 3);
             }
         });
     },
 
-    damageEnemy(en, rawDmg, forceCrit, color) {
+    // lifeMult : part du vol de vie appliquée (1/3 en zone, sinon un Séisme sur 8 ennemis soigne 8 fois ; 0 pour Représailles)
+    damageEnemy(en, rawDmg, forceCrit, color, lifeMult = 1) {
         if (!en || en.hp <= 0) return;
         const h = State.hero;
         const stats = computeHeroStats();
@@ -162,8 +163,8 @@ const Combat = {
         en.hitFlash = 0.12;
         Sound.play(isCrit ? 'crit' : 'hit');
         if (isCrit) FX.shake = Math.max(FX.shake, 2);
-        if (stats.lifesteal > 0) {
-            h.hp = Math.min(h.maxHp, h.hp + Math.max(1, Math.round(dmg * stats.lifesteal / 100)));
+        if (stats.lifesteal > 0 && lifeMult > 0) {
+            h.hp = Math.min(h.maxHp, h.hp + Math.max(1, Math.round(dmg * stats.lifesteal * lifeMult / 100)));
         }
 
         this.spawnParticles(en.x, en.y, color || '#facc15', isCrit ? 12 : 6);
@@ -263,12 +264,14 @@ const Combat = {
             return 0;
         }
 
-        const reduction = stats.armor / (stats.armor + 55 + h.level * 10);
+        // Seuil calé sur le niveau de l'attaquant (comme ses dégâts) et sur la croissance de l'équipement (×(1+0,14/niv)) :
+        // sans ça la réduction file vers 90 % en fin de partie
         const attackerLvl = source ? source.level : (lvl || h.level);
+        const reduction = Math.min(0.75, stats.armor / (stats.armor + (55 + attackerLvl * 10) * (1 + (attackerLvl - 1) * 0.14)));
         let dmg = Math.max(1, Math.round(rawDmg * (1 - reduction) * (1 - this.assist(attackerLvl))));
         if (h.skills.war_bulwark && h.hp < h.maxHp * 0.4) dmg = Math.max(1, Math.round(dmg * (1 - 0.12 * h.skills.war_bulwark)));
         if (source && h.skills.war_thorns && source.hp > 0) {
-            this.damageEnemy(source, Math.max(1, Math.round(dmg * 0.25 * (1 + h.skills.war_thorns))), false, '#a3e635');
+            this.damageEnemy(source, Math.max(1, Math.round(dmg * 0.25 * (1 + h.skills.war_thorns))), false, '#a3e635', 0);
         }
         if (h.shield > 0) {
             const absorbed = Math.min(h.shield, dmg);
@@ -323,7 +326,7 @@ const Combat = {
     deathPotions(killerLvl) {
         let n = 1;
         if ((killerLvl || 0) > State.hero.level) n++;
-        if (State.hero.gold < POTION_PRICE * 2) n++;
+        if (State.hero.gold < potionPrice() * 2) n++;
         return n;
     },
 
@@ -420,7 +423,7 @@ const Combat = {
             Sound.play('chest');
             if (chest.trapped) {
                 this.floatingText(chest.x, chest.y - 20, 'Coffre Piégé !', '#f97316', true, Art.icon('burst'));
-                this.damagePlayer(10 + chest.level * 4, null, chest.level);
+                this.damagePlayer(Math.round((8 + chest.level * 4) * (1 + (chest.level - 1) * 0.08)), null, chest.level);
             }
             const item = ItemGen.create(chest.level, Math.random() < 0.25 ? 'rare' : 'magic');
             w.lootDrops.push({

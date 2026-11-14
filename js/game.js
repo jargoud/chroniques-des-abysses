@@ -1,7 +1,8 @@
 'use strict';
 
 // ==================== 9. ACTIONS & SAUVEGARDE ====================
-const POTION_PRICE = 30;
+// Prix des potions indexé sur le niveau (30 or au niveau 1) : sinon gratuites face aux revenus de fin de partie
+const potionPrice = () => 22 + State.hero.level * 8;
 
 const Game = {
     startNewGame() {
@@ -252,8 +253,8 @@ const Game = {
 
     buyPotion(type) {
         const h = State.hero;
-        if (h.gold < POTION_PRICE) return;
-        h.gold -= POTION_PRICE;
+        if (h.gold < potionPrice()) return;
+        h.gold -= potionPrice();
         if (type === 'hp') h.potionsHp++;
         else h.potionsMp++;
         UI.renderMerchantModal();
