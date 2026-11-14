@@ -4,6 +4,23 @@ Toutes les évolutions notables du projet sont consignées dans ce fichier.
 
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
+## [0.5.0] - 2026-11-14
+
+### Ajouté
+
+- Donjon purifié : vaincre les 4 boss d'un biome rapporte, à la validation de la dernière quête de boss, un objet légendaire garanti au niveau maximum du biome et un trophée permanent de +2 % de dégâts (physiques et élémentaires) par donjon purifié. Le trophée s'affiche sur la carte du biome (onglet Expéditions) et dans les statistiques du héros. Les sauvegardes dont un donjon est déjà nettoyé reçoivent la récompense au chargement.
+- Écran de mort : une fenêtre annonce le retour au camp, les soins du guérisseur, les potions offertes et l'or perdu. Son bouton reste verrouillé 1,5 s pour que les touches pressées en plein combat ne déclenchent rien au camp.
+- Images générées pour chacun des 27 types d'équipement (dague, arc long, écu de fer, diadème…), en mode moderne comme en pixel art, dans l'inventaire, le comparateur, le marchand et la forge.
+- Icônes générées à la place de tous les émojis (55 dessins, en mode moderne comme en pixel art) : onglets du camp, HUD, menus, talents et branches, biomes, artefacts, potions, quêtes, notifications, et textes flottants du combat (coups critiques, bouclier, explosions, changement d'arme).
+- Explication de la Menace dans l'onglet Expéditions : niveaux en plus pour les ennemis et le butin, vie et dégâts des ennemis, et ce que l'on gagne en échange.
+
+### Modifié
+
+- Attributs et talents se dépensent désormais au camp, dans deux nouveaux lieux : l'Entraînement (attributs) et le Sanctuaire (talents). En expédition, la fiche du héros et l'arbre de talents restent consultables, et la barre de sorts reste modifiable.
+- L'inventaire devient un onglet du camp ; en expédition, il s'ouvre toujours avec [I]. Au camp, [C], [K] et [I] ouvrent les onglets Entraînement, Sanctuaire et Inventaire.
+- Onglets du camp réordonnés dans l'ordre d'un retour d'expédition : Quêtes, Marchand, Forge, Inventaire, Entraînement, Sanctuaire, Expéditions. Le camp s'ouvre sur Quêtes à chaque retour.
+- La pastille des onglets Entraînement et Sanctuaire indique le nombre de points à dépenser.
+
 ## [0.4.2] - 2026-11-14
 
 ### Ajouté
@@ -120,6 +137,10 @@ Première version publiée.
 - Musiques chiptune (camp, donjon, boss) avec réverbération et écho, et bruitages synthétisés ; son coupable avec la touche M.
 - Les murs bloquent les attaques, les sorts de zone et la détection des ennemis.
 
+[0.5.0]: https://github.com/jargoud/chroniques-des-abysses/compare/0.4.2...0.5.0
+[0.4.2]: https://github.com/jargoud/chroniques-des-abysses/compare/0.4.1...0.4.2
+[0.4.1]: https://github.com/jargoud/chroniques-des-abysses/compare/0.4.0...0.4.1
+[0.4.0]: https://github.com/jargoud/chroniques-des-abysses/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/jargoud/chroniques-des-abysses/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/jargoud/chroniques-des-abysses/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/jargoud/chroniques-des-abysses/releases/tag/0.1.0

@@ -5,50 +5,50 @@ const ItemGen = {
     bases: {
         // speed : vitesse d'attaque • arc : ouverture du coup (×π) • dmg : multiplicateur de dégâts
         weapon: [
-            { name: 'Dague Acérée', icon: '🗡️', range: 50, speed: 1.35, arc: 0.6, dmg: 0.8 },
-            { name: 'Épée Longue', icon: '🗡️', range: 60, speed: 1.0, arc: 0.78, dmg: 1.0 },
-            { name: 'Hache de Guerre', icon: '🪓', range: 60, speed: 0.85, arc: 1.0, dmg: 1.15 },
-            { name: 'Masse d’Armes', icon: '🔨', range: 56, speed: 0.8, arc: 0.7, dmg: 1.3 },
-            { name: 'Lance de Guerre', icon: '🔱', range: 84, speed: 0.95, arc: 0.4, dmg: 1.05 },
-            { name: 'Espadon Runique', icon: '⚔️', range: 70, speed: 0.7, arc: 1.1, dmg: 1.45 }
+            { name: 'Dague Acérée', range: 50, speed: 1.35, arc: 0.6, dmg: 0.8 },
+            { name: 'Épée Longue', range: 60, speed: 1.0, arc: 0.78, dmg: 1.0 },
+            { name: 'Hache de Guerre', range: 60, speed: 0.85, arc: 1.0, dmg: 1.15 },
+            { name: 'Masse d’Armes', range: 56, speed: 0.8, arc: 0.7, dmg: 1.3 },
+            { name: 'Lance de Guerre', range: 84, speed: 0.95, arc: 0.4, dmg: 1.05 },
+            { name: 'Espadon Runique', range: 70, speed: 0.7, arc: 1.1, dmg: 1.45 }
         ],
         // projSpeed : vitesse du projectile • pierce : traverse les ennemis
         ranged: [
-            { name: 'Arc Court', icon: '🏹', range: 300, speed: 1.25, projSpeed: 600, dmg: 0.7 },
-            { name: 'Arc Long', icon: '🏹', range: 420, speed: 0.9, projSpeed: 720, dmg: 0.9 },
-            { name: 'Arbalète Lourde', icon: '🎯', range: 380, speed: 0.6, projSpeed: 820, dmg: 1.3, pierce: true },
-            { name: 'Javelots de Chasse', icon: '🔱', range: 260, speed: 0.8, projSpeed: 480, dmg: 1.15 }
+            { name: 'Arc Court', range: 300, speed: 1.25, projSpeed: 600, dmg: 0.7 },
+            { name: 'Arc Long', range: 420, speed: 0.9, projSpeed: 720, dmg: 0.9 },
+            { name: 'Arbalète Lourde', range: 380, speed: 0.6, projSpeed: 820, dmg: 1.3, pierce: true },
+            { name: 'Javelots de Chasse', range: 260, speed: 0.8, projSpeed: 480, dmg: 1.15 }
         ],
         offhand: [
-            { name: 'Bouclier de Bois', icon: '🛡️' },
-            { name: 'Écu de Fer', icon: '🛡️' },
-            { name: 'Pavois Clouté', icon: '🛡️' }
+            { name: 'Bouclier de Bois' },
+            { name: 'Écu de Fer' },
+            { name: 'Pavois Clouté' }
         ],
         helm: [
-            { name: 'Casque de Fer', icon: '🖴' },
-            { name: 'Capuche de Cuir', icon: '🎓' },
-            { name: 'Diadème Astral', icon: '👑' }
+            { name: 'Casque de Fer' },
+            { name: 'Capuche de Cuir' },
+            { name: 'Diadème Astral' }
         ],
         armor: [
-            { name: 'Cuirasse de Mailles', icon: '🦺' },
-            { name: 'Manteau de Pisteur', icon: '🧥' },
-            { name: 'Robe d’Adepte', icon: '👘' }
+            { name: 'Cuirasse de Mailles' },
+            { name: 'Manteau de Pisteur' },
+            { name: 'Robe d’Adepte' }
         ],
         gloves: [
-            { name: 'Gantelets Rivetés', icon: '🧤' },
-            { name: 'Mitaines Souples', icon: '🧤' }
+            { name: 'Gantelets Rivetés' },
+            { name: 'Mitaines Souples' }
         ],
         boots: [
-            { name: 'Bottes Ferrées', icon: '🥾' },
-            { name: 'Bottes de Marche', icon: '👢' }
+            { name: 'Bottes Ferrées' },
+            { name: 'Bottes de Marche' }
         ],
         ring: [
-            { name: 'Anneau de Cuivre', icon: '💍' },
-            { name: 'Chevalière Gravée', icon: '💍' }
+            { name: 'Anneau de Cuivre' },
+            { name: 'Chevalière Gravée' }
         ],
         amulet: [
-            { name: 'Talisman d’Os', icon: '📿' },
-            { name: 'Pendentif Runique', icon: '🧿' }
+            { name: 'Talisman d’Os' },
+            { name: 'Pendentif Runique' }
         ]
     },
     prefixes: ['Robuste', 'Vif', 'Arcanique', 'Sanglant', 'Solaire', 'Glacial', 'Ancien', 'Maudit'],
@@ -74,7 +74,6 @@ const ItemGen = {
             uid: 'itm_' + Math.random().toString(36).slice(2, 10),
             name: (rarityKey !== 'common' ? this.prefixes[Math.floor(Math.random() * this.prefixes.length)] + ' ' : '') + base.name,
             slot,
-            icon: base.icon,
             rarity: rarityKey,
             level,
             upgrade: 0,
@@ -200,9 +199,11 @@ function computeHeroStats() {
     const rageGain = (1 + int * 0.02) * (1 + 0.1 * (sk.war_bloodthirst || 0));
     // Frénésie : bonus de dégâts tant que la Rage dépasse 50
     const frenzy = sk.war_frenzy && h.mp >= 50 ? 1 + 0.1 * sk.war_frenzy : 1;
-    const physDmg = Math.round(Math.max(3, Math.round((weaponDmg + bonusDmg) * (1 + str * 0.026 + dex * 0.012))) * 1.15 * frenzy);
+    // Trophées : +2 % de dégâts par donjon purifié
+    const trophy = 1 + 0.02 * Object.keys(h.purified || {}).length;
+    const physDmg = Math.round(Math.max(3, Math.round((weaponDmg + bonusDmg) * (1 + str * 0.026 + dex * 0.012))) * 1.15 * frenzy * trophy);
     // Puissance élémentaire : dégâts élémentaires des objets / artefacts, amplifiés par l'Intelligence, ajoutés aux talents
-    const elemPower = Math.round(elemDmg * (1 + int * 0.04) * 1.15);
+    const elemPower = Math.round(elemDmg * (1 + int * 0.04) * 1.15 * trophy);
 
     critChance = Math.min(70, Math.round(critChance + dex * 0.25));
     // Esquive : la Dextérité rend le héros insaisissable (plafond 40 %)
@@ -219,7 +220,7 @@ function computeHeroStats() {
     return {
         str, dex, int, vit,
         physDmg, elemPower, armor, critChance, critMult,
-        atkSpeed, moveSpeed, dodge, stealth, lifesteal, rageGain,
+        atkSpeed, moveSpeed, dodge, stealth, lifesteal, rageGain, trophy,
         weaponType, weaponRange, weaponArc, projSpeed, pierce
     };
 }

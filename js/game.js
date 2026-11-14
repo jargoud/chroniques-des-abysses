@@ -26,6 +26,7 @@ const Game = {
         h.inventory = [];
         h.artifacts = {};
         h.bossKills = {};
+        h.purified = {};
         h.talentVersion = 2;
         h.shield = 0;
         h.potionsHp = 3; // 3 potions de soin de départ
@@ -47,7 +48,7 @@ const Game = {
 
     trainingBow() {
         return {
-            uid: 'itm_start_r', name: 'Arc de Recrue', slot: 'ranged', icon: '🏹',
+            uid: 'itm_start_r', name: 'Arc de Recrue', slot: 'ranged',
             rarity: 'common', level: 1, upgrade: 0, socketed: null,
             weaponType: 'ranged', weaponRange: 300, atkSpeed: 1, projSpeed: 600, pierce: false,
             dmg: 5, armor: 0, affixes: [], price: 10
@@ -56,7 +57,7 @@ const Game = {
 
     trainingSword() {
         return {
-            uid: 'itm_start_w', name: 'Épée d’Entraînement', slot: 'weapon', icon: '🗡️',
+            uid: 'itm_start_w', name: 'Épée d’Entraînement', slot: 'weapon',
             rarity: 'common', level: 1, upgrade: 0, socketed: null,
             weaponType: 'melee', weaponRange: 58,
             dmg: 7, armor: 0, affixes: [], price: 10
@@ -180,7 +181,7 @@ const Game = {
         computeHeroStats();
         Sound.play('swap');
         const p = State.world.player;
-        Combat.floatingText(p.x, p.y - 30, h.equipment[next].icon + ' ' + SLOT_LABELS[next], '#fde68a');
+        Combat.floatingText(p.x, p.y - 30, SLOT_LABELS[next], '#fde68a', false, Art.itemIcon(h.equipment[next]));
         UI.renderSkillBar();
         if (State.activeModal === 'inventoryModal') UI.renderInventoryModal();
     },
@@ -199,7 +200,7 @@ const Game = {
         h.gold -= cost;
         item.upgrade++;
         computeHeroStats();
-        UI.toast('⚒️ ' + item.name + ' amélioré (+' + item.upgrade + ') !', 'amber');
+        UI.toast(item.name + ' amélioré (+' + item.upgrade + ') !', 'amber', 'forge');
         UI.renderBlacksmithModal();
         UI.updateHud();
         this.saveGame();
@@ -213,7 +214,7 @@ const Game = {
         h.artifacts[artId]--;
         item.socketed = artId;
         computeHeroStats();
-        UI.toast('💎 Artefact serti sur ' + item.name + ' !', 'amber');
+        UI.toast('Artefact serti sur ' + item.name + ' !', 'amber', 'gem');
         UI.renderBlacksmithModal();
         UI.updateHud();
         this.saveGame();
@@ -320,7 +321,7 @@ const Game = {
             if (!raw) return;
             const data = JSON.parse(raw.replaceAll('Mana Max', 'Rage Max'));
             // Champs absents des anciennes sauvegardes : valeurs neutres, pas celles de la partie en mémoire
-            Object.assign(State.hero, { talentVersion: 0, bossKills: {}, shield: 0 }, data.hero);
+            Object.assign(State.hero, { talentVersion: 0, bossKills: {}, purified: {}, shield: 0 }, data.hero);
             this.migrateToWarrior();
             State.quests = data.quests || [];
             State.difficulty = data.difficulty || 1;
@@ -328,6 +329,7 @@ const Game = {
             computeHeroStats();
             this.enterGameScreen();
             World.enterTown();
+            Quests.checkPurified(); // anciennes sauvegardes : donjons déjà nettoyés
             UI.toast('Partie restaurée : ' + State.hero.name, 'amber');
         } catch (e) {
             UI.toast('Sauvegarde corrompue, nouvelle partie requise.', 'red');

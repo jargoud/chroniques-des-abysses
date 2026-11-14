@@ -15,7 +15,7 @@ const CLASSES = {
     warrior: {
         id: 'warrior',
         name: 'Guerrier',
-        icon: '⚔️',
+        icon: 'warrior',
         color: '#ef4444',
         role: 'Mêlée & Robustesse',
         desc: 'Colosse blindé expert du corps-à-corps, capable d’encaisser de lourds assauts et de briser les lignes ennemies.',
@@ -26,32 +26,32 @@ const CLASSES = {
 // Arbre du Guerrier : 3 branches de 5 talents (rang max 3). Un talent de palier n exige le niveau BRANCH_REQ[n].lvl
 // et BRANCH_REQ[n].pts points déjà investis dans sa branche : impossible de tout apprendre, il faut choisir un style.
 const SKILL_BRANCHES = [
-    { id: 'guard', name: 'Gardien', icon: '🛡️', color: '#60a5fa', desc: 'Défense, contrôle et représailles.' },
-    { id: 'berserk', name: 'Berserker', icon: '🩸', color: '#ef4444', desc: 'Rage, vol de vie et dégâts de zone.' },
-    { id: 'master', name: 'Maître d’armes', icon: '🏹', color: '#4ade80', desc: 'Distance, mobilité et coups critiques.' }
+    { id: 'guard', name: 'Gardien', icon: 'shield', color: '#60a5fa', desc: 'Défense, contrôle et représailles.' },
+    { id: 'berserk', name: 'Berserker', icon: 'blood', color: '#ef4444', desc: 'Rage, vol de vie et dégâts de zone.' },
+    { id: 'master', name: 'Maître d’armes', icon: 'bow', color: '#4ade80', desc: 'Distance, mobilité et coups critiques.' }
 ];
 const BRANCH_REQ = { 1: { lvl: 1, pts: 0 }, 2: { lvl: 3, pts: 1 }, 3: { lvl: 6, pts: 3 }, 4: { lvl: 10, pts: 5 }, 5: { lvl: 14, pts: 7 } };
 const SKILL_MAX_RANK = 3;
 
 const SKILL_TREES = {
     warrior: [
-        { id: 'war_bash', branch: 'guard', tier: 1, name: 'Coup de Bouclier', icon: '🛡️', rage: 12, cd: 3.0, desc: 'Frappe courte devant vous : 110% (+25%/rang) dégâts et étourdit 1.2s.' },
-        { id: 'war_ironskin', branch: 'guard', tier: 2, name: 'Cuirasse de Fer', icon: '🪖', passive: true, desc: 'Passif : +12% Armure et +15 Vie Max par rang.' },
-        { id: 'war_thorns', branch: 'guard', tier: 3, name: 'Représailles', icon: '🌵', passive: true, desc: 'Passif : renvoie 25% (+25%/rang) des dégâts de mêlée subis à l’attaquant.' },
-        { id: 'war_rally', branch: 'guard', tier: 4, name: 'Cri de Ralliement', icon: '📯', rage: 30, cd: 14, desc: 'Bouclier absorbant 20% (+10%/rang) de votre Vie Max pendant 6s.' },
-        { id: 'war_bulwark', branch: 'guard', tier: 5, name: 'Rempart Inébranlable', icon: '🏰', passive: true, desc: 'Ultime passif : sous 40% de Vie, dégâts subis réduits de 12% par rang.' },
+        { id: 'war_bash', branch: 'guard', tier: 1, name: 'Coup de Bouclier', icon: 'shield', rage: 12, cd: 3.0, desc: 'Frappe courte devant vous : 110% (+25%/rang) dégâts et étourdit 1.2s.' },
+        { id: 'war_ironskin', branch: 'guard', tier: 2, name: 'Cuirasse de Fer', icon: 'mail', passive: true, desc: 'Passif : +12% Armure et +15 Vie Max par rang.' },
+        { id: 'war_thorns', branch: 'guard', tier: 3, name: 'Représailles', icon: 'cactus', passive: true, desc: 'Passif : renvoie 25% (+25%/rang) des dégâts de mêlée subis à l’attaquant.' },
+        { id: 'war_rally', branch: 'guard', tier: 4, name: 'Cri de Ralliement', icon: 'horn', rage: 30, cd: 14, desc: 'Bouclier absorbant 20% (+10%/rang) de votre Vie Max pendant 6s.' },
+        { id: 'war_bulwark', branch: 'guard', tier: 5, name: 'Rempart Inébranlable', icon: 'tower', passive: true, desc: 'Ultime passif : sous 40% de Vie, dégâts subis réduits de 12% par rang.' },
 
-        { id: 'war_cleave', branch: 'berserk', tier: 1, name: 'Fendoir Sanglant', icon: '🪓', rage: 15, cd: 1.8, desc: 'Large arc d’acier : 145% (+25%/rang) dégâts devant vous.' },
-        { id: 'war_bloodthirst', branch: 'berserk', tier: 2, name: 'Soif de Sang', icon: '🩸', passive: true, desc: 'Passif : +2% Vol de vie et +10% Rage générée par rang.' },
-        { id: 'war_whirlwind', branch: 'berserk', tier: 3, name: 'Tourbillon d’Acier', icon: '🌪️', rage: 25, cd: 4.0, desc: 'Frappe tout autour de vous : 165% (+35%/rang) dégâts.' },
-        { id: 'war_frenzy', branch: 'berserk', tier: 4, name: 'Frénésie', icon: '🔥', passive: true, desc: 'Passif : +10% dégâts par rang tant que la Rage dépasse 50.' },
-        { id: 'war_earthquake', branch: 'berserk', tier: 5, name: 'Séisme Dévastateur', icon: '🌋', rage: 40, cd: 8.0, desc: 'Ultime : brise le sol sur un large rayon, 270% (+60%/rang) dégâts et étourdit 2s.' },
+        { id: 'war_cleave', branch: 'berserk', tier: 1, name: 'Fendoir Sanglant', icon: 'axe', rage: 15, cd: 1.8, desc: 'Large arc d’acier : 145% (+25%/rang) dégâts devant vous.' },
+        { id: 'war_bloodthirst', branch: 'berserk', tier: 2, name: 'Soif de Sang', icon: 'blood', passive: true, desc: 'Passif : +2% Vol de vie et +10% Rage générée par rang.' },
+        { id: 'war_whirlwind', branch: 'berserk', tier: 3, name: 'Tourbillon d’Acier', icon: 'whirl', rage: 25, cd: 4.0, desc: 'Frappe tout autour de vous : 165% (+35%/rang) dégâts.' },
+        { id: 'war_frenzy', branch: 'berserk', tier: 4, name: 'Frénésie', icon: 'flame', passive: true, desc: 'Passif : +10% dégâts par rang tant que la Rage dépasse 50.' },
+        { id: 'war_earthquake', branch: 'berserk', tier: 5, name: 'Séisme Dévastateur', icon: 'volcano', rage: 40, cd: 8.0, desc: 'Ultime : brise le sol sur un large rayon, 270% (+60%/rang) dégâts et étourdit 2s.' },
 
-        { id: 'war_pierce', branch: 'master', tier: 1, name: 'Tir Perçant', icon: '🎯', rage: 10, cd: 2.0, desc: 'Projectile qui traverse les ennemis : 130% (+25%/rang) dégâts.' },
-        { id: 'war_swift', branch: 'master', tier: 2, name: 'Pas Léger', icon: '🪶', passive: true, desc: 'Passif : +6% vitesse de déplacement et +3% Esquive par rang.' },
-        { id: 'war_charge', branch: 'master', tier: 3, name: 'Charge Héroïque', icon: '💨', rage: 20, cd: 4.5, desc: 'Bondit vers la cible : 135% (+30%/rang) dégâts et étourdit 1.5s.' },
-        { id: 'war_lynx', branch: 'master', tier: 4, name: 'Œil de Lynx', icon: '👁️', passive: true, desc: 'Passif : +4% Critique et +15% dégâts critiques par rang.' },
-        { id: 'war_arrows', branch: 'master', tier: 5, name: 'Pluie de Flèches', icon: '🌧️', rage: 40, cd: 9.0, desc: 'Ultime : déluge sur la zone visée, 220% (+50%/rang) dégâts.' }
+        { id: 'war_pierce', branch: 'master', tier: 1, name: 'Tir Perçant', icon: 'training', rage: 10, cd: 2.0, desc: 'Projectile qui traverse les ennemis : 130% (+25%/rang) dégâts.' },
+        { id: 'war_swift', branch: 'master', tier: 2, name: 'Pas Léger', icon: 'feather', passive: true, desc: 'Passif : +6% vitesse de déplacement et +3% Esquive par rang.' },
+        { id: 'war_charge', branch: 'master', tier: 3, name: 'Charge Héroïque', icon: 'dash', rage: 20, cd: 4.5, desc: 'Bondit vers la cible : 135% (+30%/rang) dégâts et étourdit 1.5s.' },
+        { id: 'war_lynx', branch: 'master', tier: 4, name: 'Œil de Lynx', icon: 'eye', passive: true, desc: 'Passif : +4% Critique et +15% dégâts critiques par rang.' },
+        { id: 'war_arrows', branch: 'master', tier: 5, name: 'Pluie de Flèches', icon: 'arrowRain', rage: 40, cd: 9.0, desc: 'Ultime : déluge sur la zone visée, 220% (+50%/rang) dégâts.' }
     ]
 };
 
@@ -61,14 +61,14 @@ const UPGRADE_STEP = 0.12;
 
 // minLvl : niveau requis • maxLvl : plafond du niveau des ennemis et du butin (refaire un vieux donjon rapporte peu)
 const BIOMES = [
-    { id: 'dungeon', name: 'Prison Souterraine', icon: '⛓️', minLvl: 1, maxLvl: 4, floor: '#2a2622', wall: '#4a4440', accent: '#a8a29e', artifactId: 'art_iron' },
-    { id: 'castle', name: 'Château en Ruines', icon: '🏰', minLvl: 3, maxLvl: 6, floor: '#3a3f47', wall: '#5b6470', accent: '#94a3b8', artifactId: 'art_crest' },
-    { id: 'crypt', name: 'Caveau Funéraire', icon: '⚰️', minLvl: 5, maxLvl: 8, floor: '#1f1d24', wall: '#3b3842', accent: '#a78bfa', artifactId: 'art_soul' },
-    { id: 'pyramid', name: 'Pyramide Oubliée', icon: '🏜️', minLvl: 7, maxLvl: 10, floor: '#5a4526', wall: '#8a6a35', accent: '#facc15', artifactId: 'art_sun' },
-    { id: 'temple', name: 'Temple Maudit', icon: '⛩️', minLvl: 9, maxLvl: 12, floor: '#2e1a33', wall: '#5b2273', accent: '#e879f9', artifactId: 'art_rune' },
-    { id: 'jungle', name: 'Jungle Luxuriante', icon: '🌴', minLvl: 11, maxLvl: 14, floor: '#3d6b26', wall: '#1f6b2e', accent: '#4ade80', artifactId: 'art_emerald' },
-    { id: 'forest', name: 'Forêt Sombre', icon: '🌲', minLvl: 13, maxLvl: 16, floor: '#1a2a20', wall: '#2f6b45', accent: '#34d399', artifactId: 'art_amber' },
-    { id: 'catacombs', name: 'Catacombes Profondes', icon: '💀', minLvl: 15, maxLvl: 20, floor: '#2b1414', wall: '#5c1a1a', accent: '#f87171', artifactId: 'art_abyss' }
+    { id: 'dungeon', name: 'Prison Souterraine', icon: 'chains', minLvl: 1, maxLvl: 4, floor: '#2a2622', wall: '#4a4440', accent: '#a8a29e', artifactId: 'art_iron' },
+    { id: 'castle', name: 'Château en Ruines', icon: 'tower', minLvl: 3, maxLvl: 6, floor: '#3a3f47', wall: '#5b6470', accent: '#94a3b8', artifactId: 'art_crest' },
+    { id: 'crypt', name: 'Caveau Funéraire', icon: 'coffin', minLvl: 5, maxLvl: 8, floor: '#1f1d24', wall: '#3b3842', accent: '#a78bfa', artifactId: 'art_soul' },
+    { id: 'pyramid', name: 'Pyramide Oubliée', icon: 'pyramid', minLvl: 7, maxLvl: 10, floor: '#5a4526', wall: '#8a6a35', accent: '#facc15', artifactId: 'art_sun' },
+    { id: 'temple', name: 'Temple Maudit', icon: 'torii', minLvl: 9, maxLvl: 12, floor: '#2e1a33', wall: '#5b2273', accent: '#e879f9', artifactId: 'art_rune' },
+    { id: 'jungle', name: 'Jungle Luxuriante', icon: 'palm', minLvl: 11, maxLvl: 14, floor: '#3d6b26', wall: '#1f6b2e', accent: '#4ade80', artifactId: 'art_emerald' },
+    { id: 'forest', name: 'Forêt Sombre', icon: 'pine', minLvl: 13, maxLvl: 16, floor: '#1a2a20', wall: '#2f6b45', accent: '#34d399', artifactId: 'art_amber' },
+    { id: 'catacombs', name: 'Catacombes Profondes', icon: 'skull', minLvl: 15, maxLvl: 20, floor: '#2b1414', wall: '#5c1a1a', accent: '#f87171', artifactId: 'art_abyss' }
 ];
 
 // Ambiance de rendu par biome : style de sol et de mur, extérieur (pas de torches, murs = végétation),
@@ -99,14 +99,14 @@ const ENEMY_KINDS = {
 
 
 const ARTIFACTS = {
-    art_iron:    { id: 'art_iron',    name: 'Rune d’Acier Trempé', icon: '🪨', bonusStat: 'dmg', val: 4, label: '+4 Dégâts Physiques' },
-    art_crest:   { id: 'art_crest',   name: 'Blason Royal Brisé',  icon: '🛡️', bonusStat: 'armor', val: 6, label: '+6 Armure' },
-    art_soul:    { id: 'art_soul',    name: 'Cristal de Givre',    icon: '❄️', bonusStat: 'elemDmg', val: 6, label: '+6 Dégâts de Givre' },
-    art_sun:     { id: 'art_sun',     name: 'Éclat Igné Solaire',  icon: '🔥', bonusStat: 'elemDmg', val: 8, label: '+8 Dégâts de Feu' },
-    art_rune:    { id: 'art_rune',    name: 'Essence Ancienne',    icon: '🔮', bonusStat: 'mp', val: 20, label: '+20 Rage Max' },
-    art_emerald: { id: 'art_emerald', name: 'Émeraude de Vitalité',icon: '💚', bonusStat: 'hp', val: 30, label: '+30 Vie Max' },
-    art_amber:   { id: 'art_amber',   name: 'Ambre du Prédateur',  icon: '⚡', bonusStat: 'crit', val: 4, label: '+4% Chance Critique' },
-    art_abyss:   { id: 'art_abyss',   name: 'Cœur des Abysses',    icon: '💎', bonusStat: 'allStats', val: 3, label: '+3 Tous Attributs' }
+    art_iron:    { id: 'art_iron',    name: 'Rune d’Acier Trempé', icon: 'runeStone', bonusStat: 'dmg', val: 4, label: '+4 Dégâts Physiques' },
+    art_crest:   { id: 'art_crest',   name: 'Blason Royal Brisé',  icon: 'shield', bonusStat: 'armor', val: 6, label: '+6 Armure' },
+    art_soul:    { id: 'art_soul',    name: 'Cristal de Givre',    icon: 'snowflake', bonusStat: 'elemDmg', val: 6, label: '+6 Dégâts de Givre' },
+    art_sun:     { id: 'art_sun',     name: 'Éclat Igné Solaire',  icon: 'flame', bonusStat: 'elemDmg', val: 8, label: '+8 Dégâts de Feu' },
+    art_rune:    { id: 'art_rune',    name: 'Essence Ancienne',    icon: 'orb', bonusStat: 'mp', val: 20, label: '+20 Rage Max' },
+    art_emerald: { id: 'art_emerald', name: 'Émeraude de Vitalité',icon: 'emerald', bonusStat: 'hp', val: 30, label: '+30 Vie Max' },
+    art_amber:   { id: 'art_amber',   name: 'Ambre du Prédateur',  icon: 'bolt', bonusStat: 'crit', val: 4, label: '+4% Chance Critique' },
+    art_abyss:   { id: 'art_abyss',   name: 'Cœur des Abysses',    icon: 'abyss', bonusStat: 'allStats', val: 3, label: '+3 Tous Attributs' }
 };
 
 const RARITIES = {
@@ -167,6 +167,7 @@ const State = {
         inventory: [],
         artifacts: {},
         bossKills: {}, // id de boss → nombre de victoires
+        purified: {}, // id de biome → true : donjon purifié (4 boss vaincus, récompense remise)
         talentVersion: 2,
         hp: 115, maxHp: 115,
         // ponytail: champs mp / maxMp conservés pour la compatibilité des sauvegardes, ils portent la Rage

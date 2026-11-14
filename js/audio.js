@@ -449,7 +449,7 @@ const Sound = {
         this.muted = !this.muted;
         this.master.gain.value = this.muted ? 0 : 0.5;
         try { localStorage.setItem('chroniques_muted', this.muted ? '1' : '0'); } catch (e) { /* stockage indisponible */ }
-        UI.toast(this.muted ? '🔇 Son coupé [M]' : '🔊 Son activé [M]', 'amber');
+        UI.toast(this.muted ? 'Son coupé [M]' : 'Son activé [M]', 'amber', this.muted ? 'mute' : 'sound');
     },
 
     midi(n) { return 440 * Math.pow(2, (n - 69) / 12); },

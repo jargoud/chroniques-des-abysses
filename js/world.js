@@ -101,6 +101,22 @@ const Quests = {
         return { biome, boss: biome.bosses[0], tier: 0 };
     },
 
+    // Donjon purifié (ses 4 boss vaincus) : légendaire garanti au niveau max du biome + trophée permanent (+2 % dégâts)
+    checkPurified() {
+        const h = State.hero;
+        const done = BIOMES.filter(b => !h.purified[b.id] && b.bosses.every(bo => h.bossKills[bo.id]));
+        if (!done.length) return;
+        const items = done.map(b => {
+            h.purified[b.id] = true;
+            const item = ItemGen.create(b.maxLvl, 'legendary');
+            h.inventory.push(item); // ponytail: peut dépasser 24 objets, le sac se vide ensuite à la main
+            return { biome: b, item };
+        });
+        computeHeroStats();
+        UI.showPurified(items);
+        Game.saveGame();
+    },
+
     onEnemyKilled(biomeId) {
         State.quests.forEach(q => {
             if (q.claimed || q.completed) return;
@@ -108,7 +124,7 @@ const Quests = {
                 q.progress = Math.min(q.target, q.progress + 1);
                 if (q.progress >= q.target) {
                     q.completed = true;
-                    UI.toast('📜 Quête accomplie : ' + q.title + ' !', 'amber');
+                    UI.toast('Quête accomplie : ' + q.title + ' !', 'amber', 'quests');
                 }
             }
         });
@@ -123,7 +139,7 @@ const Quests = {
             if (q.claimed || q.completed || q.type !== 'boss' || q.bossId !== bossId) return;
             q.progress = 1;
             q.completed = true;
-            UI.toast('📜 Quête accomplie : ' + q.title + ' !', 'amber');
+            UI.toast('Quête accomplie : ' + q.title + ' !', 'amber', 'quests');
         });
         UI.updateHudQuest();
     },
@@ -142,10 +158,11 @@ const Quests = {
         if (q.rewardArtifact) {
             const art = ARTIFACTS[q.rewardArtifact];
             State.hero.artifacts[art.id] = (State.hero.artifacts[art.id] || 0) + 1;
-            msg += ', ' + art.icon + ' ' + art.name;
+            msg += ', ' + art.name;
         }
         this.ensureAvailable();
-        UI.toast(msg, 'amber');
+        UI.toast(msg, 'amber', 'coin');
+        this.checkPurified();
         UI.renderQuestsModal();
         UI.updateHud();
         Game.saveGame();
@@ -183,7 +200,7 @@ const World = {
         State.hero.shield = 0;
         this.refreshMerchantStock();
         UI.updateHud();
-        UI.openCamp();
+        UI.openCamp('quests');
         Game.saveGame();
     },
 
@@ -214,7 +231,7 @@ const World = {
     enterDungeon(biomeId) {
         const biome = BIOMES.find(b => b.id === biomeId) || BIOMES[0];
         if (State.hero.level < biome.minLvl) {
-            UI.toast('🔒 ' + biome.name + ' : niveau ' + biome.minLvl + ' requis', 'red');
+            UI.toast(biome.name + ' : niveau ' + biome.minLvl + ' requis', 'red', 'lock');
             return;
         }
         State.location = 'dungeon';

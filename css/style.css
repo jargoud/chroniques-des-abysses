@@ -109,3 +109,6 @@ canvas { image-rendering: pixelated; }
     #modalBackdrop > div:not(.hidden) { animation: none; }
     .rpg-btn { transition: none; }
 }
+.item-img { object-fit: contain; filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.7)); }
+.ic { display: inline-block; width: 1.2em; height: 1.2em; vertical-align: -0.25em; object-fit: contain; }
+.px { image-rendering: pixelated; }

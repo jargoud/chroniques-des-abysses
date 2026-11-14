@@ -2,7 +2,20 @@
 
 // ==================== 8. INTERFACE UTILISATEUR (UI) ====================
 const UI = {
-    toast(msg, tone) {
+    // Icône générée en ligne (Art.ICONS / alias d'objets), à la taille du texte par défaut
+    ic(id, cls) {
+        return '<img src="' + Art.iconUrl(id) + '" alt="" class="ic ' + (Gfx.hd ? '' : 'px ') + (cls || '') + '">';
+    },
+
+    // Icônes du HTML statique : <img data-icon="clé">, repeintes au changement de graphismes
+    paintIcons() {
+        document.querySelectorAll('img[data-icon]').forEach(img => {
+            img.src = Art.iconUrl(img.dataset.icon);
+            img.classList.toggle('px', !Gfx.hd);
+        });
+    },
+
+    toast(msg, tone, icon) {
         const box = document.getElementById('toastContainer');
         const el = document.createElement('div');
         const colors = {
@@ -11,18 +24,21 @@ const UI = {
             blue: 'border-blue-400/80 text-blue-200 bg-slate-950/95'
         };
         el.className = 'px-4 py-1.5 rounded-full border text-xs font-semibold shadow-xl transition-opacity duration-300 ' + (colors[tone] || colors.amber);
+        el.className += ' flex items-center gap-1.5';
         el.textContent = msg;
+        if (icon) el.insertAdjacentHTML('afterbegin', this.ic(icon, 'w-4 h-4'));
         box.appendChild(el);
         setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 320); }, 2600);
     },
 
     renderStartScreen() {
-        document.getElementById('startGfxBtn').textContent = '🎨 Graphismes : ' + (Gfx.hd ? 'Modernes' : 'Pixel art 16-bit') + ' (changer)';
+        document.getElementById('startGfxBtn').innerHTML = this.ic('palette', 'mr-1') + 'Graphismes : ' + (Gfx.hd ? 'Modernes' : 'Pixel art 16-bit') + ' (changer)';
+        this.paintIcons();
         const sel = CLASSES.warrior;
         document.getElementById('classDetailBox').innerHTML =
             '<div class="flex-1">' +
                 '<div class="flex items-center gap-2 mb-1">' +
-                    '<span class="text-xl">' + sel.icon + '</span>' +
+                    this.ic(sel.icon, 'w-7 h-7') +
                     '<h3 class="font-cinzel font-bold text-base text-amber-300">' + sel.name + ' — ' + sel.role + '</h3>' +
                 '</div>' +
                 '<p class="text-xs text-gray-300 leading-relaxed">' + sel.desc + '</p>' +
@@ -41,13 +57,13 @@ const UI = {
     updateHud() {
         const h = State.hero;
         const cls = CLASSES[h.classId];
-        document.getElementById('hudClassIcon').textContent = cls.icon;
+        document.getElementById('hudClassIcon').innerHTML = this.ic(cls.icon, 'w-7 h-7');
         document.getElementById('hudHeroName').textContent = h.name;
         document.getElementById('hudLevelBadge').textContent = 'Niv. ' + h.level;
         document.getElementById('hudGold').textContent = h.gold;
-        document.getElementById('hudLocationName').textContent = State.location === 'town'
-            ? '🏕️ Camp d’Oakhaven'
-            : (State.currentBiome.icon + ' ' + State.currentBiome.name + ' (Menace ' + State.difficulty + ')');
+        document.getElementById('hudLocationName').innerHTML = State.location === 'town'
+            ? this.ic('camp') + ' Camp d’Oakhaven'
+            : (this.ic(State.currentBiome.icon) + ' ' + State.currentBiome.name + ' (Menace ' + State.difficulty + ')');
 
         document.getElementById('badgeAttr').classList.toggle('hidden', h.attrPoints <= 0);
         document.getElementById('badgeSkill').classList.toggle('hidden', h.skillPoints <= 0);
@@ -88,7 +104,7 @@ const UI = {
             return;
         }
         box.classList.remove('hidden');
-        document.getElementById('hudQuestText').textContent = active.title + ' (' + active.progress + '/' + active.target + ')' + (active.completed ? ' ✅' : '');
+        document.getElementById('hudQuestText').innerHTML = active.title + ' (' + active.progress + '/' + active.target + ')' + (active.completed ? ' ' + this.ic('check') : '');
     },
 
     updateContextPrompt() {
@@ -107,7 +123,9 @@ const UI = {
         else if (nearNpc) msg = '[E] Parler à ' + nearNpc.name;
 
         if (msg) {
-            el.textContent = msg;
+            el.className += ' flex items-center gap-1.5';
+        el.textContent = msg;
+        if (icon) el.insertAdjacentHTML('afterbegin', this.ic(icon, 'w-4 h-4'));
             el.classList.remove('hidden');
         } else {
             el.classList.add('hidden');
@@ -120,7 +138,7 @@ const UI = {
         const labels = ['Esp', '1', '2', '3', '4/Clic droit'];
         const wpn = h.equipment[h.activeWeapon === 'ranged' && h.equipment.ranged ? 'ranged' : 'weapon'];
         let html = '<div onclick="Game.swapWeapon()" title="Changer d’arme [Tab]" class="relative w-10 h-10 rounded-lg bg-amber-950/70 border border-amber-400 flex items-center justify-center cursor-pointer hover:border-amber-200">' +
-            '<span class="text-lg">' + (wpn ? wpn.icon : '✊') + '</span>' +
+            (wpn ? this.itemImg(wpn, 'w-7 h-7') : this.ic('gauntlet', 'w-6 h-6 opacity-40')) +
             '<span class="absolute top-0.5 left-1 text-[9px] font-bold text-amber-300">Tab</span></div>';
 
         for (let i = 0; i < 5; i++) {
@@ -128,24 +146,70 @@ const UI = {
             const def = skId ? findSkillDef(skId) : null;
             html += '<div onclick="Combat.castSlot(' + i + ')" class="relative w-10 h-10 rounded-lg bg-black/80 border ' +
                 (def ? 'border-amber-500/70' : 'border-gray-700') + ' flex items-center justify-center cursor-pointer hover:border-amber-300">' +
-                '<span class="text-lg">' + (def ? def.icon : (i === 0 ? '⚔️' : '·')) + '</span>' +
+                (def ? this.ic(def.icon, 'w-7 h-7') : i === 0 ? this.ic('warrior', 'w-7 h-7') : '<span class="text-lg">·</span>') +
                 '<span class="absolute top-0.5 left-1 text-[9px] font-bold text-amber-300">' + labels[i] + '</span>' +
                 '<div id="skillCd_' + i + '" class="hidden absolute inset-0 bg-black/80 rounded-lg flex items-center justify-center text-[11px] font-bold text-amber-300"></div>' +
                 '</div>';
         }
 
         html += '<div onclick="Combat.usePotion(\'hp\')" class="relative w-10 h-10 rounded-lg bg-red-950/60 border border-red-500/60 flex items-center justify-center cursor-pointer">' +
-            '<span class="text-base">🧪</span><span class="absolute top-0.5 left-1 text-[9px] font-bold text-red-300">R</span>' +
+            this.ic('potionHp', 'w-6 h-6') + '<span class="absolute top-0.5 left-1 text-[9px] font-bold text-red-300">R</span>' +
             '<span class="absolute bottom-0.5 right-1 text-[10px] font-bold text-white">' + h.potionsHp + '</span></div>';
 
         html += '<div onclick="Combat.usePotion(\'mp\')" title="Potion de Fureur : +50 % de Rage" class="relative w-10 h-10 rounded-lg bg-orange-950/60 border border-orange-500/60 flex items-center justify-center cursor-pointer">' +
-            '<span class="text-base">🔥</span><span class="absolute top-0.5 left-1 text-[9px] font-bold text-orange-300">F</span>' +
+            this.ic('potionRage', 'w-6 h-6') + '<span class="absolute top-0.5 left-1 text-[9px] font-bold text-orange-300">F</span>' +
             '<span class="absolute bottom-0.5 right-1 text-[10px] font-bold text-white">' + h.potionsMp + '</span></div>';
 
         bar.innerHTML = html;
     },
 
+    // Mort : popin avant le camp ; le bouton reste désactivé 1,5 s pour que les touches du combat ne déclenchent rien
+    showDeath(lost, gift) {
+        this.hideModals();
+        State.activeModal = 'deathModal';
+        State.modalFocusIdx = 0;
+        this.showBackdrop(false);
+        document.getElementById('deathModal').classList.remove('hidden');
+        document.getElementById('deathModalBody').innerHTML =
+            '<p>Vous reprenez connaissance au <strong class="text-amber-300">Camp d’Oakhaven</strong>.</p>' +
+            '<p>Le guérisseur panse vos blessures : <strong class="text-emerald-300">vie restaurée</strong>.</p>' +
+            '<p>Il vous confie <strong class="text-red-300">' + this.ic('potionHp') + ' ' + gift + ' potion' + (gift > 1 ? 's' : '') + ' de vie</strong> pour la suite.</p>' +
+            (lost ? '<p class="text-xs text-yellow-500/80">Bourse allégée de ' + lost + ' Or.</p>' : '');
+        const btn = document.getElementById('deathOkBtn');
+        btn.disabled = true;
+        setTimeout(() => {
+            btn.disabled = false;
+            if (State.activeModal === 'deathModal') this.applyModalFocus();
+        }, 1500);
+    },
+
+    showPurified(rewards) {
+        this.hideModals();
+        State.activeModal = 'purifiedModal';
+        State.modalFocusIdx = 0;
+        this.showBackdrop(false);
+        document.getElementById('purifiedModal').classList.remove('hidden');
+        const n = Object.keys(State.hero.purified).length;
+        document.getElementById('purifiedModalBody').innerHTML = rewards.map(({ biome, item }) =>
+            '<p>Les 4 maîtres de <strong class="text-amber-200">' + this.ic(biome.icon) + ' ' + biome.name + '</strong> sont tombés.</p>' +
+            '<div class="flex items-center gap-3 text-left bg-black/50 rounded-xl p-3 border" style="border-color:' + RARITIES[item.rarity].color + '80">' +
+                this.itemImg(item, 'w-12 h-12 shrink-0') +
+                '<div class="min-w-0"><div class="font-bold truncate" style="color:' + RARITIES[item.rarity].color + '">' + item.name + '</div>' +
+                '<div class="text-[11px] text-gray-400">' + RARITIES[item.rarity].name + ' • Niv.' + item.level + ' • ajouté au sac</div></div>' +
+            '</div>'
+        ).join('') +
+            '<p>Trophée : <strong class="text-emerald-300">+2 % de dégâts</strong>, définitivement (total : +' + n * 2 + ' %).</p>';
+        setTimeout(() => this.applyModalFocus(), 20);
+    },
+
+    // Au camp, fiche, talents et sac sont des onglets du menu, plus des fenêtres
+    CAMP_EQUIV: { characterModal: 'training', skillsModal: 'learning', inventoryModal: 'inventory' },
+
     toggleModal(modalId) {
+        if (State.screen === 'playing' && State.location === 'town' && this.CAMP_EQUIV[modalId]) {
+            this.openCamp(this.CAMP_EQUIV[modalId]);
+            return;
+        }
         if (State.activeModal === modalId) {
             this.closeModals();
             return;
@@ -166,7 +230,7 @@ const UI = {
         setTimeout(() => this.applyModalFocus(), 20);
     },
 
-    MODALS: ['characterModal', 'skillsModal', 'inventoryModal', 'questsModal', 'campModal', 'pauseModal'],
+    MODALS: ['characterModal', 'skillsModal', 'inventoryModal', 'questsModal', 'campModal', 'deathModal', 'purifiedModal', 'pauseModal'],
 
     hideModals() {
         State.activeModal = null;
@@ -189,7 +253,7 @@ const UI = {
         if (State.screen === 'playing' && State.location === 'town') this.openCamp();
     },
 
-    campTab: 'expeditions',
+    campTab: 'quests',
 
     openCamp(tab) {
         this.hideModals();
@@ -210,31 +274,44 @@ const UI = {
         setTimeout(() => this.applyModalFocus(), 20);
     },
 
+    // Ordre d'un retour au camp : valider, vendre, renforcer, équiper, progresser, repartir
+    // [id (icône Art.ICONS), libellé, générateur du contenu]
     CAMP_TABS: [
-        ['expeditions', '🌀', 'Expéditions'],
-        ['quests', '📜', 'Quêtes'],
-        ['merchant', '⚖️', 'Marchand'],
-        ['forge', '⚒️', 'Forge']
+        ['quests', 'Quêtes', 'questsHtml'],
+        ['merchant', 'Marchand', 'merchantHtml'],
+        ['forge', 'Forge', 'forgeHtml'],
+        ['inventory', 'Inventaire', 'inventoryHtml'],
+        ['training', 'Entraînement', 'characterHtml'],
+        ['learning', 'Sanctuaire', 'skillsHtml'],
+        ['expeditions', 'Expéditions', 'expeditionsHtml']
     ],
 
     renderCampModal() {
         const h = State.hero;
-        const tabs = this.CAMP_TABS.map(([id, icon, label]) =>
-            '<button onclick="UI.setCampTab(\'' + id + '\')" class="rpg-btn px-4 py-2 rounded-lg text-sm font-cinzel font-bold ' + (this.campTab === id ? 'border-amber-400 text-amber-300 bg-amber-950/60' : 'text-gray-400') + '">' + icon + ' ' + label + '</button>'
-        ).join('');
+        // Pastille : nombre de points à dépenser dans le lieu
+        const pts = { training: [h.attrPoints, 'd’attribut'], learning: [h.skillPoints, 'de talent'] };
+        const tabs = this.CAMP_TABS.map(([id, label]) => {
+            const [n, kind] = pts[id] || [0];
+            return '<button onclick="UI.setCampTab(\'' + id + '\')"' + (n > 0 ? ' title="' + n + ' point' + (n > 1 ? 's' : '') + ' ' + kind + ' à dépenser"' : '') + ' class="rpg-btn px-2.5 py-2 rounded-lg text-sm font-cinzel whitespace-nowrap font-bold ' + (this.campTab === id ? 'border-amber-400 text-amber-300 bg-amber-950/60' : 'text-gray-400') + ' inline-flex items-center gap-1">' + '<img src="' + Art.iconUrl(id) + '" alt="" class="item-img w-5 h-5' + (Gfx.hd ? '' : ' px') + '">' + label +
+            (n > 0 ? '<span class="ml-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-500 text-black text-[11px] font-sans font-bold leading-[18px] text-center">' + n + '</span>' : '') + '</button>';
+        }).join('');
         const ready = State.quests.filter(q => q.completed && !q.claimed).length;
         document.getElementById('campTabs').innerHTML = tabs;
         document.getElementById('campGold').textContent = h.gold;
         document.getElementById('campQuestBadge').textContent = ready ? ready + ' quête' + (ready > 1 ? 's' : '') + ' à valider' : '';
-        const body = this.campTab === 'quests' ? this.questsHtml()
-            : this.campTab === 'merchant' ? this.merchantHtml()
-            : this.campTab === 'forge' ? this.forgeHtml()
-            : this.expeditionsHtml();
-        document.getElementById('campModalBody').innerHTML = body;
+        const tab = this.CAMP_TABS.find(t => t[0] === this.campTab) || this.CAMP_TABS[0];
+        this.hideCompare();
+        document.getElementById('campModalBody').innerHTML = this[tab[2]]();
+    },
+
+    // Rafraîchit le contenu : onglet du camp si le camp est ouvert, sinon la fenêtre
+    fill(modalId, html) {
+        if (State.activeModal === 'campModal') return this.renderCampModal();
+        document.getElementById(modalId + 'Body').innerHTML = html();
     },
 
     renderPauseModal() {
-        document.getElementById('gfxToggleBtn').textContent = '🎨 Graphismes : ' + (Gfx.hd ? 'Modernes' : 'Pixel art 16-bit');
+        document.getElementById('gfxToggleBtn').innerHTML = this.ic('palette', 'mr-1') + 'Graphismes : ' + (Gfx.hd ? 'Modernes' : 'Pixel art 16-bit');
     },
 
     toggleGfx() {
@@ -268,8 +345,20 @@ const UI = {
         }
     },
 
-    renderCharacterModal() {
+    renderCharacterModal() { this.fill('characterModal', () => this.characterHtml()); },
+    renderSkillsModal() { this.fill('skillsModal', () => this.skillsHtml()); },
+    renderInventoryModal() { this.fill('inventoryModal', () => this.inventoryHtml()); },
+
+    // Points d'attributs et de talents : à dépenser seulement dans les lieux du camp
+    campOnlyNote(points, place) {
+        return points > 0 && State.location !== 'town'
+            ? '<div class="mb-3 p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-200">' + points + ' point' + (points > 1 ? 's' : '') + ' à dépenser au camp, ' + place + '.</div>'
+            : '';
+    },
+
+    characterHtml() {
         const h = State.hero;
+        const atCamp = State.location === 'town';
         const s = computeHeroStats();
         const attrDefs = [
             { key: 'str', label: 'Force', desc: '+2.6% Dégâts Physiques & +0.35 Armure' },
@@ -278,7 +367,7 @@ const UI = {
             { key: 'vit', label: 'Vitalité', desc: '+8 Santé Max' }
         ];
 
-        document.getElementById('characterModalBody').innerHTML =
+        return this.campOnlyNote(h.attrPoints, 'à l’Entraînement') +
             '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
                 '<div class="bg-black/40 p-4 rounded-xl border border-gray-800">' +
                     '<div class="flex justify-between items-center mb-3">' +
@@ -290,7 +379,7 @@ const UI = {
                         '<div class="flex items-center justify-between bg-black/50 p-2.5 rounded-lg border border-gray-800">' +
                             '<div><div class="text-sm font-bold text-gray-100">' + a.label + ' : <span class="text-amber-300">' + s[a.key] + '</span></div>' +
                             '<div class="text-[11px] text-gray-400">' + a.desc + '</div></div>' +
-                            '<button onclick="Game.spendAttr(\'' + a.key + '\')" ' + (h.attrPoints <= 0 ? 'disabled' : '') + ' class="rpg-btn px-3 py-1 rounded font-bold text-emerald-300">+1</button>' +
+                            (atCamp ? '<button onclick="Game.spendAttr(\'' + a.key + '\')" ' + (h.attrPoints <= 0 ? 'disabled' : '') + ' class="rpg-btn px-3 py-1 rounded font-bold text-emerald-300">+1</button>' : '') +
                         '</div>'
                     ).join('') +
                     '</div>' +
@@ -306,24 +395,27 @@ const UI = {
                     '<div class="flex justify-between" title="Réduit les dégâts subis en début de partie et quand votre équipement est en retard sur les ennemis"><span>Protection du débutant :</span><strong class="text-sky-300">−' + Math.round(Combat.assist(h.level) * 100) + '% dégâts</strong></div>' +
                     '<div class="flex justify-between" title="Moyenne des objets portés, pondérée par la rareté et les améliorations"><span>Niveau d’équipement :</span><strong>' + Combat.gearLevel().toFixed(1) + '</strong></div>' +
                     '<div class="flex justify-between" title="Réduit la distance à laquelle les ennemis vous repèrent"><span>Furtivité :</span><strong class="text-emerald-300">' + s.stealth + '%</strong></div>' +
+                    '<div class="flex justify-between" title="+2 % de dégâts par donjon purifié (ses 4 boss vaincus)"><span>Trophées de donjon :</span><strong class="text-emerald-300">' + Object.keys(h.purified).length + ' • +' + Math.round((s.trophy - 1) * 100) + ' % dégâts</strong></div>' +
                     '<div class="flex justify-between"><span>Expérience :</span><strong>' + h.xp + ' / ' + h.xpNext + '</strong></div>' +
                 '</div>' +
             '</div>';
     },
 
-    renderSkillsModal() {
+    skillsHtml() {
         const h = State.hero;
+        const atCamp = State.location === 'town';
         const spent = Object.values(h.skills).reduce((n, r) => n + r, 0);
-        let html = '<div class="flex flex-wrap justify-between items-center gap-2 bg-black/50 p-3 rounded-xl border border-gray-800 mb-4 text-xs">' +
+        let html = this.campOnlyNote(h.skillPoints, 'au Sanctuaire') +
+            '<div class="flex flex-wrap justify-between items-center gap-2 bg-black/50 p-3 rounded-xl border border-gray-800 mb-4 text-xs">' +
             '<span>Points de Talent : <strong class="text-amber-300 text-sm">' + h.skillPoints + '</strong> <span class="text-gray-500">(1 par niveau • rang max ' + SKILL_MAX_RANK + ')</span></span>' +
-            '<button onclick="Game.resetSkills()" ' + (spent ? '' : 'disabled') + ' class="rpg-btn px-3 py-1 rounded text-[11px] text-gray-300">↺ Réinitialiser (gratuit)</button>' +
+            (atCamp ? '<button onclick="Game.resetSkills()" ' + (spent ? '' : 'disabled') + ' class="rpg-btn px-3 py-1 rounded text-[11px] text-gray-300">↺ Réinitialiser (gratuit)</button>' : '') +
             '</div><div class="grid grid-cols-1 lg:grid-cols-3 gap-3">';
 
         SKILL_BRANCHES.forEach(br => {
             const pts = Game.branchPoints(br.id);
             html += '<div class="bg-black/40 p-3 rounded-xl border border-gray-800" style="border-top:3px solid ' + br.color + '">' +
                 '<div class="flex items-center justify-between mb-1">' +
-                    '<span class="font-cinzel font-bold text-sm" style="color:' + br.color + '">' + br.icon + ' ' + br.name + '</span>' +
+                    '<span class="font-cinzel font-bold text-sm" style="color:' + br.color + '">' + this.ic(br.icon) + ' ' + br.name + '</span>' +
                     '<span class="text-[11px] text-gray-400">' + pts + ' pts</span>' +
                 '</div>' +
                 '<p class="text-[11px] text-gray-500 mb-2.5">' + br.desc + '</p><div class="space-y-2">';
@@ -336,14 +428,15 @@ const UI = {
                 const reqTxt = 'Niv. ' + req.lvl + (req.pts ? ' • ' + req.pts + ' pts ' + br.name : '');
                 html += '<div class="p-2.5 rounded-lg bg-black/60 border ' + (rank > 0 ? 'border-amber-500/40' : 'border-gray-800') + (reqOk || rank ? '' : ' opacity-50') + '">' +
                     '<div class="flex justify-between items-center gap-2">' +
-                        '<span class="text-xs font-bold text-gray-100">' + sk.icon + ' ' + sk.name + '</span>' +
+                        '<span class="text-xs font-bold text-gray-100">' + this.ic(sk.icon, 'w-5 h-5') + ' ' + sk.name + '</span>' +
                         '<span class="text-xs font-bold text-amber-300 shrink-0">' + rank + '/' + SKILL_MAX_RANK + '</span>' +
                     '</div>' +
-                    '<p class="text-[11px] text-gray-400 mt-1">' + sk.desc + (sk.rage ? ' <span class="text-orange-300">🔥 ' + sk.rage + ' Rage • ' + sk.cd + 's</span>' : '') + '</p>' +
+                    '<p class="text-[11px] text-gray-400 mt-1">' + sk.desc + (sk.rage ? ' <span class="text-orange-300">' + this.ic('flame') + ' ' + sk.rage + ' Rage • ' + sk.cd + 's</span>' : '') + '</p>' +
                     '<div class="flex flex-wrap items-center justify-between gap-1.5 pt-1.5 mt-1.5 border-t border-gray-800/80">' +
-                        (reqOk
+                        (!atCamp ? '<span></span>'
+                            : reqOk
                             ? '<button onclick="Game.learnSkill(\'' + sk.id + '\')" ' + (!canLearn ? 'disabled' : '') + ' class="rpg-btn px-2.5 py-1 rounded text-[11px] text-amber-200">' + (rank ? 'Améliorer' : 'Apprendre') + '</button>'
-                            : '<span class="text-[10px] text-red-400">🔒 ' + reqTxt + '</span>') +
+                            : '<span class="text-[10px] text-red-400">' + this.ic('lock') + ' ' + reqTxt + '</span>') +
                         (!sk.passive && rank > 0
                             ? '<div class="flex items-center gap-1 text-[10px]">' +
                               [0, 1, 2, 3, 4].map(sl =>
@@ -358,11 +451,10 @@ const UI = {
             html += '</div></div>';
         });
 
-        html += '</div>';
-        document.getElementById('skillsModalBody').innerHTML = html;
+        return html + '</div>';
     },
 
-    renderInventoryModal() {
+    inventoryHtml() {
         const h = State.hero;
         // Poupée d'équipement : emplacements disposés autour du héros
         const activeSlot = h.activeWeapon === 'ranged' && h.equipment.ranged ? 'ranged' : 'weapon';
@@ -372,9 +464,9 @@ const UI = {
                 ' onmouseenter="UI.showEquippedTooltip(\'' + sl + '\', event.clientX, event.clientY)" onmousemove="UI.moveTooltip(event.clientX, event.clientY)" onmouseleave="UI.hideCompare()"' +
                 ' class="doll-slot" style="grid-area:' + sl + (it ? ';--rar:' + RARITIES[it.rarity].color : '') + '">' +
                 (it
-                    ? '<span class="text-3xl">' + it.icon + '</span>' +
+                    ? this.itemImg(it, 'w-12 h-12') +
                       (it.upgrade > 0 ? '<span class="doll-upg">+' + it.upgrade + '</span>' : '') +
-                      (it.socketed ? '<span class="doll-gem">💎</span>' : '') +
+                      (it.socketed ? '<span class="doll-gem">' + this.ic('gem', 'w-3.5 h-3.5') + '</span>' : '') +
                       (sl === activeSlot ? '<span class="doll-hand">En main</span>' : '')
                     : '<span class="doll-empty">' + SLOT_LABELS[sl] + '</span>') +
             '</div>';
@@ -400,10 +492,13 @@ const UI = {
                 const rar = RARITIES[it.rarity];
                 return '<div data-kb-item="1" data-bag-idx="' + idx + '" onclick="Game.equipFromBag(' + idx + ')"' +
                     ' onmouseenter="UI.showCompare(' + idx + ', event.clientX, event.clientY)" onmousemove="UI.moveTooltip(event.clientX, event.clientY)" onmouseleave="UI.hideCompare()"' +
-                    ' class="p-2.5 rounded-lg bg-black/60 border border-gray-800 hover:border-amber-400 cursor-pointer">' +
-                    '<div class="text-xs font-bold truncate" style="color:' + rar.color + '">' + it.icon + ' ' + it.name + (it.upgrade > 0 ? ' +' + it.upgrade : '') + '</div>' +
-                    '<div class="text-[10px] text-gray-400">' + SLOT_LABELS[it.slot] + ' • Niv.' + it.level + '</div>' +
-                    '<div class="text-[10px] text-gray-300 mt-1">' + this.formatItemStats(it) + '</div>' +
+                    ' class="p-2.5 rounded-lg bg-black/60 border border-gray-800 hover:border-amber-400 cursor-pointer flex gap-2.5 items-start">' +
+                    this.itemImg(it, 'w-11 h-11 shrink-0 rounded-md border', 'border-color:' + rar.color + '66;background:' + rar.color + '1a') +
+                    '<div class="min-w-0">' +
+                        '<div class="text-xs font-bold truncate" style="color:' + rar.color + '">' + it.name + (it.upgrade > 0 ? ' +' + it.upgrade : '') + '</div>' +
+                        '<div class="text-[10px] text-gray-400">' + SLOT_LABELS[it.slot] + ' • Niv.' + it.level + '</div>' +
+                        '<div class="text-[10px] text-gray-300 mt-1">' + this.formatItemStats(it) + '</div>' +
+                    '</div>' +
                 '</div>';
             }).join('');
 
@@ -413,11 +508,10 @@ const UI = {
             : artKeys.map(k => {
                 const a = ARTIFACTS[k];
                 return '<span class="px-2.5 py-1 rounded-lg bg-amber-950/50 border border-amber-500/40 text-xs text-amber-200">' +
-                    a.icon + ' ' + a.name + ' x' + h.artifacts[k] + ' (' + a.label + ')</span>';
+                    this.ic(a.icon) + ' ' + a.name + ' x' + h.artifacts[k] + ' (' + a.label + ')</span>';
             }).join('');
 
-        document.getElementById('inventoryModalBody').innerHTML =
-            '<div class="grid grid-cols-1 md:grid-cols-3 gap-4">' +
+        return '<div class="grid grid-cols-1 md:grid-cols-3 gap-4">' +
                 '<div class="bg-black/40 p-3.5 rounded-xl border border-gray-800">' +
                     '<div class="flex justify-between items-baseline mb-3"><span class="text-xs font-bold uppercase text-amber-300">Équipement Porté</span><span class="text-[10px] text-gray-500">Clic : retirer</span></div>' + slotsHtml +
                 '</div>' +
@@ -427,11 +521,16 @@ const UI = {
                         '<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto">' + bagHtml + '</div>' +
                     '</div>' +
                     '<div class="bg-black/40 p-3.5 rounded-xl border border-gray-800">' +
-                        '<div class="text-xs font-bold uppercase text-amber-300 mb-2">💎 Artefacts & Runes (Forgeron Thrain)</div>' +
+                        '<div class="text-xs font-bold uppercase text-amber-300 mb-2">' + this.ic('gem') + ' Artefacts & Runes (Forgeron Thrain)</div>' +
                         '<div class="flex flex-wrap gap-2">' + artHtml + '</div>' +
                     '</div>' +
                 '</div>' +
             '</div>';
+    },
+
+    // Image générée du type d'objet (Art.item), nette en pixel art comme en HD
+    itemImg(it, cls, style) {
+        return '<img src="' + Art.itemUrl(it) + '" alt="" class="item-img ' + (Gfx.hd ? '' : 'px ') + (cls || '') + '"' + (style ? ' style="' + style + '"' : '') + '>';
     },
 
     formatItemStats(it) {
@@ -444,7 +543,7 @@ const UI = {
         }
         if (it.armor > 0) parts.push('+' + Math.round(it.armor * upg) + ' Armure');
         it.affixes.forEach(a => parts.push(a.label));
-        if (it.socketed && ARTIFACTS[it.socketed]) parts.push('💎 ' + ARTIFACTS[it.socketed].label);
+        if (it.socketed && ARTIFACTS[it.socketed]) parts.push(this.ic('gem') + ' ' + ARTIFACTS[it.socketed].label);
         return parts.join(' • ') || 'Équipement de base';
     },
 
@@ -476,7 +575,7 @@ const UI = {
         if (!it) return '<div class="flex-1 bg-black/50 rounded-lg p-2 border border-gray-800">' + head + '<div class="text-gray-600 italic">Emplacement vide</div></div>';
         const rar = RARITIES[it.rarity];
         return '<div class="flex-1 min-w-0 bg-black/50 rounded-lg p-2 border border-gray-800">' + head +
-            '<div class="font-bold truncate" style="color:' + rar.color + '">' + it.icon + ' ' + it.name + (it.upgrade > 0 ? ' +' + it.upgrade : '') + '</div>' +
+            '<div class="font-bold truncate flex items-center gap-1.5" style="color:' + rar.color + '">' + this.itemImg(it, 'w-7 h-7 shrink-0') + '<span class="truncate">' + it.name + (it.upgrade > 0 ? ' +' + it.upgrade : '') + '</span></div>' +
             '<div class="text-[10px] text-gray-400">' + rar.name + ' • Niv.' + it.level + '</div>' +
             '<div class="text-[10px] text-gray-300 mt-1">' + this.formatItemStats(it) + '</div></div>';
     },
@@ -555,12 +654,12 @@ const UI = {
             return '<div class="bg-black/50 p-4 rounded-xl border ' + (q.completed ? 'border-emerald-500/60' : q.type === 'boss' ? 'border-orange-500/40' : 'border-gray-800') + ' flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">' +
                 '<div>' +
                     '<div class="flex flex-wrap items-center gap-2">' +
-                        '<span class="text-[10px] px-2 py-0.5 rounded ' + (locked ? 'bg-red-950 text-red-300' : 'bg-gray-900 text-gray-300') + '">' + (locked ? '🔒 ' : '') + b.icon + ' ' + b.name + ' • Niv. ' + b.minLvl + '-' + b.maxLvl + '</span>' +
-                        '<span class="text-sm font-bold ' + (q.type === 'boss' ? 'text-orange-300' : 'text-amber-200') + '">' + (q.type === 'boss' ? '☠️ ' : '🗡️ ') + q.title + '</span>' +
+                        '<span class="text-[10px] px-2 py-0.5 rounded ' + (locked ? 'bg-red-950 text-red-300' : 'bg-gray-900 text-gray-300') + '">' + (locked ? this.ic('lock') + ' ' : '') + this.ic(b.icon) + ' ' + b.name + ' • Niv. ' + b.minLvl + '-' + b.maxLvl + '</span>' +
+                        '<span class="text-sm font-bold ' + (q.type === 'boss' ? 'text-orange-300' : 'text-amber-200') + '">' + this.ic(q.type === 'boss' ? 'skull' : 'dagger') + ' ' + q.title + '</span>' +
                     '</div>' +
                     '<p class="text-xs text-gray-300 mt-0.5">' + q.desc + '</p>' +
                     '<div class="text-[11px] text-amber-400 mt-1">Progression : ' + q.progress + ' / ' + q.target + ' • Récompense : ' + q.rewardGold + ' Or, ' + q.rewardXp + ' XP' +
-                        (art ? ' • <span class="text-cyan-300">' + art.icon + ' ' + art.name + '</span>' : '') + '</div>' +
+                        (art ? ' • <span class="text-cyan-300">' + this.ic(art.icon) + ' ' + art.name + '</span>' : '') + '</div>' +
                 '</div>' +
                 (q.completed && State.location !== 'town'
                     ? '<span class="text-xs text-emerald-300 px-3 py-1.5 rounded bg-black/50 shrink-0">Terminée • à valider au camp</span>'
@@ -581,7 +680,7 @@ const UI = {
         const intro = '<p class="text-xs text-gray-400 mb-3">Deux crans de renfort par objet (+' + Math.round(UPGRADE_STEP * 100) + ' % dégâts / armure chacun). ' +
             'Un artefact, gagné en récompense de quête de boss, se sertit une seule fois par objet.</p>' +
             '<div class="flex flex-wrap gap-2 mb-3">' + (artKeys.length
-                ? artKeys.map(k => '<span class="px-2.5 py-1 rounded-lg bg-amber-950/50 border border-amber-500/40 text-xs text-amber-200">' + ARTIFACTS[k].icon + ' ' + ARTIFACTS[k].name + ' ×' + h.artifacts[k] + ' <span class="text-gray-400">(' + ARTIFACTS[k].label + ')</span></span>').join('')
+                ? artKeys.map(k => '<span class="px-2.5 py-1 rounded-lg bg-amber-950/50 border border-amber-500/40 text-xs text-amber-200">' + this.ic(ARTIFACTS[k].icon) + ' ' + ARTIFACTS[k].name + ' ×' + h.artifacts[k] + ' <span class="text-gray-400">(' + ARTIFACTS[k].label + ')</span></span>').join('')
                 : '<span class="text-xs text-gray-500">Aucun artefact en réserve.</span>') + '</div>';
         if (!allItems.length) return intro + '<p class="text-xs text-gray-400 text-center py-6">Aucun équipement.</p>';
         return intro + '<div class="space-y-2.5">' + allItems.map(({ item: it, source }) => {
@@ -589,14 +688,14 @@ const UI = {
             const cost = Game.upgradeCost(it);
             return '<div class="bg-black/50 p-3 rounded-xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">' +
                 '<div class="min-w-0">' +
-                    '<div class="text-xs font-bold" style="color:' + RARITIES[it.rarity].color + '">' + it.icon + ' ' + it.name + ' <span class="text-amber-300">' + '★'.repeat(it.upgrade) + '☆'.repeat(MAX_UPGRADE - it.upgrade) + '</span> <span class="text-gray-400">[' + source + ']</span></div>' +
+                    '<div class="text-xs font-bold" style="color:' + RARITIES[it.rarity].color + '">' + this.itemImg(it, 'w-6 h-6 inline-block align-middle mr-1') + it.name + ' <span class="text-amber-300">' + '★'.repeat(it.upgrade) + '☆'.repeat(MAX_UPGRADE - it.upgrade) + '</span> <span class="text-gray-400">[' + source + ']</span></div>' +
                     '<div class="text-[11px] text-gray-300 mt-0.5">' + this.formatItemStats(it) + '</div>' +
                 '</div>' +
                 '<div class="flex flex-wrap items-center gap-2 shrink-0">' +
                     (maxed ? '<span class="text-[11px] text-amber-300">Renfort maximal</span>'
-                        : '<button onclick="Game.upgradeItem(\'' + it.uid + '\')" ' + (h.gold < cost ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-amber-200">⚒️ Renforcer (' + cost + ' Or)</button>') +
+                        : '<button onclick="Game.upgradeItem(\'' + it.uid + '\')" ' + (h.gold < cost ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-amber-200">' + this.ic('forge') + ' Renforcer (' + cost + ' Or)</button>') +
                     (it.socketed ? '' : artKeys.map(k =>
-                        '<button onclick="Game.socketArtifact(\'' + it.uid + '\', \'' + k + '\')" title="' + ARTIFACTS[k].label + '" class="rpg-btn px-2.5 py-1.5 rounded-lg text-xs text-cyan-300">💎 ' + ARTIFACTS[k].icon + '</button>').join('')) +
+                        '<button onclick="Game.socketArtifact(\'' + it.uid + '\', \'' + k + '\')" title="' + ARTIFACTS[k].label + '" class="rpg-btn px-2.5 py-1.5 rounded-lg text-xs text-cyan-300">' + this.ic('gem') + ' ' + this.ic(ARTIFACTS[k].icon) + '</button>').join('')) +
                 '</div>' +
             '</div>';
         }).join('') + '</div>';
@@ -611,7 +710,7 @@ const UI = {
             const canBuy = h.gold >= it.price && h.inventory.length < 24;
             return '<div' + hover('showShopCompare', idx) + ' class="bg-black/50 p-2.5 rounded-lg border border-gray-800 hover:border-amber-400 flex justify-between items-center gap-2">' +
                 '<div class="min-w-0">' +
-                    '<div class="text-xs font-bold truncate" style="color:' + rar.color + '">' + it.icon + ' ' + it.name + ' <span class="text-gray-500">Niv.' + it.level + '</span></div>' +
+                    '<div class="text-xs font-bold truncate" style="color:' + rar.color + '">' + this.itemImg(it, 'w-6 h-6 inline-block align-middle mr-1') + it.name + ' <span class="text-gray-500">Niv.' + it.level + '</span></div>' +
                     '<div class="text-[10px] text-gray-400">' + this.formatItemStats(it) + '</div>' +
                 '</div>' +
                 '<button data-shop-idx="' + idx + '" onclick="Game.buyItem(' + idx + ')" ' + (!canBuy ? 'disabled' : '') + ' class="rpg-btn px-2.5 py-1 rounded text-xs text-yellow-300 shrink-0">' + it.price + ' Or</button>' +
@@ -622,21 +721,27 @@ const UI = {
             ? '<div class="text-xs text-gray-500 text-center py-6">Rien à vendre dans le sac.</div>'
             : h.inventory.map((it, idx) =>
                 '<div data-kb-item="1" data-sell-idx="' + idx + '" onclick="Game.sellItem(' + idx + ')"' + hover('showCompare', idx) + ' class="bg-black/50 p-2.5 rounded-lg border border-gray-800 hover:border-amber-400 cursor-pointer flex justify-between items-center gap-2">' +
-                    '<span class="text-xs font-bold truncate" style="color:' + RARITIES[it.rarity].color + '">' + it.icon + ' ' + it.name + '</span>' +
+                    '<span class="text-xs font-bold truncate" style="color:' + RARITIES[it.rarity].color + '">' + this.itemImg(it, 'w-6 h-6 inline-block align-middle mr-1') + it.name + '</span>' +
                     '<span class="text-xs text-emerald-300 shrink-0">+' + Game.sellValue(it) + ' Or</span>' +
                 '</div>').join('');
 
         return '<div class="flex flex-wrap gap-2 mb-4 items-center justify-between">' +
                 '<span class="text-xs text-gray-400">Le stock se renouvelle à chaque retour d’expédition. [Entrée] Acheter • [X] Vendre</span>' +
                 '<div class="flex gap-2">' +
-                    '<button onclick="Game.buyPotion(\'hp\')" ' + (h.gold < POTION_PRICE ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-red-300">+🧪 Potion Vie (' + POTION_PRICE + ' Or)</button>' +
-                    '<button onclick="Game.buyPotion(\'mp\')" ' + (h.gold < POTION_PRICE ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-orange-300">+🔥 Potion Fureur (' + POTION_PRICE + ' Or)</button>' +
+                    '<button onclick="Game.buyPotion(\'hp\')" ' + (h.gold < POTION_PRICE ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-red-300">+' + this.ic('potionHp') + ' Potion Vie (' + POTION_PRICE + ' Or)</button>' +
+                    '<button onclick="Game.buyPotion(\'mp\')" ' + (h.gold < POTION_PRICE ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-orange-300">+' + this.ic('potionRage') + ' Potion Fureur (' + POTION_PRICE + ' Or)</button>' +
                 '</div>' +
             '</div>' +
             '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
                 '<div><div class="text-xs font-bold uppercase text-amber-300 mb-2">À vendre</div><div class="space-y-2">' + buyHtml + '</div></div>' +
                 '<div><div class="text-xs font-bold uppercase text-amber-300 mb-2">Votre sac (' + h.inventory.length + '/24)</div><div class="space-y-2 max-h-80 overflow-y-auto">' + sellHtml + '</div></div>' +
             '</div>';
+    },
+
+    // Effets de la Menace, d'après World.biomeLevel et World.spawnEnemy
+    menaceText(d) {
+        if (d === 1) return 'Menace 1 : difficulté normale. Chaque cran ajoute 2 niveaux aux ennemis et au butin, et rend les ennemis plus coriaces, contre plus d’XP, d’or et de meilleurs objets.';
+        return 'Menace ' + d + ' : ennemis et butin <strong class="text-amber-200">+' + (d - 1) * 2 + ' niveaux</strong>, vie des ennemis <strong class="text-red-300">+' + (d - 1) * 40 + ' %</strong>, dégâts des ennemis <strong class="text-red-300">+' + (d - 1) * 25 + ' %</strong>. En échange : plus d’XP, d’or et des objets de plus haut niveau.';
     },
 
     expeditionsHtml() {
@@ -657,22 +762,24 @@ const UI = {
                 const killed = h.bossKills[bo.id];
                 const hunted = quest && quest.bossId === bo.id;
                 return '<span class="' + (hunted ? 'text-orange-300 font-bold' : killed ? 'text-emerald-300' : 'text-gray-600') + '">' +
-                    (hunted ? '🎯 ' + bo.name : killed ? '✓ ' + bo.name : '？') + '</span>';
+                    (hunted ? this.ic('training') + ' ' + bo.name : killed ? this.ic('check') + ' ' + bo.name : '？') + '</span>';
             }).join('<span class="text-gray-700"> • </span>');
             return '<div class="bg-black/55 p-3 rounded-xl border ' + (quest ? 'border-orange-500/50' : 'border-gray-800') + (locked ? ' opacity-40' : '') + '">' +
                 '<div class="flex justify-between items-center gap-2">' +
-                    '<span class="font-cinzel font-bold text-sm text-amber-200">' + b.icon + ' ' + b.name + '</span>' +
+                    '<span class="font-cinzel font-bold text-sm text-amber-200">' + this.ic(b.icon, 'w-5 h-5') + ' ' + b.name + '</span>' +
                     '<span class="text-[10px] px-2 py-0.5 rounded shrink-0 ' + (locked ? 'bg-red-950 text-red-300' : 'bg-gray-900 text-gray-300') + '">' +
-                        (locked ? '🔒 Niv. ' + b.minLvl : pct + ' % • Niv. ' + b.minLvl + '-' + b.maxLvl) + '</span>' +
+                        (locked ? this.ic('lock') + ' Niv. ' + b.minLvl : pct + ' % • Niv. ' + b.minLvl + '-' + b.maxLvl) + '</span>' +
                 '</div>' +
                 '<div class="text-[11px] mt-1.5 leading-relaxed">' + bosses + '</div>' +
+                (h.purified[b.id] ? '<div class="text-[11px] mt-1 text-emerald-300 font-semibold">' + this.ic('trophy') + ' Purifié • +2 % dégâts</div>' : '') +
             '</div>';
         }).join('');
 
         return '<div class="flex flex-col items-center gap-2 mb-4">' +
-                '<button onclick="World.startExpedition(); UI.closeModals();" class="px-8 py-3 rounded-xl font-cinzel font-bold text-base text-black bg-gradient-to-b from-amber-300 to-amber-600 hover:from-amber-200 hover:to-amber-500 shadow-lg shadow-amber-900/40">🌀 Partir en exploration</button>' +
-                '<p class="text-[11px] text-gray-400 text-center max-w-xl">Le portail choisit un donjon au hasard parmi ceux accessibles : ceux de vos quêtes en cours sont bien plus probables, ceux que vous avez dépassés presque jamais. Le boss est celui de votre quête (🎯), sinon l’un de ceux déjà vaincus (✓).</p>' +
+                '<button onclick="World.startExpedition(); UI.closeModals();" class="px-8 py-3 rounded-xl font-cinzel font-bold text-base text-black bg-gradient-to-b from-amber-300 to-amber-600 hover:from-amber-200 hover:to-amber-500 shadow-lg shadow-amber-900/40">' + this.ic('expeditions', 'w-5 h-5 mr-1') + ' Partir en exploration</button>' +
+                '<p class="text-[11px] text-gray-400 text-center max-w-xl">Le portail choisit un donjon au hasard parmi ceux accessibles : ceux de vos quêtes en cours sont bien plus probables, ceux que vous avez dépassés presque jamais. Le boss est celui de votre quête (' + this.ic('training') + '), sinon l’un de ceux déjà vaincus (' + this.ic('check') + ').</p>' +
                 '<div class="flex flex-wrap items-center justify-center gap-2"><span class="text-xs font-bold text-amber-300 mr-1">Menace :</span>' + diffBtns + '</div>' +
+                '<p class="text-[11px] text-gray-400 text-center max-w-xl">' + this.menaceText(State.difficulty) + '</p>' +
             '</div>' +
             '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">' + biomesHtml + '</div>';
     }

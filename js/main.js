@@ -23,13 +23,14 @@ window.addEventListener('keydown', e => {
     }
 
     if (State.activeModal) {
+        if (State.activeModal === 'deathModal' && document.getElementById('deathOkBtn').disabled) return;
         if (e.code === 'Escape') {
             e.preventDefault();
             if (State.activeModal === 'campModal') UI.toggleModal('pauseModal');
             else UI.closeModals();
             return;
         }
-        // Depuis le menu du camp : fiche, talents et sac restent accessibles au clavier
+        // Depuis le menu du camp : [C] [K] [I] ouvrent les onglets Cour d'entraînement, Sanctuaire et Inventaire
         if (State.activeModal === 'campModal') {
             const shortcut = { KeyC: 'characterModal', KeyK: 'skillsModal', KeyI: 'inventoryModal' }[e.code];
             if (shortcut) { UI.toggleModal(shortcut); return; }

@@ -42,7 +42,7 @@
                 <div class="flex gap-2.5 sm:pt-5">
                     <button id="startGameBtn" onclick="Game.startNewGame()"
                         class="flex-1 sm:flex-initial px-6 py-2.5 rounded-lg font-cinzel font-bold text-sm text-black bg-gradient-to-b from-amber-300 to-amber-600 hover:from-amber-200 hover:to-amber-500 shadow-lg shadow-amber-900/40 transition">
-                        ⚔️ Commencer l'Aventure
+                        <img data-icon="warrior" alt="" class="ic mr-1"> Commencer l'Aventure
                     </button>
                     <button id="continueGameBtn" onclick="Game.loadSavedGame()" class="hidden rpg-btn px-4 py-2.5 rounded-lg text-xs font-semibold text-amber-200">
                         Continuer la Partie
@@ -61,22 +61,22 @@
         <div class="flex justify-between items-start gap-2">
             <!-- Infos Héros & Zone -->
             <div class="pointer-events-auto rpg-panel rounded-xl px-3.5 py-2.5 flex items-center gap-3">
-                <div id="hudClassIcon" class="w-10 h-10 rounded-lg bg-amber-950/80 border border-amber-500/50 flex items-center justify-center text-2xl">⚔️</div>
+                <div id="hudClassIcon" class="w-10 h-10 rounded-lg bg-amber-950/80 border border-amber-500/50 flex items-center justify-center text-2xl"></div>
                 <div>
                     <div class="flex items-center gap-2">
                         <span id="hudHeroName" class="font-cinzel font-bold text-sm text-amber-200">Héros</span>
                         <span id="hudLevelBadge" class="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Niv. 1</span>
                     </div>
                     <div class="flex items-center gap-3 text-xs text-gray-300 mt-0.5">
-                        <span id="hudLocationName" class="text-amber-400/90 font-medium">🏕️ Camp d'Oakhaven</span>
-                        <span class="text-yellow-400 font-semibold">🪙 <span id="hudGold">65</span></span>
+                        <span id="hudLocationName" class="text-amber-400/90 font-medium"><img data-icon="camp" alt="" class="ic"> Camp d'Oakhaven</span>
+                        <span class="text-yellow-400 font-semibold"><img data-icon="coin" alt="" class="ic"> <span id="hudGold">65</span></span>
                     </div>
                 </div>
             </div>
 
             <!-- Suivi rapide de quête -->
             <div id="hudQuestTracker" class="hidden md:block pointer-events-auto rpg-panel rounded-xl px-3.5 py-2 max-w-xs text-xs">
-                <div class="text-[10px] uppercase tracking-wider text-amber-400 font-bold mb-0.5">📜 Quête Active</div>
+                <div class="text-[10px] uppercase tracking-wider text-amber-400 font-bold mb-0.5"><img data-icon="quests" alt="" class="ic"> Quête Active</div>
                 <div id="hudQuestText" class="text-gray-200">Parlez au Chef Aldebaran au camp.</div>
             </div>
 
@@ -86,7 +86,7 @@
                     <canvas id="minimapCanvas" width="128" height="96" class="rounded-lg bg-black/90 block"></canvas>
                 </div>
                 <button onclick="UI.toggleModal('pauseModal')" class="rpg-btn px-2.5 py-1 rounded-lg text-[11px] text-gray-300">
-                    ⚙️ Menu [Échap]
+                    <img data-icon="gear" alt="" class="ic"> Menu [Échap]
                 </button>
             </div>
         </div>
@@ -103,7 +103,7 @@
                 <!-- Vie -->
                 <div class="bg-black/70 rounded-lg p-1.5 border border-red-900/50">
                     <div class="flex justify-between text-[11px] font-semibold px-1 mb-0.5">
-                        <span class="text-red-300">❤️ Santé</span>
+                        <span class="text-red-300"><img data-icon="heart" alt="" class="ic"> Santé</span>
                         <span id="hudHpText" class="text-red-200">105 / 105</span>
                     </div>
                     <div class="w-full h-2.5 bg-red-950 rounded-full overflow-hidden">
@@ -117,7 +117,7 @@
                 <!-- Rage -->
                 <div class="bg-black/70 rounded-lg p-1.5 border border-orange-900/50">
                     <div class="flex justify-between text-[11px] font-semibold px-1 mb-0.5">
-                        <span class="text-orange-300">🔥 Rage</span>
+                        <span class="text-orange-300"><img data-icon="flame" alt="" class="ic"> Rage</span>
                         <span id="hudMpText" class="text-orange-200">0 / 100</span>
                     </div>
                     <div class="w-full h-2.5 bg-orange-950 rounded-full overflow-hidden">
@@ -135,18 +135,18 @@
             <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5 text-[11px]">
                 <div class="flex flex-wrap items-center gap-1.5">
                     <button onclick="UI.toggleModal('characterModal')" class="rpg-btn px-2.5 py-1 rounded-lg flex items-center gap-1">
-                        <span>👤 Héros [C]</span>
+                        <span><img data-icon="hero" alt="" class="ic"> Héros [C]</span>
                         <span id="badgeAttr" class="hidden w-2 h-2 rounded-full bg-emerald-400"></span>
                     </button>
                     <button onclick="UI.toggleModal('skillsModal')" class="rpg-btn px-2.5 py-1 rounded-lg flex items-center gap-1">
-                        <span>🌳 Talents [K]</span>
+                        <span><img data-icon="talents" alt="" class="ic"> Talents [K]</span>
                         <span id="badgeSkill" class="hidden w-2 h-2 rounded-full bg-amber-400"></span>
                     </button>
                     <button onclick="UI.toggleModal('inventoryModal')" class="rpg-btn px-2.5 py-1 rounded-lg">
-                        🎒 Sac [I]
+                        <img data-icon="inventory" alt="" class="ic"> Sac [I]
                     </button>
                     <button onclick="UI.toggleModal('questsModal')" class="rpg-btn px-2.5 py-1 rounded-lg">
-                        📜 Quêtes [J]
+                        <img data-icon="quests" alt="" class="ic"> Quêtes [J]
                     </button>
                 </div>
                 <div class="text-[10px] text-gray-400 hidden lg:block">
@@ -168,7 +168,7 @@
         <!-- 1. Fiche Héros & Attributs [C] -->
         <div id="characterModal" class="hidden rpg-panel w-full max-w-2xl rounded-2xl p-5 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-amber-500/30 pb-3 mb-4">
-                <h2 class="font-cinzel text-xl font-bold text-amber-300">👤 Fiche du Héros & Attributs</h2>
+                <h2 class="font-cinzel text-xl font-bold text-amber-300"><img data-icon="hero" alt="" class="ic"> Fiche du Héros & Attributs</h2>
                 <button onclick="UI.closeModals()" class="rpg-btn px-3 py-1 rounded-lg text-xs">Fermer [Échap]</button>
             </div>
             <div id="characterModalBody"></div>
@@ -178,7 +178,7 @@
         <div id="skillsModal" class="hidden rpg-panel w-full max-w-4xl rounded-2xl p-5 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-amber-500/30 pb-3 mb-4">
                 <div>
-                    <h2 class="font-cinzel text-xl font-bold text-amber-300">🌳 Arbre de Compétences</h2>
+                    <h2 class="font-cinzel text-xl font-bold text-amber-300"><img data-icon="talents" alt="" class="ic"> Arbre de Compétences</h2>
                     <p class="text-xs text-gray-400">3 branches, 5 paliers : chaque palier exige un niveau et des points investis dans sa branche.</p>
                 </div>
                 <button onclick="UI.closeModals()" class="rpg-btn px-3 py-1 rounded-lg text-xs">Fermer [Échap]</button>
@@ -190,7 +190,7 @@
         <div id="inventoryModal" class="hidden rpg-panel w-full max-w-4xl rounded-2xl p-5 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-amber-500/30 pb-3 mb-4">
                 <div>
-                    <h2 class="font-cinzel text-xl font-bold text-amber-300">🎒 Équipement, Sac & Artefacts</h2>
+                    <h2 class="font-cinzel text-xl font-bold text-amber-300"><img data-icon="inventory" alt="" class="ic"> Équipement, Sac & Artefacts</h2>
                     <p class="text-xs text-gray-400">Flèches pour naviguer • [Entrée] Équiper/Retirer • [X] Jeter</p>
                 </div>
                 <button onclick="UI.closeModals()" class="rpg-btn px-3 py-1 rounded-lg text-xs">Fermer [Échap]</button>
@@ -201,7 +201,7 @@
         <!-- 4. Journal de Quêtes [J] (hors du camp) -->
         <div id="questsModal" class="hidden rpg-panel w-full max-w-2xl rounded-2xl p-5 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-amber-500/30 pb-3 mb-4">
-                <h2 class="font-cinzel text-xl font-bold text-amber-300">📜 Journal de Quêtes</h2>
+                <h2 class="font-cinzel text-xl font-bold text-amber-300"><img data-icon="quests" alt="" class="ic"> Journal de Quêtes</h2>
                 <button onclick="UI.closeModals()" class="rpg-btn px-3 py-1 rounded-lg text-xs">Fermer [Échap]</button>
             </div>
             <div id="questsModalBody"></div>
@@ -211,31 +211,44 @@
         <div id="campModal" class="hidden rpg-panel w-full max-w-5xl rounded-2xl p-5 max-h-[92vh] overflow-y-auto">
             <div class="flex flex-wrap justify-between items-center gap-3 border-b border-amber-500/30 pb-3 mb-3">
                 <div>
-                    <h2 class="font-cinzel text-xl font-bold text-amber-300">🏕️ Camp d’Oakhaven</h2>
-                    <p class="text-xs text-gray-400">Vie restaurée • 🪙 <span id="campGold" class="text-yellow-300 font-bold">0</span> Or <span id="campQuestBadge" class="ml-2 text-emerald-300 font-semibold"></span></p>
+                    <h2 class="font-cinzel text-xl font-bold text-amber-300"><img data-icon="camp" alt="" class="ic"> Camp d’Oakhaven</h2>
+                    <p class="text-xs text-gray-400">Vie restaurée • <img data-icon="coin" alt="" class="ic"> <span id="campGold" class="text-yellow-300 font-bold">0</span> Or <span id="campQuestBadge" class="ml-2 text-emerald-300 font-semibold"></span></p>
                 </div>
                 <div class="flex flex-wrap gap-1.5">
-                    <button onclick="UI.toggleModal('characterModal')" class="rpg-btn px-2.5 py-1 rounded-lg text-xs text-amber-200">👤 Héros [C]</button>
-                    <button onclick="UI.toggleModal('skillsModal')" class="rpg-btn px-2.5 py-1 rounded-lg text-xs text-amber-200">🌳 Talents [K]</button>
-                    <button onclick="UI.toggleModal('inventoryModal')" class="rpg-btn px-2.5 py-1 rounded-lg text-xs text-amber-200">🎒 Sac [I]</button>
-                    <button onclick="UI.toggleModal('pauseModal')" class="rpg-btn px-2.5 py-1 rounded-lg text-xs text-gray-300">⚙️ Menu [Échap]</button>
+                    <button onclick="UI.toggleModal('pauseModal')" class="rpg-btn px-2.5 py-1 rounded-lg text-xs text-gray-300"><img data-icon="gear" alt="" class="ic"> Menu [Échap]</button>
                 </div>
             </div>
             <div id="campTabs" class="flex flex-wrap gap-1.5 mb-4"></div>
             <div id="campModalBody"></div>
         </div>
 
+        <!-- 6. Mort du héros : bouton verrouillé un instant pour absorber les touches du combat -->
+        <div id="deathModal" class="hidden rpg-panel w-full max-w-md rounded-2xl p-6 text-center">
+            <img data-icon="skull" alt="" class="ic w-16 h-16 mx-auto mb-2">
+            <h2 class="font-cinzel text-2xl font-bold text-red-300 mb-3">Vous avez succombé</h2>
+            <div id="deathModalBody" class="text-sm text-gray-300 space-y-2 mb-5"></div>
+            <button id="deathOkBtn" onclick="UI.openCamp()" class="rpg-btn w-full py-2.5 rounded-lg font-semibold text-amber-200">Se relever</button>
+        </div>
+
+        <!-- 7. Donjon purifié : récompense premium -->
+        <div id="purifiedModal" class="hidden rpg-panel w-full max-w-md rounded-2xl p-6 text-center">
+            <img data-icon="trophy" alt="" class="ic w-16 h-16 mx-auto mb-2">
+            <h2 class="font-cinzel text-2xl font-bold text-amber-300 mb-3">Donjon purifié !</h2>
+            <div id="purifiedModalBody" class="text-sm text-gray-300 space-y-3 mb-5"></div>
+            <button onclick="UI.openCamp()" class="rpg-btn w-full py-2.5 rounded-lg font-semibold text-amber-200">Récupérer</button>
+        </div>
+
         <!-- 8. Menu Pause -->
         <div id="pauseModal" class="hidden rpg-panel w-full max-w-md rounded-2xl p-6 text-center">
-            <h2 class="font-cinzel text-2xl font-bold text-amber-300 mb-2">⏸️ Jeu en Pause</h2>
+            <h2 class="font-cinzel text-2xl font-bold text-amber-300 mb-2"><img data-icon="pause" alt="" class="ic"> Jeu en Pause</h2>
             <p class="text-xs text-gray-400 mb-5">Votre progression est sauvegardée automatiquement.</p>
             <div class="flex flex-col gap-2.5">
                 <button onclick="UI.closeModals()" class="rpg-btn py-2.5 rounded-lg font-semibold text-amber-200">Reprendre l'Aventure</button>
-                <button id="returnCampBtn" onclick="World.enterTown(); UI.closeModals();" class="rpg-btn py-2.5 rounded-lg font-semibold text-cyan-300">🌀 Téléportation au Camp</button>
-                <button onclick="Sound.toggleMute()" class="rpg-btn py-2.5 rounded-lg font-semibold text-amber-200">🔊 Couper / Activer le Son [M]</button>
-                <button id="gfxToggleBtn" onclick="UI.toggleGfx()" class="rpg-btn py-2.5 rounded-lg font-semibold text-violet-300">🎨 Graphismes</button>
-                <button onclick="Game.saveGame(); UI.toast('Partie sauvegardée !', 'amber');" class="rpg-btn py-2.5 rounded-lg font-semibold text-emerald-300">💾 Sauvegarder Manuellement</button>
-                <button onclick="Game.returnToTitle()" class="rpg-btn py-2.5 rounded-lg font-semibold text-red-300">🚪 Écran Titre</button>
+                <button id="returnCampBtn" onclick="World.enterTown(); UI.closeModals();" class="rpg-btn py-2.5 rounded-lg font-semibold text-cyan-300"><img data-icon="expeditions" alt="" class="ic"> Téléportation au Camp</button>
+                <button onclick="Sound.toggleMute()" class="rpg-btn py-2.5 rounded-lg font-semibold text-amber-200"><img data-icon="sound" alt="" class="ic"> Couper / Activer le Son [M]</button>
+                <button id="gfxToggleBtn" onclick="UI.toggleGfx()" class="rpg-btn py-2.5 rounded-lg font-semibold text-violet-300"><img data-icon="palette" alt="" class="ic"> Graphismes</button>
+                <button onclick="Game.saveGame(); UI.toast('Partie sauvegardée !', 'amber');" class="rpg-btn py-2.5 rounded-lg font-semibold text-emerald-300"><img data-icon="save" alt="" class="ic"> Sauvegarder Manuellement</button>
+                <button onclick="Game.returnToTitle()" class="rpg-btn py-2.5 rounded-lg font-semibold text-red-300"><img data-icon="door" alt="" class="ic"> Écran Titre</button>
             </div>
         </div>
     </div>
@@ -252,6 +265,7 @@
 <script src="js/world.js"></script>
 <script src="js/combat.js"></script>
 <script src="js/art.js"></script>
+<script src="js/icons.js"></script>
 <script src="js/render.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/game.js"></script>

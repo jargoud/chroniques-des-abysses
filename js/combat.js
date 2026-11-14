@@ -62,7 +62,7 @@ const Combat = {
                 h.shieldT = 6;
                 this.spawnParticles(p.x, p.y, '#93c5fd', 24);
                 FX.rings.push({ x: p.x, y: p.y, radius: 60, color: '#60a5fa', life: 0.4, max: 0.4 });
-                this.floatingText(p.x, p.y - 34, '🛡️ +' + h.shield, '#93c5fd', true);
+                this.floatingText(p.x, p.y - 34, '+' + h.shield, '#93c5fd', true, Art.icon('shield'));
                 break;
             case 'war_cleave':
                 this.meleeArc(p.x, p.y, angle, 88, Math.PI * 1.1, Math.round(power * (1.2 + 0.25 * rank)), '#ef4444');
@@ -163,7 +163,7 @@ const Combat = {
         }
 
         this.spawnParticles(en.x, en.y, color || '#facc15', isCrit ? 12 : 6);
-        this.floatingText(en.x, en.y - en.radius - 6, (isCrit ? '💥 ' : '') + dmg, isCrit ? '#facc15' : '#ffffff', isCrit);
+        this.floatingText(en.x, en.y - en.radius - 6, String(dmg), isCrit ? '#facc15' : '#ffffff', isCrit, isCrit ? Art.icon('burst') : null);
 
         if (en.hp <= 0) this.onEnemyDeath(en);
     },
@@ -179,7 +179,7 @@ const Combat = {
 
         if (en.affix && en.affix.id === 'explosive') {
             this.spawnParticles(en.x, en.y, '#f97316', 24);
-            this.floatingText(en.x, en.y - 24, '💥 Détonation !', '#f97316', true);
+            this.floatingText(en.x, en.y - 24, 'Détonation !', '#f97316', true, Art.icon('burst'));
             if (Math.hypot(w.player.x - en.x, w.player.y - en.y) <= 88 && World.hasLineOfSight(en.x, en.y, w.player.x, w.player.y)) {
                 this.damagePlayer(Math.round(en.dmg * 1.3), null, en.level);
             }
@@ -230,7 +230,7 @@ const Combat = {
 
         if (en.isBoss) {
             w.portal = { x: en.x, y: en.y - 45 };
-            UI.toast('🏆 ' + en.name + ' vaincu ! Portail vers le camp ouvert.', 'amber');
+            UI.toast(en.name + ' vaincu ! Portail vers le camp ouvert.', 'amber', 'trophy');
         }
     },
 
@@ -273,9 +273,8 @@ const Combat = {
             h.gold = Math.max(0, h.gold - lost);
             const gift = this.deathPotions(source ? source.level : lvl);
             h.potionsHp += gift;
-            UI.toast('💀 Vous avez succombé ! (-' + lost + ' Or). Retour au camp...', 'red');
-            UI.toast('🧪 Le guérisseur du camp vous offre ' + gift + ' potion' + (gift > 1 ? 's' : '') + ' de vie.', 'amber');
             World.enterTown();
+            UI.showDeath(lost, gift);
         }
         return dmg;
     },
@@ -402,7 +401,7 @@ const Combat = {
             chest.opened = true;
             Sound.play('chest');
             if (chest.trapped) {
-                this.floatingText(chest.x, chest.y - 20, '💥 Coffre Piégé !', '#f97316', true);
+                this.floatingText(chest.x, chest.y - 20, 'Coffre Piégé !', '#f97316', true, Art.icon('burst'));
                 this.damagePlayer(10 + chest.level * 4, null, chest.level);
             }
             const item = ItemGen.create(chest.level, Math.random() < 0.25 ? 'rare' : 'magic');
@@ -426,8 +425,9 @@ const Combat = {
         }
     },
 
-    floatingText(x, y, text, color, big) {
-        State.world.floatingTexts.push({ x, y, text, color, big: !!big, life: 0.95 });
+    // icon : canvas Art (icône dessinée à gauche du texte)
+    floatingText(x, y, text, color, big, icon) {
+        State.world.floatingTexts.push({ x, y, text, color, big: !!big, icon, life: 0.95 });
     }
 };
 

@@ -2000,7 +2000,7 @@ function renderWorld() {
     g.translate(-camX, -camY);
 
     const labels = [];
-    const label = (text, x, y, color, size) => labels.push({ text, x, y, color, size: size || 8 });
+    const label = (text, x, y, color, size, icon) => labels.push({ text, x, y, color, size: size || 8, icon });
     const lights = []; // { x, y, r, col, a } en pixels logiques monde
     const light = (x, y, r, col, a) => lights.push({ x, y, r, col, a: a === undefined ? 0.5 : a });
     // Image lissée seulement si elle est en haute définition (lw) ; un sprite pixel reste net
@@ -2679,7 +2679,7 @@ function renderWorld() {
     present();
 
     // --- Textes à pleine résolution (police lisible avec contour) ---
-    w.floatingTexts.forEach(ft => label(ft.text, L(ft.x), L(ft.y), ft.color, ft.big ? 16 : 8));
+    w.floatingTexts.forEach(ft => label(ft.text, L(ft.x), L(ft.y), ft.color, ft.big ? 16 : 8, ft.icon));
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
     labels.forEach(lb => {
@@ -2691,6 +2691,11 @@ function renderWorld() {
         ctx.strokeText(lb.text, sx, sy);
         ctx.fillStyle = lb.color;
         ctx.fillText(lb.text, sx, sy);
+        if (lb.icon) {
+            const sz = lb.size > 8 ? 20 : 15;
+            ctx.imageSmoothingEnabled = Gfx.hd;
+            ctx.drawImage(lb.icon, sx - ctx.measureText(lb.text).width / 2 - sz - 2, sy - sz + 3, sz, sz);
+        }
     });
 
     renderMinimap(accentCol);

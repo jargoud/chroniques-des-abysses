@@ -53,6 +53,335 @@ const Art = {
         });
     },
 
+    // ---------- Équipement : une image 16×16 par type d'objet (nom de base, préfixe de rareté ignoré) ----------
+    // Canvas mis en cache par Art.render (un par mode graphique) ; l'URL est mémorisée sur le canvas
+    url(cv) { return cv._url || (cv._url = cv.toDataURL()); },
+
+    itemIcon(it) {
+        const pool = ItemGen.bases[it.slot];
+        const base = pool.find(b => it.name.endsWith(b.name)) || pool[0];
+        return this.render('item' + base.name, 16, 16, null, (d, g) => this.ITEMS[base.name].call(this, d, g));
+    },
+    itemUrl(it) { return this.url(this.itemIcon(it)); },
+
+    // Icônes d'interface (Art.ICONS, js/icons.js) ; un alias renvoie au dessin d'objet du même nom
+    icon(id) {
+        const alias = this.ICON_ALIAS[id];
+        return this.render('icon' + id, 16, 16, null, (d, g) => (alias ? this.ITEMS[alias] : this.ICONS[id]).call(this, d, g));
+    },
+    iconUrl(id) { return this.url(this.icon(id)); },
+
+    ICONS: {
+        // Portail : anneaux de pierre et tourbillon violet
+        expeditions(d, g) {
+            d.ell(8, 8, 7, 7, '#57534e');
+            d.ell(8, 8, 5.4, 5.4, '#4c1d95');
+            d.ell(8, 8, 3.6, 3.6, '#7c3aed');
+            d.line(8, 3.6, 11.5, 8.5, 0.8, '#c4b5fd', 12, 4);
+            d.line(8, 12.4, 4.5, 7.5, 0.8, '#c4b5fd', 4, 12);
+            d.dot(8, 8, 1, '#ede9fe', true);
+        },
+        // Parchemin enroulé
+        quests(d) {
+            d.rr(3, 3, 10, 10, 0.5, '#e7d3a8');
+            d.rr(2, 1.5, 12, 2.6, 1.3, '#c8a96a');
+            d.rr(2, 11.9, 12, 2.6, 1.3, '#c8a96a');
+            [5.6, 7.6, 9.6].forEach(y => d.line(4.5, y, 11.5, y, 0.45, '#78350f'));
+            d.ell(11, 12, 1.3, 1.3, '#b91c1c');
+        },
+        // Sac à dos de cuir
+        inventory(d) {
+            d.rr(5.5, 1, 5, 3.5, 2, '#78350f');
+            d.rr(2.5, 3.5, 11, 11.5, 3, '#a16207');
+            d.rr(3.5, 4, 9, 4.5, 2, '#854d0e');
+            d.rr(4.5, 9.5, 7, 4.5, 1.2, '#78350f');
+            d.rr(7.2, 7, 1.6, 2.6, 0.4, '#facc15');
+        },
+        // Balance du marchand
+        merchant(d) {
+            d.rr(7.3, 2.5, 1.4, 11, 0.5, '#a16207');
+            d.rr(4.5, 13, 7, 2, 0.8, '#78350f');
+            d.rr(1.5, 3, 13, 1.2, 0.5, '#facc15');
+            [3.5, 12.5].forEach(x => {
+                d.line(x, 4, x - 2, 9, 0.35, '#d4d4d8');
+                d.line(x, 4, x + 2, 9, 0.35, '#d4d4d8');
+                d.ell(x, 9.3, 2.6, 1.1, '#eab308');
+            });
+            d.ell(8, 2.4, 1, 1, '#fde68a');
+        },
+        // Marteau sur enclume
+        forge(d, g) {
+            d.poly([[1.5, 9], [14.5, 9], [12.5, 11], [10, 11], [11, 14.5], [5, 14.5], [6, 11], [3.5, 11]], '#52525b');
+            d.rr(1.5, 8.5, 13, 1.2, 0.4, '#a1a1aa');
+            this.diag(g, () => {
+                g.translate(-1.5, -2);
+                d.rr(-0.6, -2, 1.2, 8, 0.5, '#7c4a1e');
+                d.rr(-2.8, -5, 5.6, 3, 0.6, '#9ca3af');
+            });
+            d.dot(11.5, 7, 0.5, '#fb923c', true);
+        },
+        // Cible et flèche plantée
+        training(d) {
+            d.ell(7, 9, 6, 6, '#e7e5e4');
+            d.ell(7, 9, 4.3, 4.3, '#dc2626');
+            d.ell(7, 9, 2.6, 2.6, '#e7e5e4');
+            d.ell(7, 9, 1.1, 1.1, '#dc2626');
+            d.line(7, 9, 14, 2, 0.7, '#7c4a1e');
+            d.poly([[12.2, 1.2], [15, 1], [14.8, 3.8], [13.6, 2.4]], '#4ade80');
+        },
+        // Livre ouvert
+        learning(d, g) {
+            const page = (x0, x1) => d.path(() => {
+                g.moveTo(8, 4); g.quadraticCurveTo((8 + x0) / 2, 2, x0, 3); g.lineTo(x0, 13);
+                g.quadraticCurveTo((8 + x0) / 2, 12, 8, 14); g.closePath();
+            }, '#f5f0e1', [Math.min(x0, 8), 2, Math.max(x0, 8), 14]);
+            d.rr(1, 4, 14, 11, 1, '#7f1d1d');
+            page(1.8); page(14.2);
+            [6, 8, 10].forEach(y => { d.line(3.5, y, 6.5, y + 0.3, 0.35, '#a8a29e'); d.line(9.5, y + 0.3, 12.5, y, 0.35, '#a8a29e'); });
+            d.line(8, 4, 8, 14, 0.4, '#a8a29e');
+        }
+    },
+
+    // Arme en diagonale : dessinée verticale (pointe en haut) autour de (0, 0), pivotée de 45°
+    diag(g, fn) {
+        g.save();
+        g.translate(8, 8);
+        g.rotate(Math.PI / 4);
+        fn();
+        g.restore();
+    },
+
+    // Épée verticale : lame de top à 2, garde, poignée, pommeau
+    sword(d, top, w, guard, steel) {
+        d.poly([[-w / 2, 2], [-w / 2, top + w], [0, top], [w / 2, top + w], [w / 2, 2]], steel || '#d4d4d8');
+        d.line(0, top + w, 0, 1.5, 0.35, 'rgba(255,255,255,0.5)');
+        d.rr(-guard / 2, 2, guard, 1.3, 0.5, '#a16207');
+        d.rr(-0.75, 3.3, 1.5, 3.8, 0.4, '#5b3716');
+        d.ell(0, 7.8, 1.1, 1.1, '#ca8a04');
+    },
+
+    bow(d, half, bend, tips) {
+        d.line(0, -half, 0, half, 1.4, '#8b5a2b', -bend, 0);
+        d.line(0, -half, 0, half, 0.3, '#e7e5e4');
+        d.rr(-bend / 2 - 0.9, -1.3, 1.8, 2.6, 0.5, '#3f2a1d');
+        if (tips) [-half, half].forEach(y => d.ell(0, y, 0.7, 0.7, '#facc15'));
+    },
+
+    hole(g, x, y, rx, ry) {
+        g.save();
+        g.globalCompositeOperation = 'destination-out';
+        g.beginPath();
+        g.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+        g.fill();
+        g.restore();
+    },
+
+    torso(d, g, col) {
+        d.path(() => {
+            [[4, 2], [12, 2], [15, 4.5], [13, 7], [12.5, 14.5], [3.5, 14.5], [3, 7], [1, 4.5]]
+                .forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
+            g.closePath();
+        }, col, [1, 2, 15, 14.5]);
+    },
+
+    ITEMS: {
+        'Dague Acérée'(d, g) { this.diag(g, () => { g.translate(0, -2.5); this.sword(d, -4.5, 2.4, 4.6); }); },
+        'Épée Longue'(d, g) { this.diag(g, () => this.sword(d, -9.5, 2, 6)); },
+        'Espadon Runique'(d, g) {
+            this.diag(g, () => {
+                this.sword(d, -10, 3, 7.5, '#cbd5e1');
+                [-6, -3.5, -1].forEach(y => d.dot(0, y, 0.45, '#c084fc', true));
+            });
+        },
+        'Hache de Guerre'(d, g) {
+            this.diag(g, () => {
+                d.rr(-0.7, -8.5, 1.4, 17.5, 0.6, '#7c4a1e');
+                d.rr(-0.9, 5, 1.8, 3.5, 0.5, '#3f2a1d');
+                d.poly([[0.5, -7], [4, -8], [6.4, -9.6], [6.4, -0.4], [4, -2], [0.5, -3]], '#9ca3af');
+                d.line(6.2, -9.2, 6.2, -0.8, 0.5, '#f4f4f5');
+                d.poly([[-0.5, -6], [-3.2, -5], [-0.5, -4]], '#71717a');
+            });
+        },
+        'Masse d’Armes'(d, g) {
+            this.diag(g, () => {
+                d.rr(-0.7, -4, 1.4, 13, 0.6, '#7c4a1e');
+                d.rr(-0.9, 4.5, 1.8, 4, 0.5, '#3f2a1d');
+                for (let i = 0; i < 6; i++) {
+                    const a = i * Math.PI / 3, c = Math.cos(a), s = Math.sin(a);
+                    d.poly([[c * 4.8, -6 + s * 4.8], [-s * 1.1 + c * 2.5, -6 + c * 1.1 + s * 2.5], [s * 1.1 + c * 2.5, -6 - c * 1.1 + s * 2.5]], '#a1a1aa');
+                }
+                d.ell(0, -6, 3, 3, '#71717a');
+                d.rr(-1.6, -3.4, 3.2, 1, 0.4, '#a16207');
+            });
+        },
+        'Lance de Guerre'(d, g) {
+            this.diag(g, () => {
+                d.rr(-0.6, -5, 1.2, 15, 0.5, '#7c4a1e');
+                d.poly([[0, -10.5], [1.7, -7], [0, -4.6], [-1.7, -7]], '#d4d4d8');
+                d.rr(-1, -5, 2, 1.1, 0.4, '#a16207');
+                d.ell(-1.2, -3.4, 0.8, 1.5, '#b91c1c');
+            });
+        },
+        'Arc Court'(d, g) { this.diag(g, () => this.bow(d, 6.5, 5, false)); },
+        'Arc Long'(d, g) { this.diag(g, () => this.bow(d, 9.2, 6, true)); },
+        'Arbalète Lourde'(d, g) {
+            this.diag(g, () => {
+                d.rr(-1.2, -4, 2.4, 13, 0.6, '#7c4a1e');
+                d.line(-6.8, -3.5, 6.8, -3.5, 1.4, '#52525b', 0, -7.5);
+                d.line(-6.8, -3.5, 0, -0.5, 0.3, '#e7e5e4');
+                d.line(6.8, -3.5, 0, -0.5, 0.3, '#e7e5e4');
+                d.rr(-0.4, -9, 0.8, 8.5, 0.3, '#d4d4d8');
+                d.poly([[0, -10.4], [1, -8.6], [-1, -8.6]], '#e5e7eb');
+                d.rr(-0.5, 3, 1, 2, 0.4, '#18181b');
+            });
+        },
+        'Javelots de Chasse'(d, g) {
+            [-0.38, 0, 0.38].forEach(a => {
+                g.save();
+                g.translate(8, 15);
+                g.rotate(a);
+                d.rr(-0.5, -11, 1, 11, 0.4, '#8b5a2b');
+                d.poly([[0, -14.6], [1.2, -11.8], [0, -10.6], [-1.2, -11.8]], '#d4d4d8');
+                g.restore();
+            });
+        },
+        'Bouclier de Bois'(d, g) {
+            d.ell(8, 8, 7.3, 7.3, '#71717a');
+            d.ell(8, 8, 6.2, 6.2, '#8b5a2b');
+            d.over(() => [5, 8, 11].forEach(x => d.line(x, 1.5, x, 14.5, 0.4, '#5b3716')));
+            d.ell(8, 8, 2, 2, '#a1a1aa');
+        },
+        'Écu de Fer'(d, g) {
+            const heater = (x0, x1, y0, yb, col) => d.path(() => {
+                g.moveTo(x0, y0); g.lineTo(x1, y0); g.lineTo(x1, 7);
+                g.quadraticCurveTo(x1, 12.5, 8, yb); g.quadraticCurveTo(x0, 12.5, x0, 7); g.closePath();
+            }, col, [x0, y0, x1, yb]);
+            heater(1.5, 14.5, 1.2, 15.4, '#94a3b8');
+            heater(3, 13, 2.6, 13.6, '#1e3a8a');
+            d.rr(7.3, 3.5, 1.4, 8.5, 0.3, '#facc15');
+            d.rr(4.5, 6, 7, 1.4, 0.3, '#facc15');
+        },
+        'Pavois Clouté'(d) {
+            d.rr(2.5, 0.5, 11, 15, 2.5, '#57534e');
+            d.rr(3.5, 1.5, 9, 13, 1.8, '#991b1b');
+            d.rr(7.2, 1.5, 1.6, 13, 0.3, '#57534e');
+            [[5, 3.5], [11, 3.5], [5, 8], [11, 8], [5, 12.5], [11, 12.5], [8, 8]].forEach(([x, y]) => d.ell(x, y, 0.75, 0.75, '#e5e7eb'));
+        },
+        'Casque de Fer'(d, g) {
+            d.path(() => {
+                g.moveTo(2.5, 11.5); g.lineTo(2.5, 7);
+                g.quadraticCurveTo(2.5, 1.5, 8, 1.5); g.quadraticCurveTo(13.5, 1.5, 13.5, 7);
+                g.lineTo(13.5, 11.5); g.closePath();
+            }, '#9ca3af', [2.5, 1.5, 13.5, 11.5]);
+            d.rr(3.6, 6.6, 8.8, 1.4, 0.4, '#111827');
+            d.rr(7.3, 5.6, 1.4, 7, 0.4, '#6b7280');
+            d.rr(2, 11, 12, 2, 0.8, '#6b7280');
+            d.line(8, 1.8, 8, 5.4, 0.6, '#e5e7eb');
+        },
+        'Capuche de Cuir'(d, g) {
+            d.path(() => {
+                g.moveTo(1.5, 14.5); g.quadraticCurveTo(0.8, 3, 8, 1.2);
+                g.quadraticCurveTo(15.2, 3, 14.5, 14.5); g.closePath();
+            }, '#78350f', [1, 1.2, 15, 14.5]);
+            d.ell(8, 9.2, 3.6, 4.3, '#1c1917', { noEdge: true });
+            d.dot(6.6, 8.6, 0.4, '#fbbf24', true);
+            d.dot(9.4, 8.6, 0.4, '#fbbf24', true);
+        },
+        'Diadème Astral'(d) {
+            d.poly([[1.5, 9], [3, 5], [5.2, 7.6], [8, 2.5], [10.8, 7.6], [13, 5], [14.5, 9]], '#eab308');
+            d.rr(1.5, 8.5, 13, 2.8, 1, '#facc15');
+            d.ell(8, 7.6, 1.3, 1.6, '#60a5fa');
+            d.dot(8, 7.2, 0.5, '#e0f2fe', true);
+            [4, 12].forEach(x => d.ell(x, 9.9, 0.8, 0.8, '#c084fc'));
+        },
+        'Cuirasse de Mailles'(d, g) {
+            this.torso(d, g, '#9ca3af');
+            d.over(() => {
+                for (let y = 3; y < 15; y += 1.5) for (let x = 1.5 + (y % 3 ? 0.75 : 0); x < 15; x += 1.5) d.ell(x, y, 0.42, 0.42, '#52525b', { noEdge: true });
+            });
+            d.ell(8, 2, 2, 1.3, '#1c1917', { noEdge: true });
+            d.rr(3.3, 10.3, 9.4, 1.6, 0.4, '#78350f');
+            d.rr(7.2, 10.1, 1.6, 2, 0.3, '#facc15');
+        },
+        'Manteau de Pisteur'(d, g) {
+            d.path(() => { g.moveTo(5, 1.5); g.lineTo(11, 1.5); g.lineTo(15, 15); g.lineTo(1, 15); g.closePath(); }, '#4d7c0f', [1, 1.5, 15, 15]);
+            d.over(() => {
+                d.line(6.5, 4, 4, 14.5, 0.5, '#365314');
+                d.line(9.5, 4, 12, 14.5, 0.5, '#365314');
+            });
+            d.ell(8, 2.6, 3.6, 1.9, '#3f6212');
+            d.ell(8, 4, 0.9, 0.9, '#facc15');
+        },
+        'Robe d’Adepte'(d, g) {
+            d.path(() => {
+                [[5, 1.5], [11, 1.5], [12.5, 6], [14, 15], [2, 15], [3.5, 6]].forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
+                g.closePath();
+            }, '#6d28d9', [2, 1.5, 14, 15]);
+            d.over(() => {
+                d.rr(7.2, 1.5, 1.6, 14, 0.2, '#facc15');
+                d.rr(1, 13.6, 14, 1.4, 0.2, '#facc15');
+            });
+            d.rr(3.4, 6.6, 9.2, 1.4, 0.5, '#a21caf');
+        },
+        'Gantelets Rivetés'(d) {
+            d.rr(4, 9.5, 7, 5.5, 1, '#71717a');
+            d.rr(10, 5.6, 3.8, 2, 1, '#a1a1aa');
+            [4, 5.8, 7.6, 9.4].forEach(x => d.rr(x, 1.5, 1.6, 4, 0.8, '#d4d4d8'));
+            d.rr(4, 4, 7, 6.5, 1.8, '#a1a1aa');
+            [[5, 12.5], [8, 12.5], [10, 12.5]].forEach(([x, y]) => d.ell(x, y, 0.55, 0.55, '#facc15'));
+        },
+        'Mitaines Souples'(d) {
+            d.rr(10, 6, 3.6, 2, 1, '#a16207');
+            [4, 5.8, 7.6, 9.4].forEach(x => d.rr(x, 2.5, 1.6, 3, 0.8, '#e0b38a'));
+            d.rr(4, 4.5, 7, 6.5, 2, '#a16207');
+            d.rr(4, 10, 7, 4.5, 1, '#78350f');
+            d.line(4.5, 11.2, 10.5, 11.2, 0.35, '#fcd34d');
+        },
+        'Bottes Ferrées'(d) {
+            d.rr(4, 1.5, 6, 10, 1, '#7c2d12');
+            d.rr(4, 9, 10, 4.5, 2, '#7c2d12');
+            d.rr(3.8, 13, 10.6, 1.6, 0.6, '#1c1917');
+            d.rr(3.6, 1.5, 6.8, 2.2, 0.6, '#a1a1aa');
+            d.ell(12.2, 11, 2, 2, '#a1a1aa');
+            d.rr(4, 7, 6, 1.3, 0.4, '#a1a1aa');
+        },
+        'Bottes de Marche'(d) {
+            d.rr(4, 2, 6, 10, 1, '#92400e');
+            d.rr(4, 9, 9.6, 4.5, 2, '#92400e');
+            d.rr(3.8, 13, 10.2, 1.6, 0.6, '#3f2a1d');
+            d.rr(3.5, 1.5, 7, 2.4, 0.8, '#78350f');
+            [5.5, 7.2, 8.9].forEach(y => d.line(5.5, y, 8.5, y + 0.8, 0.4, '#fde68a'));
+        },
+        'Anneau de Cuivre'(d, g) {
+            d.ell(8, 9.5, 5, 5, '#c2410c');
+            this.hole(g, 8, 9.5, 3.2, 3.2);
+            d.ell(8, 4.5, 1.9, 1.7, '#22c55e');
+            d.dot(7.5, 4, 0.4, '#bbf7d0', true);
+        },
+        'Chevalière Gravée'(d, g) {
+            d.ell(8, 10, 5, 4.6, '#eab308');
+            this.hole(g, 8, 10.6, 3.2, 2.9);
+            d.rr(4.5, 2.4, 7, 4.8, 1.5, '#facc15');
+            d.line(6.5, 3.6, 9.5, 6, 0.5, '#854d0e');
+            d.line(9.5, 3.6, 6.5, 6, 0.5, '#854d0e');
+        },
+        'Talisman d’Os'(d, g) {
+            d.line(2, 1, 8, 8.5, 0.6, '#a16207', 2.5, 7);
+            d.line(14, 1, 8, 8.5, 0.6, '#a16207', 13.5, 7);
+            [[4.4, 6], [11.6, 6]].forEach(([x, y]) => d.ell(x, y, 0.9, 1.2, '#ece6da'));
+            d.path(() => { g.moveTo(6.3, 8.4); g.quadraticCurveTo(8, 9.4, 9.7, 8.4); g.quadraticCurveTo(9.4, 12.5, 8, 15.2); g.quadraticCurveTo(6.6, 12.5, 6.3, 8.4); }, '#ece6da', [6.3, 8.4, 9.7, 15.2]);
+        },
+        'Pendentif Runique'(d) {
+            d.line(2, 1, 8, 7.4, 0.5, '#facc15', 2.5, 6);
+            d.line(14, 1, 8, 7.4, 0.5, '#facc15', 13.5, 6);
+            d.ell(8, 10.5, 3.8, 3.8, '#a1a1aa');
+            d.ell(8, 10.5, 2.7, 2.7, '#1e40af');
+            d.line(8, 8.6, 8, 12.4, 0.5, '#7dd3fc');
+            d.line(8, 10, 9.4, 9, 0.5, '#7dd3fc');
+            d.dot(8, 10.5, 0.5, '#e0f2fe', true);
+        }
+    },
+
     white(spr) {
         if (spr._white) return spr._white;
         const c = document.createElement('canvas');
