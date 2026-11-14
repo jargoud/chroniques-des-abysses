@@ -245,8 +245,9 @@ const Game = {
         this.saveGame();
     },
 
+    // 25 % du prix, +50 % de cette valeur par amélioration (bien en dessous du coût de la forge)
     sellValue(it) {
-        return Math.max(2, Math.floor(it.price * 0.25));
+        return Math.max(2, Math.floor(it.price * 0.25 * (1 + 0.5 * (it.upgrade || 0))));
     },
 
     buyPotion(type) {

@@ -142,8 +142,10 @@ const UI = {
         for (let i = 0; i < 5; i++) {
             const skId = h.skillBar[i];
             const def = skId ? findSkillDef(skId) : null;
-            html += '<div onclick="Combat.castSlot(' + i + ')" class="relative w-10 h-10 rounded-lg bg-black/80 border ' +
-                (def ? 'border-amber-500/70' : 'border-gray-700') + ' flex items-center justify-center cursor-pointer hover:border-amber-300">' +
+            const off = def && def.weapon && def.weapon !== (wpn && wpn.slot === 'ranged' ? 'ranged' : 'melee');
+            html += '<div onclick="Combat.castSlot(' + i + ')"' + (off ? ' title="Indisponible : exige une arme ' + (def.weapon === 'ranged' ? 'à distance' : 'de mêlée') + '"' : '') +
+                ' class="relative w-10 h-10 rounded-lg bg-black/80 border ' +
+                (off ? 'border-gray-700 opacity-40 grayscale' : def ? 'border-amber-500/70' : 'border-gray-700') + ' flex items-center justify-center cursor-pointer hover:border-amber-300">' +
                 (def ? this.ic(def.icon, 'w-7 h-7') : i === 0 ? this.ic('warrior', 'w-7 h-7') : '<span class="text-lg">·</span>') +
                 '<span class="absolute top-0.5 left-1 text-[9px] font-bold text-amber-300">' + labels[i] + '</span>' +
                 '<div id="skillCd_' + i + '" class="hidden absolute inset-0 bg-black/80 rounded-lg flex items-center justify-center text-[11px] font-bold text-amber-300"></div>' +
@@ -426,7 +428,9 @@ const UI = {
                 const reqTxt = 'Niv. ' + req.lvl + (req.pts ? ' • ' + req.pts + ' pts ' + br.name : '');
                 html += '<div class="p-2.5 rounded-lg bg-black/60 border ' + (rank > 0 ? 'border-amber-500/40' : 'border-gray-800') + (reqOk || rank ? '' : ' opacity-50') + '">' +
                     '<div class="flex justify-between items-center gap-2">' +
-                        '<span class="text-xs font-bold text-gray-100">' + this.ic(sk.icon, 'w-5 h-5') + ' ' + sk.name + '</span>' +
+                        '<span class="text-xs font-bold text-gray-100">' + this.ic(sk.icon, 'w-5 h-5') + ' ' + sk.name +
+                            (sk.weapon ? ' <span class="ml-1 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase ' + (sk.weapon === 'ranged' ? 'bg-emerald-950/70 text-emerald-300' : 'bg-red-950/70 text-red-300') + '">' + (sk.weapon === 'ranged' ? 'Distance' : 'Mêlée') + '</span>' : '') +
+                        '</span>' +
                         '<span class="text-xs font-bold text-amber-300 shrink-0">' + rank + '/' + SKILL_MAX_RANK + '</span>' +
                     '</div>' +
                     '<p class="text-[11px] text-gray-400 mt-1">' + sk.desc + (sk.rage ? ' <span class="text-orange-300">' + this.ic('flame') + ' ' + sk.rage + ' Rage • ' + sk.cd + 's</span>' : '') + '</p>' +
@@ -521,6 +525,13 @@ const UI = {
                     '<div class="bg-black/40 p-3.5 rounded-xl border border-gray-800">' +
                         '<div class="text-xs font-bold uppercase text-amber-300 mb-2">' + this.ic('gem') + ' Artefacts & Runes (Forgeron Thrain)</div>' +
                         '<div class="flex flex-wrap gap-2">' + artHtml + '</div>' +
+                    '</div>' +
+                    '<div class="bg-black/40 p-3.5 rounded-xl border border-gray-800">' +
+                        '<div class="text-xs font-bold uppercase text-amber-300 mb-2">' + this.ic('potionHp') + ' Potions</div>' +
+                        '<div class="flex flex-wrap gap-2">' +
+                            '<span class="px-2.5 py-1 rounded-lg bg-red-950/50 border border-red-500/40 text-xs text-red-200">' + this.ic('potionHp') + ' Potion de Vie x' + h.potionsHp + '</span>' +
+                            '<span class="px-2.5 py-1 rounded-lg bg-orange-950/50 border border-orange-500/40 text-xs text-orange-200">' + this.ic('potionRage') + ' Potion de Fureur x' + h.potionsMp + '</span>' +
+                        '</div>' +
                     '</div>' +
                 '</div>' +
             '</div>';

@@ -4,6 +4,21 @@ Toutes les évolutions notables du projet sont consignées dans ce fichier.
 
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
+## [0.6.0] - 2026-11-14
+
+### Ajouté
+
+- Explosions entre ennemis : la détonation d'un kamikaze ou d'un ennemi à l'affixe Explosif blesse aussi les autres ennemis pris dans la zone (hors murs), avec réactions en chaîne d'une détonation à l'autre.
+- Les projectiles ennemis s'arrêtent sur les autres ennemis sans les blesser : les monstres se font écran entre un tireur et le héros.
+- Inventaire : encadré « Potions » avec le nombre de potions de vie et de fureur.
+- Minicarte : coffres non ouverts en carrés dorés ; boss (orange, plus grand, cerné de sombre) et élites (rose) distincts des ennemis ordinaires.
+
+### Modifié
+
+- Talents liés à l'arme : Coup de Bouclier, Fendoir, Tourbillon, Séisme et Charge exigent une arme de mêlée, Tir Perçant et Pluie de Flèches une arme à distance. Avec l'autre arme en main, le talent est grisé dans la barre de sorts et ne se lance pas (ni Rage ni recharge consommées). L'arbre de talents affiche l'arme requise (Mêlée / Distance).
+- Revente : chaque cran d'amélioration ajoute 50 % au prix de revente (25 % de la valeur, puis 37,5 % à +1 et 50 % à +2).
+- Minicarte : ennemis et coffres n'apparaissent plus que dans les zones explorées.
+
 ## [0.5.1] - 2026-11-14
 
 ### Corrigé
@@ -143,6 +158,7 @@ Première version publiée.
 - Musiques chiptune (camp, donjon, boss) avec réverbération et écho, et bruitages synthétisés ; son coupable avec la touche M.
 - Les murs bloquent les attaques, les sorts de zone et la détection des ennemis.
 
+[0.6.0]: https://github.com/jargoud/chroniques-des-abysses/compare/0.5.1...0.6.0
 [0.5.1]: https://github.com/jargoud/chroniques-des-abysses/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/jargoud/chroniques-des-abysses/compare/0.4.2...0.5.0
 [0.4.2]: https://github.com/jargoud/chroniques-des-abysses/compare/0.4.1...0.4.2

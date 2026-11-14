@@ -35,23 +35,23 @@ const SKILL_MAX_RANK = 3;
 
 const SKILL_TREES = {
     warrior: [
-        { id: 'war_bash', branch: 'guard', tier: 1, name: 'Coup de Bouclier', icon: 'shield', rage: 12, cd: 3.0, desc: 'Frappe courte devant vous : 110% (+25%/rang) dégâts et étourdit 1.2s.' },
+        { id: 'war_bash', weapon: 'melee', branch: 'guard', tier: 1, name: 'Coup de Bouclier', icon: 'shield', rage: 12, cd: 3.0, desc: 'Frappe courte devant vous : 110% (+25%/rang) dégâts et étourdit 1.2s.' },
         { id: 'war_ironskin', branch: 'guard', tier: 2, name: 'Cuirasse de Fer', icon: 'mail', passive: true, desc: 'Passif : +12% Armure et +15 Vie Max par rang.' },
         { id: 'war_thorns', branch: 'guard', tier: 3, name: 'Représailles', icon: 'cactus', passive: true, desc: 'Passif : renvoie 25% (+25%/rang) des dégâts de mêlée subis à l’attaquant.' },
         { id: 'war_rally', branch: 'guard', tier: 4, name: 'Cri de Ralliement', icon: 'horn', rage: 30, cd: 14, desc: 'Bouclier absorbant 20% (+10%/rang) de votre Vie Max pendant 6s.' },
         { id: 'war_bulwark', branch: 'guard', tier: 5, name: 'Rempart Inébranlable', icon: 'tower', passive: true, desc: 'Ultime passif : sous 40% de Vie, dégâts subis réduits de 12% par rang.' },
 
-        { id: 'war_cleave', branch: 'berserk', tier: 1, name: 'Fendoir Sanglant', icon: 'axe', rage: 15, cd: 1.8, desc: 'Large arc d’acier : 145% (+25%/rang) dégâts devant vous.' },
+        { id: 'war_cleave', weapon: 'melee', branch: 'berserk', tier: 1, name: 'Fendoir Sanglant', icon: 'axe', rage: 15, cd: 1.8, desc: 'Large arc d’acier : 145% (+25%/rang) dégâts devant vous.' },
         { id: 'war_bloodthirst', branch: 'berserk', tier: 2, name: 'Soif de Sang', icon: 'blood', passive: true, desc: 'Passif : +2% Vol de vie et +10% Rage générée par rang.' },
-        { id: 'war_whirlwind', branch: 'berserk', tier: 3, name: 'Tourbillon d’Acier', icon: 'whirl', rage: 25, cd: 4.0, desc: 'Frappe tout autour de vous : 165% (+35%/rang) dégâts.' },
+        { id: 'war_whirlwind', weapon: 'melee', branch: 'berserk', tier: 3, name: 'Tourbillon d’Acier', icon: 'whirl', rage: 25, cd: 4.0, desc: 'Frappe tout autour de vous : 165% (+35%/rang) dégâts.' },
         { id: 'war_frenzy', branch: 'berserk', tier: 4, name: 'Frénésie', icon: 'flame', passive: true, desc: 'Passif : +10% dégâts par rang tant que la Rage dépasse 50.' },
-        { id: 'war_earthquake', branch: 'berserk', tier: 5, name: 'Séisme Dévastateur', icon: 'volcano', rage: 40, cd: 8.0, desc: 'Ultime : brise le sol sur un large rayon, 270% (+60%/rang) dégâts et étourdit 2s.' },
+        { id: 'war_earthquake', weapon: 'melee', branch: 'berserk', tier: 5, name: 'Séisme Dévastateur', icon: 'volcano', rage: 40, cd: 8.0, desc: 'Ultime : brise le sol sur un large rayon, 270% (+60%/rang) dégâts et étourdit 2s.' },
 
-        { id: 'war_pierce', branch: 'master', tier: 1, name: 'Tir Perçant', icon: 'training', rage: 10, cd: 2.0, desc: 'Projectile qui traverse les ennemis : 130% (+25%/rang) dégâts.' },
+        { id: 'war_pierce', weapon: 'ranged', branch: 'master', tier: 1, name: 'Tir Perçant', icon: 'training', rage: 10, cd: 2.0, desc: 'Projectile qui traverse les ennemis : 130% (+25%/rang) dégâts.' },
         { id: 'war_swift', branch: 'master', tier: 2, name: 'Pas Léger', icon: 'feather', passive: true, desc: 'Passif : +6% vitesse de déplacement et +3% Esquive par rang.' },
-        { id: 'war_charge', branch: 'master', tier: 3, name: 'Charge Héroïque', icon: 'dash', rage: 20, cd: 4.5, desc: 'Bondit vers la cible : 135% (+30%/rang) dégâts et étourdit 1.5s.' },
+        { id: 'war_charge', weapon: 'melee', branch: 'master', tier: 3, name: 'Charge Héroïque', icon: 'dash', rage: 20, cd: 4.5, desc: 'Bondit vers la cible : 135% (+30%/rang) dégâts et étourdit 1.5s.' },
         { id: 'war_lynx', branch: 'master', tier: 4, name: 'Œil de Lynx', icon: 'eye', passive: true, desc: 'Passif : +4% Critique et +15% dégâts critiques par rang.' },
-        { id: 'war_arrows', branch: 'master', tier: 5, name: 'Pluie de Flèches', icon: 'arrowRain', rage: 40, cd: 9.0, desc: 'Ultime : déluge sur la zone visée, 220% (+50%/rang) dégâts.' }
+        { id: 'war_arrows', weapon: 'ranged', branch: 'master', tier: 5, name: 'Pluie de Flèches', icon: 'arrowRain', rage: 40, cd: 9.0, desc: 'Ultime : déluge sur la zone visée, 220% (+50%/rang) dégâts.' }
     ]
 };
 

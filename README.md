@@ -37,17 +37,17 @@ Dans les fenêtres : flèches pour naviguer, Entrée pour valider, X pour jeter 
 
 ## Contenu
 
-- **Héros** : un Guerrier avec 4 attributs à répartir et un arbre de 15 talents en 3 branches (Gardien, Berserker, Maître d'armes) : chaque palier exige un niveau et des points investis dans sa branche.
+- **Héros** : un Guerrier avec 4 attributs à répartir et un arbre de 15 talents en 3 branches (Gardien, Berserker, Maître d'armes) : chaque palier exige un niveau et des points investis dans sa branche. Les talents d'attaque exigent une arme de mêlée ou à distance, indiquée dans l'arbre ; avec l'autre arme en main, ils sont grisés et indisponibles.
 - **Rage** : la ressource des talents se remplit en frappant et en encaissant, puis retombe hors combat.
 - **Attributs** : Force (dégâts, armure), Dextérité (critique, esquive, furtivité), Intelligence (puissance élémentaire, Rage générée, furtivité), Vitalité (santé).
 - **Furtivité** : les ennemis repèrent le héros de plus près ; un « ! » signale chaque détection.
 - **Armes** : un emplacement mêlée (dague, épée, hache, masse, lance, espadon) et un emplacement distance (arc court, arc long, arbalète, javelots), avec alternance en jeu.
-- **Équipement** : 9 emplacements présentés sur une poupée d'équipement, 4 raretés (légendaires réservés aux boss), affixes aléatoires, 2 crans d'amélioration et sertissage d'artefacts à la forge.
+- **Équipement** : 9 emplacements présentés sur une poupée d'équipement, 4 raretés (légendaires réservés aux boss), affixes aléatoires, 2 crans d'amélioration et sertissage d'artefacts à la forge. Chaque cran d'amélioration augmente de 50 % le prix de revente. Le sac affiche aussi le nombre de potions.
 - **Comparateur** : au survol d'un objet du sac ou de la boutique, écart de statistiques avec l'objet porté (vert = hausse, rouge = baisse).
 - **Camp** : menu à onglets (Expéditions, Quêtes, Marchand, Forge) sur fond de camp animé ; la vie y est restaurée.
 - **Expéditions** : le portail tire le donjon au hasard, en favorisant les biomes de vos quêtes en cours.
-- **Donjons** : 8 biomes générés aléatoirement (salles, halls à piliers ou cavernes selon le biome), chacun avec sa plage de niveaux qui plafonne ennemis et butin ; le portail apparaît sur la minicarte.
-- **Ennemis** : 8 comportements (combattant, tireur, mage, invocateur, chargeur, nuée, kamikaze, colosse), 41 types d'ennemis à la silhouette propre, élites avec affixes et halo.
+- **Donjons** : 8 biomes générés aléatoirement (salles, halls à piliers ou cavernes selon le biome), chacun avec sa plage de niveaux qui plafonne ennemis et butin. La minicarte montre le portail, et dans les zones explorées les coffres, les ennemis, les élites et le boss.
+- **Ennemis** : 8 comportements (combattant, tireur, mage, invocateur, chargeur, nuée, kamikaze, colosse), 41 types d'ennemis à la silhouette propre, élites avec affixes et halo. Les explosions (kamikazes, affixe Explosif) blessent aussi les autres ennemis, et les projectiles ennemis s'arrêtent sur les monstres placés sur leur trajet.
 - **Boss** : 32 boss (4 par biome, de rang croissant) avec attaques spéciales annoncées à l'avance (onde de choc, nova, rafale, charge, invocation). Le boss d'un donjon dépend des quêtes en cours ; sans quête, c'est l'un de ceux déjà vaincus.
 - **Quêtes** : chasses et têtes mises à prix, à valider au camp ; elles sont la principale source d'or, et la première victoire sur un boss rapporte l'artefact de son biome.
 - **Rendu** : mode moderne lissé ou pixel art 16-bit (bouton « Graphismes » sur l'écran titre et dans le menu pause), avec sols, murs, décors, météo et ambiance lumineuse propres à chaque biome.

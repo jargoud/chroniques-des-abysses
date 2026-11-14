@@ -40,6 +40,10 @@ const Combat = {
         const def = findSkillDef(skillId);
         const rank = h.skills[skillId] || 0;
         if (!def || rank <= 0 || def.passive) return;
+        if (def.weapon && def.weapon !== stats.weaponType) {
+            UI.toast(def.name + ' exige une arme ' + (def.weapon === 'ranged' ? 'à distance' : 'de mêlée') + ' [Tab]', 'red');
+            return;
+        }
         if ((State.cooldowns[skillId] || 0) > 0) return;
 
         if (h.mp < def.rage) {
@@ -168,6 +172,19 @@ const Combat = {
         if (en.hp <= 0) this.onEnemyDeath(en);
     },
 
+    // Dégâts d'explosion sur les autres ennemis de la zone (sans bonus du héros) ; réactions en chaîne possibles
+    blastEnemies(src, R, dmg) {
+        State.world.enemies.filter(o => o !== src && o.hp > 0
+            && Math.hypot(o.x - src.x, o.y - src.y) <= R + o.radius
+            && World.hasLineOfSight(src.x, src.y, o.x, o.y)).forEach(o => {
+            if (o.hp <= 0) return; // déjà tué par une détonation en chaîne
+            o.hp -= dmg;
+            o.hitFlash = 0.12;
+            this.floatingText(o.x, o.y - o.radius - 6, String(dmg), '#f97316');
+            if (o.hp <= 0) this.onEnemyDeath(o);
+        });
+    },
+
     onEnemyDeath(en) {
         const w = State.world;
         const idx = w.enemies.indexOf(en);
@@ -183,6 +200,7 @@ const Combat = {
             if (Math.hypot(w.player.x - en.x, w.player.y - en.y) <= 88 && World.hasLineOfSight(en.x, en.y, w.player.x, w.player.y)) {
                 this.damagePlayer(Math.round(en.dmg * 1.3), null, en.level);
             }
+            this.blastEnemies(en, 88, Math.round(en.dmg * 1.3));
         }
 
         if (en.minion || en.selfDestruct) return;
@@ -453,7 +471,7 @@ const EnemyAI = {
         State.world.projectiles.push({
             x: en.x, y: en.y,
             vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-            dmg: Math.round(en.dmg * (dmgMult || 1)), color: en.color, radius: 6, life: 1.8, lvl: en.level
+            dmg: Math.round(en.dmg * (dmgMult || 1)), color: en.color, radius: 6, life: 1.8, lvl: en.level, src: en.uid
         });
     },
 
@@ -595,6 +613,8 @@ const EnemyAI = {
                 FX.rings.push({ x: en.x, y: en.y, radius: R, color: '#f97316', life: 0.35, max: 0.35 });
                 if (dToP <= R + p.radius && los) Combat.damagePlayer(en.dmg, null, en.level);
                 en.selfDestruct = true;
+                en.hp = 0; // hors cible des détonations en chaîne
+                Combat.blastEnemies(en, R, en.dmg);
                 Combat.onEnemyDeath(en);
                 break;
             }
@@ -696,6 +716,10 @@ function updateSimulation(dt) {
                 Combat.damageEnemy(en, prj.dmg, false, prj.color);
                 if (prj.basic) Combat.gainRage(6);
             }
+        } else if (w.enemies.some(e => e.uid !== prj.src && e.hp > 0 && Math.hypot(prj.x - e.x, prj.y - e.y) < prj.radius + e.radius)) {
+            // Un allié du tireur bloque le projectile sans être blessé
+            removePrj(prj);
+            Combat.spawnParticles(prj.x, prj.y, prj.color, 3);
         } else if (Math.hypot(prj.x - p.x, prj.y - p.y) < prj.radius + p.radius) {
             removePrj(prj);
             Combat.damagePlayer(prj.dmg, null, prj.lvl);

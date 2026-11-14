@@ -2722,10 +2722,28 @@ function renderMinimap(accentCol) {
         miniCtx.fillRect((n.x / w.tileSize) * sx - 2, (n.y / w.tileSize) * sy - 2, 4, 4);
     });
 
-    w.enemies.forEach(e => {
-        if (e.dummy) return;
-        miniCtx.fillStyle = e.isBoss ? '#f97316' : '#ef4444';
-        miniCtx.fillRect((e.x / w.tileSize) * sx - 1.5, (e.y / w.tileSize) * sy - 1.5, 3, 3);
+    // Coffres non ouverts des zones explorées : carré doré cerné de sombre (les pièges restent une surprise)
+    (w.chests || []).forEach(ch => {
+        if (ch.opened || !w.explored[Math.floor(ch.y / w.tileSize)][Math.floor(ch.x / w.tileSize)]) return;
+        const cx = (ch.x / w.tileSize) * sx, cy = (ch.y / w.tileSize) * sy;
+        miniCtx.fillStyle = '#1c1917';
+        miniCtx.fillRect(cx - 3, cy - 3, 6, 6);
+        miniCtx.fillStyle = '#facc15';
+        miniCtx.fillRect(cx - 2, cy - 2, 4, 4);
+    });
+
+    // Ennemis : normal rouge 3 px, élite rose 4 px, boss orange 6 px cerné de sombre (dessinés par-dessus)
+    const rank = e => e.isBoss ? 2 : e.isElite ? 1 : 0;
+    w.enemies.slice().sort((a, b) => rank(a) - rank(b)).forEach(e => {
+        if (e.dummy || !w.explored[Math.floor(e.y / w.tileSize)]?.[Math.floor(e.x / w.tileSize)]) return;
+        const ex = (e.x / w.tileSize) * sx, ey = (e.y / w.tileSize) * sy;
+        const size = [3, 4, 6][rank(e)];
+        if (e.isBoss) {
+            miniCtx.fillStyle = '#1c1917';
+            miniCtx.fillRect(ex - size / 2 - 1, ey - size / 2 - 1, size + 2, size + 2);
+        }
+        miniCtx.fillStyle = ['#ef4444', '#f472b6', '#f97316'][rank(e)];
+        miniCtx.fillRect(ex - size / 2, ey - size / 2, size, size);
     });
 
     // Portail (camp ou sortie de donjon après le boss) : anneau violet clignotant
