@@ -4,6 +4,13 @@ Toutes les évolutions notables du projet sont consignées dans ce fichier.
 
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
+## [0.4.2] - 2026-11-14
+
+### Ajouté
+
+- Protection du débutant : les dégâts subis baissent de 15 % au niveau 1, puis de moins en moins jusqu'au niveau 6. S'y ajoutent 3 % par niveau d'avance de l'ennemi sur le niveau d'équipement du héros (moyenne des objets portés, pondérée par la rareté et les améliorations), 12 % au plus. Total plafonné à 20 %, nul dès que le héros est au niveau de ses ennemis. Valeur visible sur la fiche du héros.
+- Potions de secours : à chaque mort, le guérisseur du camp offre 1 potion de vie, +1 si le coup fatal vient d'un ennemi de plus haut niveau que le héros, +1 si la bourse ne permet plus d'acheter 2 potions (3 au maximum).
+
 ## [0.4.1] - 2026-11-14
 
 ### Corrigé

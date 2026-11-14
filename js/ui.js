@@ -303,6 +303,8 @@ const UI = {
                     '<div class="flex justify-between"><span>Armure :</span><strong>' + s.armor + '</strong></div>' +
                     '<div class="flex justify-between"><span>Chance Critique :</span><strong class="text-yellow-300">' + s.critChance + '% (x' + s.critMult.toFixed(2) + ')</strong></div>' +
                     '<div class="flex justify-between"><span>Esquive :</span><strong>' + s.dodge + '%</strong></div>' +
+                    '<div class="flex justify-between" title="Réduit les dégâts subis en début de partie et quand votre équipement est en retard sur les ennemis"><span>Protection du débutant :</span><strong class="text-sky-300">−' + Math.round(Combat.assist(h.level) * 100) + '% dégâts</strong></div>' +
+                    '<div class="flex justify-between" title="Moyenne des objets portés, pondérée par la rareté et les améliorations"><span>Niveau d’équipement :</span><strong>' + Combat.gearLevel().toFixed(1) + '</strong></div>' +
                     '<div class="flex justify-between" title="Réduit la distance à laquelle les ennemis vous repèrent"><span>Furtivité :</span><strong class="text-emerald-300">' + s.stealth + '%</strong></div>' +
                     '<div class="flex justify-between"><span>Expérience :</span><strong>' + h.xp + ' / ' + h.xpNext + '</strong></div>' +
                 '</div>' +

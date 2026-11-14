@@ -181,7 +181,7 @@ const Combat = {
             this.spawnParticles(en.x, en.y, '#f97316', 24);
             this.floatingText(en.x, en.y - 24, '💥 Détonation !', '#f97316', true);
             if (Math.hypot(w.player.x - en.x, w.player.y - en.y) <= 88 && World.hasLineOfSight(en.x, en.y, w.player.x, w.player.y)) {
-                this.damagePlayer(Math.round(en.dmg * 1.3));
+                this.damagePlayer(Math.round(en.dmg * 1.3), null, en.level);
             }
         }
 
@@ -234,8 +234,8 @@ const Combat = {
         }
     },
 
-    // source : ennemi au corps-à-corps (déclenche Représailles)
-    damagePlayer(rawDmg, source) {
+    // source : ennemi au corps-à-corps (déclenche Représailles) • lvl : niveau de l'attaquant (potions de secours à la mort)
+    damagePlayer(rawDmg, source, lvl) {
         const h = State.hero;
         const stats = computeHeroStats();
 
@@ -246,7 +246,8 @@ const Combat = {
         }
 
         const reduction = stats.armor / (stats.armor + 55 + h.level * 10);
-        let dmg = Math.max(1, Math.round(rawDmg * (1 - reduction)));
+        const attackerLvl = source ? source.level : (lvl || h.level);
+        let dmg = Math.max(1, Math.round(rawDmg * (1 - reduction) * (1 - this.assist(attackerLvl))));
         if (h.skills.war_bulwark && h.hp < h.maxHp * 0.4) dmg = Math.max(1, Math.round(dmg * (1 - 0.12 * h.skills.war_bulwark)));
         if (source && h.skills.war_thorns && source.hp > 0) {
             this.damageEnemy(source, Math.max(1, Math.round(dmg * 0.25 * (1 + h.skills.war_thorns))), false, '#a3e635');
@@ -270,10 +271,43 @@ const Combat = {
         if (h.hp <= 0) {
             const lost = Math.floor(h.gold * 0.12);
             h.gold = Math.max(0, h.gold - lost);
+            const gift = this.deathPotions(source ? source.level : lvl);
+            h.potionsHp += gift;
             UI.toast('💀 Vous avez succombé ! (-' + lost + ' Or). Retour au camp...', 'red');
+            UI.toast('🧪 Le guérisseur du camp vous offre ' + gift + ' potion' + (gift > 1 ? 's' : '') + ' de vie.', 'amber');
             World.enterTown();
         }
         return dmg;
+    },
+
+    // Niveau d'équipement : moyenne des emplacements portés (arme rangée exclue, vide = 0),
+    // pondérée par la rareté et les améliorations
+    gearLevel() {
+        const h = State.hero;
+        const inactive = h.activeWeapon === 'ranged' && h.equipment.ranged ? 'weapon' : 'ranged';
+        const slots = Object.keys(h.equipment).filter(sl => sl !== inactive);
+        return slots.reduce((sum, sl) => {
+            const it = h.equipment[sl];
+            return sum + (it ? it.level * RARITIES[it.rarity].mult * (1 + it.upgrade * UPGRADE_STEP) : 0);
+        }, 0) / slots.length;
+    },
+
+    // Protection du débutant : réduction des dégâts subis (20 % max) tant que le héros n'est pas plus fort que l'ennemi.
+    // Début de partie : 15 % au niveau 1, nulle au niveau 6. Sous-équipement : 3 % par niveau d'écart entre l'ennemi
+    // et le niveau d'équipement, 12 % max. Disparaît dès que l'équipement égale le niveau de l'ennemi, après le niveau 6.
+    assist(attackerLvl) {
+        const early = Math.max(0, 0.15 * (1 - (State.hero.level - 1) / 5));
+        const gear = Math.min(0.12, Math.max(0, 0.03 * (attackerLvl - this.gearLevel())));
+        return Math.min(0.2, early + gear);
+    },
+
+    // Potions de secours à la mort (1 à 3) : +1 si le coup fatal vient d'un ennemi plus fort que le héros,
+    // +1 si la bourse ne permet pas d'acheter 2 potions
+    deathPotions(killerLvl) {
+        let n = 1;
+        if ((killerLvl || 0) > State.hero.level) n++;
+        if (State.hero.gold < POTION_PRICE * 2) n++;
+        return n;
     },
 
     gainXp(amount) {
@@ -369,7 +403,7 @@ const Combat = {
             Sound.play('chest');
             if (chest.trapped) {
                 this.floatingText(chest.x, chest.y - 20, '💥 Coffre Piégé !', '#f97316', true);
-                this.damagePlayer(10 + chest.level * 4);
+                this.damagePlayer(10 + chest.level * 4, null, chest.level);
             }
             const item = ItemGen.create(chest.level, Math.random() < 0.25 ? 'rare' : 'magic');
             w.lootDrops.push({
@@ -419,7 +453,7 @@ const EnemyAI = {
         State.world.projectiles.push({
             x: en.x, y: en.y,
             vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-            dmg: Math.round(en.dmg * (dmgMult || 1)), color: en.color, radius: 6, life: 1.8
+            dmg: Math.round(en.dmg * (dmgMult || 1)), color: en.color, radius: 6, life: 1.8, lvl: en.level
         });
     },
 
@@ -539,7 +573,7 @@ const EnemyAI = {
                 FX.rings.push({ x: en.x, y: en.y, radius: R, color: en.color, life: 0.4, max: 0.4 });
                 FX.shake = Math.max(FX.shake, 5);
                 Sound.play('boom');
-                if (dToP <= R + p.radius && los) Combat.damagePlayer(Math.round(en.dmg * 0.8));
+                if (dToP <= R + p.radius && los) Combat.damagePlayer(Math.round(en.dmg * 0.8), null, en.level);
                 break;
             }
             case 'summon': {
@@ -559,7 +593,7 @@ const EnemyAI = {
             case 'fuse': {
                 const R = 80;
                 FX.rings.push({ x: en.x, y: en.y, radius: R, color: '#f97316', life: 0.35, max: 0.35 });
-                if (dToP <= R + p.radius && los) Combat.damagePlayer(en.dmg);
+                if (dToP <= R + p.radius && los) Combat.damagePlayer(en.dmg, null, en.level);
                 en.selfDestruct = true;
                 Combat.onEnemyDeath(en);
                 break;
@@ -664,7 +698,7 @@ function updateSimulation(dt) {
             }
         } else if (Math.hypot(prj.x - p.x, prj.y - p.y) < prj.radius + p.radius) {
             removePrj(prj);
-            Combat.damagePlayer(prj.dmg);
+            Combat.damagePlayer(prj.dmg, null, prj.lvl);
         }
     }
     if (State.location !== loc) return;
