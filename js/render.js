@@ -185,15 +185,19 @@ const Pixel = {
                     rect(g, 5, 10, 5, 1, d); px(g, 9, 9, d); px(g, 6, 11, d); px(g, 8, 11, d); // oiseau
                 }
             }),
-            // Pilastres sculptés et frises d'or
-            templewall: [0, 0, 0, 1].map(v => g => {
-                rect(g, 0, 0, 16, 16, W);
-                rect(g, 6, 0, 4, 16, sh(W, 0.15));
-                rect(g, 6, 0, 1, 16, sh(W, 0.3));
-                rect(g, 9, 0, 1, 16, sh(W, -0.3));
-                [2, 13].forEach(y => { rect(g, 0, y, 16, 1, '#a16207'); for (let x = 0; x < 16; x += 3) px(g, x, y, '#facc15'); });
+            // Pierres taillées en appareil décalé ; variantes : incrustation d'or, pilastre, runes (aucune frise continue)
+            templewall: [0, 0, 1, 2, 3].map(v => g => {
+                rect(g, 0, 0, 16, 16, sh(W, -0.35));
+                [[0, 0, 8], [8, 0, 8], [-4, 5, 8], [4, 5, 8], [12, 5, 8], [0, 10, 8], [8, 10, 8]].forEach(([x, y, w]) => {
+                    const c = sh(W, (rnd() - 0.5) * 0.18);
+                    rect(g, x + 1, y + 1, w - 1, 4, c);
+                    rect(g, x + 1, y + 1, w - 1, 1, sh(c, 0.18));
+                });
+                rect(g, 0, 15, 16, 1, sh(W, -0.35));
                 specks(g, 6, W, 0.12, -0.25);
-                if (v) { px(g, 2, 6, '#e879f9'); px(g, 3, 7, '#e879f9'); px(g, 2, 8, '#e879f9'); px(g, 13, 6, '#e879f9'); px(g, 12, 7, '#e879f9'); px(g, 13, 8, '#e879f9'); }
+                if (v === 1) { px(g, 4, 7, '#facc15'); px(g, 3, 8, '#a16207'); px(g, 5, 8, '#a16207'); px(g, 4, 8, '#fde047'); px(g, 4, 9, '#a16207'); }
+                if (v === 2) { rect(g, 6, 0, 4, 16, sh(W, 0.12)); rect(g, 6, 0, 1, 16, sh(W, 0.3)); rect(g, 9, 0, 1, 16, sh(W, -0.3)); }
+                if (v === 3) { px(g, 3, 6, '#e879f9'); px(g, 4, 7, '#e879f9'); px(g, 3, 8, '#e879f9'); px(g, 12, 11, '#e879f9'); px(g, 11, 12, '#e879f9'); px(g, 12, 13, '#e879f9'); }
             }),
             // Canopée tropicale vue de dessus
             foliage: [0, 0, 1].map(v => g => {
@@ -648,31 +652,44 @@ const HD = {
                     g.stroke();
                 }
             }),
-            // Pilastre sculpté, frises d'or ; variante : runes luminescentes
-            templewall: [0, 0, 1].map(v => g => {
-                vgrad(g, sh(W, 0.1), sh(W, -0.25));
-                const gr = g.createLinearGradient(5.5, 0, 10.5, 0);
-                gr.addColorStop(0, sh(W, -0.2));
-                gr.addColorStop(0.35, sh(W, 0.35));
-                gr.addColorStop(1, sh(W, -0.3));
-                g.fillStyle = gr;
-                g.fillRect(5.5, 0, 5, 16);
-                [2, 13].forEach(y => {
-                    g.fillStyle = '#a16207';
-                    g.fillRect(0, y - 0.6, 16, 1.4);
-                    g.fillStyle = '#facc15';
-                    for (let x = 0.75; x < 16; x += 2.5) { g.beginPath(); g.arc(x, y + 0.1, 0.35, 0, P); g.fill(); }
+            // Pierres taillées en appareil décalé ; variantes : incrustation d'or, pilastre, runes luminescentes
+            templewall: [0, 0, 1, 2, 3].map(v => g => {
+                fill(g, sh(W, -0.45));
+                [[0, 0, 8], [8, 0, 8], [-4, 5.33, 8], [4, 5.33, 8], [12, 5.33, 8], [0, 10.66, 8], [8, 10.66, 8]].forEach(([x, y, w]) => {
+                    const c = sh(W, (rnd() - 0.5) * 0.22);
+                    const gr = g.createLinearGradient(0, y, 0, y + 5.3);
+                    gr.addColorStop(0, sh(c, 0.18));
+                    gr.addColorStop(1, sh(c, -0.18));
+                    g.fillStyle = gr;
+                    g.beginPath();
+                    g.roundRect(x + 0.45, y + 0.45, w - 0.9, 4.45, 0.6);
+                    g.fill();
+                    g.fillStyle = 'rgba(255,255,255,0.08)';
+                    g.fillRect(x + 0.9, y + 0.6, w - 1.8, 0.4);
                 });
-                grain(g, 6, W, 0.2);
-                if (v) {
+                grain(g, 8, W, 0.2);
+                if (v === 1) { // médaillon d'or incrusté
+                    g.fillStyle = '#a16207';
+                    g.beginPath(); g.arc(4, 8, 1.5, 0, P); g.fill();
+                    disc(g, 4, 8, 1.1, '#fde047', '#ca8a04');
+                }
+                if (v === 2) { // pilastre
+                    const gr = g.createLinearGradient(5.5, 0, 10.5, 0);
+                    gr.addColorStop(0, sh(W, -0.2));
+                    gr.addColorStop(0.35, sh(W, 0.3));
+                    gr.addColorStop(1, sh(W, -0.3));
+                    g.fillStyle = gr;
+                    g.fillRect(5.5, 0, 5, 16);
+                }
+                if (v === 3) { // runes luminescentes
                     g.strokeStyle = '#f0abfc';
                     g.lineWidth = 0.4;
                     g.shadowColor = '#e879f9';
                     g.shadowBlur = 4;
-                    [[2.5, 1], [13.5, -1]].forEach(([x, d]) => {
+                    [[3, 6, 1], [12, 11.3, -1]].forEach(([x, y, d]) => {
                         g.beginPath();
-                        g.moveTo(x, 5.5); g.lineTo(x + d, 7.5); g.lineTo(x, 9.5);
-                        g.moveTo(x - d * 0.2, 7.5); g.lineTo(x + d * 1.4, 7.5);
+                        g.moveTo(x, y); g.lineTo(x + d, y + 1.5); g.lineTo(x, y + 3);
+                        g.moveTo(x - d * 0.2, y + 1.5); g.lineTo(x + d * 1.4, y + 1.5);
                         g.stroke();
                     });
                     g.shadowBlur = 0;

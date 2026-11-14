@@ -4,6 +4,13 @@ Toutes les évolutions notables du projet sont consignées dans ce fichier.
 
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
+## [0.4.1] - 2026-11-14
+
+### Corrigé
+
+- Erreur « prj is undefined » quand le héros mourait sous plusieurs projectiles dans la même image.
+- Murs du Temple : les frises d'or formaient des bandes horizontales continues. Ils sont désormais en pierres taillées décalées, avec incrustations d'or, pilastres et runes ponctuels.
+
 ## [0.4.0] - 2026-11-14
 
 ### Ajouté

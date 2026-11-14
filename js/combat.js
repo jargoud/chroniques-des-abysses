@@ -639,14 +639,18 @@ function updateSimulation(dt) {
 
     if (State.mouse.leftDown || State.keys['Space']) Combat.castSlot(0);
 
-    for (let i = w.projectiles.length - 1; i >= 0; i--) {
-        const prj = w.projectiles[i];
+    // Un coup peut tuer le héros et le renvoyer au camp (tableaux remplacés) : on itère sur une copie
+    // et on s'arrête si le lieu change
+    const loc = State.location;
+    const removePrj = prj => { const k = w.projectiles.indexOf(prj); if (k !== -1) w.projectiles.splice(k, 1); };
+    for (const prj of w.projectiles.slice()) {
+        if (State.location !== loc) break;
         prj.x += prj.vx * dt;
         prj.y += prj.vy * dt;
         prj.life -= dt;
 
         if (!World.isWalkable(prj.x, prj.y) || prj.life <= 0) {
-            w.projectiles.splice(i, 1);
+            removePrj(prj);
             continue;
         }
 
@@ -654,17 +658,22 @@ function updateSimulation(dt) {
             const en = w.enemies.find(e => e.hp > 0 && !prj.hitList.includes(e.uid) && Math.hypot(prj.x - e.x, prj.y - e.y) < prj.radius + e.radius);
             if (en) {
                 prj.hitList.push(en.uid);
+                if (!prj.pierce) removePrj(prj);
                 Combat.damageEnemy(en, prj.dmg, false, prj.color);
                 if (prj.basic) Combat.gainRage(6);
-                if (!prj.pierce) w.projectiles.splice(i, 1);
             }
         } else if (Math.hypot(prj.x - p.x, prj.y - p.y) < prj.radius + p.radius) {
+            removePrj(prj);
             Combat.damagePlayer(prj.dmg);
-            w.projectiles.splice(i, 1);
         }
     }
+    if (State.location !== loc) return;
 
-    w.enemies.slice().forEach(en => EnemyAI.update(en, dt));
+    for (const en of w.enemies.slice()) {
+        if (State.location !== loc) return;
+        EnemyAI.update(en, dt);
+    }
+    if (State.location !== loc) return;
 
     for (let i = w.lootDrops.length - 1; i >= 0; i--) {
         if (Math.hypot(w.lootDrops[i].x - p.x, w.lootDrops[i].y - p.y) < 32) {
