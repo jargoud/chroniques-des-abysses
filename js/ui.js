@@ -17,6 +17,7 @@ const UI = {
     },
 
     renderStartScreen() {
+        document.getElementById('startGfxBtn').textContent = '🎨 Graphismes : ' + (Gfx.hd ? 'Modernes' : 'Pixel art 16-bit') + ' (changer)';
         const sel = CLASSES.warrior;
         document.getElementById('classDetailBox').innerHTML =
             '<div class="flex-1">' +
@@ -149,30 +150,98 @@ const UI = {
             this.closeModals();
             return;
         }
-        this.closeModals();
+        this.hideModals();
         State.activeModal = modalId;
         Sound.play('ui');
         State.modalFocusIdx = 0;
-        document.getElementById('modalBackdrop').classList.remove('hidden');
+        this.showBackdrop(false);
         document.getElementById(modalId).classList.remove('hidden');
 
         if (modalId === 'characterModal') this.renderCharacterModal();
         else if (modalId === 'skillsModal') this.renderSkillsModal();
         else if (modalId === 'inventoryModal') this.renderInventoryModal();
         else if (modalId === 'questsModal') this.renderQuestsModal();
-        else if (modalId === 'blacksmithModal') this.renderBlacksmithModal();
-        else if (modalId === 'merchantModal') this.renderMerchantModal();
-        else if (modalId === 'portalModal') this.renderPortalModal();
+        else if (modalId === 'pauseModal') this.renderPauseModal();
 
         setTimeout(() => this.applyModalFocus(), 20);
     },
 
-    closeModals() {
+    MODALS: ['characterModal', 'skillsModal', 'inventoryModal', 'questsModal', 'campModal', 'pauseModal'],
+
+    hideModals() {
         State.activeModal = null;
         this.hideCompare();
         document.getElementById('modalBackdrop').classList.add('hidden');
-        ['characterModal', 'skillsModal', 'inventoryModal', 'questsModal', 'blacksmithModal', 'merchantModal', 'portalModal', 'pauseModal']
-            .forEach(id => document.getElementById(id).classList.add('hidden'));
+        this.MODALS.forEach(id => document.getElementById(id).classList.add('hidden'));
+    },
+
+    // Fond léger au camp pour laisser voir le décor peint derrière le menu
+    showBackdrop(camp) {
+        const bd = document.getElementById('modalBackdrop');
+        bd.classList.remove('hidden');
+        bd.style.background = camp ? 'rgba(0,0,0,0.2)' : '';
+        bd.style.backdropFilter = camp ? 'none' : '';
+    },
+
+    // Au camp, fermer une fenêtre ramène toujours au menu du camp
+    closeModals() {
+        this.hideModals();
+        if (State.screen === 'playing' && State.location === 'town') this.openCamp();
+    },
+
+    campTab: 'expeditions',
+
+    openCamp(tab) {
+        this.hideModals();
+        if (tab) this.campTab = tab;
+        State.activeModal = 'campModal';
+        State.modalFocusIdx = 0;
+        this.showBackdrop(true);
+        document.getElementById('campModal').classList.remove('hidden');
+        this.renderCampModal();
+        setTimeout(() => this.applyModalFocus(), 20);
+    },
+
+    setCampTab(tab) {
+        this.campTab = tab;
+        State.modalFocusIdx = 0;
+        Sound.play('ui');
+        this.renderCampModal();
+        setTimeout(() => this.applyModalFocus(), 20);
+    },
+
+    CAMP_TABS: [
+        ['expeditions', '🌀', 'Expéditions'],
+        ['quests', '📜', 'Quêtes'],
+        ['merchant', '⚖️', 'Marchand'],
+        ['forge', '⚒️', 'Forge']
+    ],
+
+    renderCampModal() {
+        const h = State.hero;
+        const tabs = this.CAMP_TABS.map(([id, icon, label]) =>
+            '<button onclick="UI.setCampTab(\'' + id + '\')" class="rpg-btn px-4 py-2 rounded-lg text-sm font-cinzel font-bold ' + (this.campTab === id ? 'border-amber-400 text-amber-300 bg-amber-950/60' : 'text-gray-400') + '">' + icon + ' ' + label + '</button>'
+        ).join('');
+        const ready = State.quests.filter(q => q.completed && !q.claimed).length;
+        document.getElementById('campTabs').innerHTML = tabs;
+        document.getElementById('campGold').textContent = h.gold;
+        document.getElementById('campQuestBadge').textContent = ready ? ready + ' quête' + (ready > 1 ? 's' : '') + ' à valider' : '';
+        const body = this.campTab === 'quests' ? this.questsHtml()
+            : this.campTab === 'merchant' ? this.merchantHtml()
+            : this.campTab === 'forge' ? this.forgeHtml()
+            : this.expeditionsHtml();
+        document.getElementById('campModalBody').innerHTML = body;
+    },
+
+    renderPauseModal() {
+        document.getElementById('gfxToggleBtn').textContent = '🎨 Graphismes : ' + (Gfx.hd ? 'Modernes' : 'Pixel art 16-bit');
+    },
+
+    toggleGfx() {
+        Gfx.toggle();
+        this.renderPauseModal();
+        this.renderStartScreen();
+        UI.toast('Graphismes : ' + (Gfx.hd ? 'modernes' : 'pixel art 16-bit'), 'amber');
     },
 
     getFocusableItems() {
@@ -242,52 +311,48 @@ const UI = {
 
     renderSkillsModal() {
         const h = State.hero;
-        let html = '<div class="flex flex-wrap justify-between items-center bg-black/50 p-3 rounded-xl border border-gray-800 mb-4 text-xs">' +
-            '<span>Points de Talent disponibles : <strong class="text-amber-300 text-sm">' + h.skillPoints + '</strong></span>' +
-            '<span class="text-gray-400">Coût : 1 pt par rang</span>' +
-            '</div><div class="space-y-4">';
+        const spent = Object.values(h.skills).reduce((n, r) => n + r, 0);
+        let html = '<div class="flex flex-wrap justify-between items-center gap-2 bg-black/50 p-3 rounded-xl border border-gray-800 mb-4 text-xs">' +
+            '<span>Points de Talent : <strong class="text-amber-300 text-sm">' + h.skillPoints + '</strong> <span class="text-gray-500">(1 par niveau • rang max ' + SKILL_MAX_RANK + ')</span></span>' +
+            '<button onclick="Game.resetSkills()" ' + (spent ? '' : 'disabled') + ' class="rpg-btn px-3 py-1 rounded text-[11px] text-gray-300">↺ Réinitialiser (gratuit)</button>' +
+            '</div><div class="grid grid-cols-1 lg:grid-cols-3 gap-3">';
 
-        Object.keys(CLASSES).forEach(clsId => {
-            const cls = CLASSES[clsId];
-            const isMain = clsId === h.classId;
-            const skills = SKILL_TREES[clsId];
-
-            html += '<div class="bg-black/40 p-3.5 rounded-xl border ' + (isMain ? 'border-amber-500/50' : 'border-gray-800') + '">' +
-                '<div class="flex items-center justify-between mb-2.5">' +
-                    '<span class="font-cinzel font-bold text-sm text-amber-200">' + cls.icon + ' ' + cls.name + '' + '</span>' +
+        SKILL_BRANCHES.forEach(br => {
+            const pts = Game.branchPoints(br.id);
+            html += '<div class="bg-black/40 p-3 rounded-xl border border-gray-800" style="border-top:3px solid ' + br.color + '">' +
+                '<div class="flex items-center justify-between mb-1">' +
+                    '<span class="font-cinzel font-bold text-sm" style="color:' + br.color + '">' + br.icon + ' ' + br.name + '</span>' +
+                    '<span class="text-[11px] text-gray-400">' + pts + ' pts</span>' +
                 '</div>' +
-                '<div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">';
+                '<p class="text-[11px] text-gray-500 mb-2.5">' + br.desc + '</p><div class="space-y-2">';
 
-            skills.forEach(sk => {
-                const lockedTier3 = !isMain && sk.tier === 3;
+            SKILL_TREES.warrior.filter(sk => sk.branch === br.id).forEach(sk => {
                 const rank = h.skills[sk.id] || 0;
-                const cost = isMain ? 1 : 2;
-                const canLearn = !lockedTier3 && rank < 5 && h.level >= sk.reqLvl && h.skillPoints >= cost;
-
-                html += '<div class="p-2.5 rounded-lg bg-black/60 border ' + (rank > 0 ? 'border-amber-500/40' : 'border-gray-800') + ' flex flex-col justify-between gap-2">' +
-                    '<div>' +
-                        '<div class="flex justify-between items-center">' +
-                            '<span class="text-xs font-bold text-gray-100">' + sk.icon + ' ' + sk.name + ' <span class="text-[10px] text-gray-400">(Palier ' + sk.tier + ' • Niv.' + sk.reqLvl + ')</span></span>' +
-                            '<span class="text-xs font-bold text-amber-300">' + rank + '/5</span>' +
-                        '</div>' +
-                        '<p class="text-[11px] text-gray-400 mt-1">' + sk.desc + (sk.rage ? ' <span class="text-orange-300">🔥 ' + sk.rage + ' Rage</span>' : '') + '</p>' +
+                const req = BRANCH_REQ[sk.tier];
+                const reqOk = h.level >= req.lvl && pts >= req.pts;
+                const canLearn = Game.canLearnSkill(sk);
+                const reqTxt = 'Niv. ' + req.lvl + (req.pts ? ' • ' + req.pts + ' pts ' + br.name : '');
+                html += '<div class="p-2.5 rounded-lg bg-black/60 border ' + (rank > 0 ? 'border-amber-500/40' : 'border-gray-800') + (reqOk || rank ? '' : ' opacity-50') + '">' +
+                    '<div class="flex justify-between items-center gap-2">' +
+                        '<span class="text-xs font-bold text-gray-100">' + sk.icon + ' ' + sk.name + '</span>' +
+                        '<span class="text-xs font-bold text-amber-300 shrink-0">' + rank + '/' + SKILL_MAX_RANK + '</span>' +
                     '</div>' +
-                    '<div class="flex items-center justify-between pt-1 border-t border-gray-800/80">' +
-                        (lockedTier3
-                            ? '<span class="text-[10px] text-red-400">Exclusif ' + cls.name + '</span>'
-                            : '<button onclick="Game.learnSkill(\'' + sk.id + '\', ' + cost + ')" ' + (!canLearn ? 'disabled' : '') + ' class="rpg-btn px-2.5 py-1 rounded text-[11px] text-amber-200">Améliorer (' + cost + ' pt)</button>') +
+                    '<p class="text-[11px] text-gray-400 mt-1">' + sk.desc + (sk.rage ? ' <span class="text-orange-300">🔥 ' + sk.rage + ' Rage • ' + sk.cd + 's</span>' : '') + '</p>' +
+                    '<div class="flex flex-wrap items-center justify-between gap-1.5 pt-1.5 mt-1.5 border-t border-gray-800/80">' +
+                        (reqOk
+                            ? '<button onclick="Game.learnSkill(\'' + sk.id + '\')" ' + (!canLearn ? 'disabled' : '') + ' class="rpg-btn px-2.5 py-1 rounded text-[11px] text-amber-200">' + (rank ? 'Améliorer' : 'Apprendre') + '</button>'
+                            : '<span class="text-[10px] text-red-400">🔒 ' + reqTxt + '</span>') +
                         (!sk.passive && rank > 0
                             ? '<div class="flex items-center gap-1 text-[10px]">' +
                               [0, 1, 2, 3, 4].map(sl =>
                                 '<button onclick="Game.assignSkill(\'' + sk.id + '\', ' + sl + ')" class="px-1.5 py-0.5 rounded border ' +
                                 (h.skillBar[sl] === sk.id ? 'bg-amber-400 text-black font-bold border-amber-300' : 'bg-gray-900 border-gray-700 text-gray-300') + '">' +
-                                (sl === 0 ? 'Esp' : (sl === 4 ? '4/Clic droit' : sl)) + '</button>'
+                                (sl === 0 ? 'Esp' : (sl === 4 ? '4' : sl)) + '</button>'
                               ).join('') + '</div>'
-                            : '<span class="text-[10px] text-gray-500">' + (sk.passive ? 'Passif' : 'Non appris') + '</span>') +
+                            : '<span class="text-[10px] text-gray-500">' + (sk.passive ? 'Passif' : '') + '</span>') +
                     '</div>' +
                 '</div>';
             });
-
             html += '</div></div>';
         });
 
@@ -312,7 +377,7 @@ const UI = {
                     : '<span class="doll-empty">' + SLOT_LABELS[sl] + '</span>') +
             '</div>';
         };
-        const heroImg = Pixel.humanoid(CLASSES[h.classId].color, HERO_HAIR).toDataURL();
+        const heroImg = Art.hero(0).toDataURL();
         const st = computeHeroStats();
         const statsHtml = [
             ['Force', st.str], ['Dextérité', st.dex], ['Intelligence', st.int], ['Vitalité', st.vit],
@@ -368,7 +433,7 @@ const UI = {
     },
 
     formatItemStats(it) {
-        const upg = 1 + it.upgrade * 0.14;
+        const upg = 1 + it.upgrade * UPGRADE_STEP;
         const parts = [];
         if (it.dmg > 0) parts.push('+' + Math.round(it.dmg * upg) + ' Dégâts');
         if (it.slot === 'weapon' || it.slot === 'ranged') {
@@ -465,135 +530,147 @@ const UI = {
         document.getElementById('itemTooltip').classList.add('hidden');
     },
 
+    // Journal [J] hors du camp ; au camp, l'onglet Quêtes
     renderQuestsModal() {
-        Quests.ensureAvailable();
-        // Donjon de la quête (chasse : biomeId, relique : biome qui détient l'artefact)
-        const biomeOf = q => BIOMES.find(b => b.id === q.biomeId || b.artifactId === q.artifactId) || BIOMES[0];
-        // Tri par niveau requis du donjon (BIOMES est rangé dans cet ordre)
-        const active = State.quests.filter(q => !q.claimed)
-            .sort((a, b) => BIOMES.indexOf(biomeOf(a)) - BIOMES.indexOf(biomeOf(b)));
-        document.getElementById('questsModalBody').innerHTML = '<div class="space-y-3">' +
-            active.map(q => {
-                const b = biomeOf(q);
-                const locked = State.hero.level < b.minLvl;
-                return '<div class="bg-black/50 p-4 rounded-xl border ' + (q.completed ? 'border-emerald-500/60' : 'border-gray-800') + ' flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">' +
-                    '<div>' +
-                        '<div class="flex flex-wrap items-center gap-2">' +
-                            '<span class="text-[10px] px-2 py-0.5 rounded ' + (locked ? 'bg-red-950 text-red-300' : 'bg-gray-900 text-gray-300') + '">' + (locked ? '🔒 ' : '') + 'Niv. ' + b.minLvl + '+ • ' + b.icon + ' ' + b.name + '</span>' +
-                            '<span class="text-sm font-bold text-amber-200">' + q.title + '</span>' +
-                        '</div>' +
-                        '<p class="text-xs text-gray-300 mt-0.5">' + q.desc + '</p>' +
-                        '<div class="text-[11px] text-amber-400 mt-1">Progression : ' + q.progress + ' / ' + q.target + ' • Récompense : ' + q.rewardGold + ' Or, ' + q.rewardXp + ' XP</div>' +
-                    '</div>' +
-                    (q.completed && State.location !== 'town'
-                        ? '<span class="text-xs text-emerald-300 px-3 py-1.5 rounded bg-black/50">Terminée • à valider au camp</span>'
-                        : q.completed
-                        ? '<button onclick="Quests.claim(\'' + q.id + '\')" class="rpg-btn px-4 py-2 rounded-lg text-xs font-bold text-emerald-300 border-emerald-500">Valider la Quête</button>'
-                        : '<span class="text-xs text-gray-500 px-3 py-1.5 rounded bg-black/50">En cours</span>') +
-                '</div>';
-            }).join('') + '</div>';
+        if (State.activeModal === 'campModal') return this.renderCampModal();
+        document.getElementById('questsModalBody').innerHTML = this.questsHtml();
     },
 
-    renderBlacksmithModal() {
+    renderBlacksmithModal() { if (State.activeModal === 'campModal') this.renderCampModal(); },
+    renderMerchantModal() { if (State.activeModal === 'campModal') this.renderCampModal(); },
+    renderPortalModal() { if (State.activeModal === 'campModal') this.renderCampModal(); },
+
+    questsHtml() {
+        Quests.ensureAvailable();
+        const biomeOf = q => BIOMES.find(b => b.id === q.biomeId) || BIOMES[0];
+        const active = State.quests.filter(q => !q.claimed)
+            .sort((a, b) => (b.completed - a.completed) || BIOMES.indexOf(biomeOf(a)) - BIOMES.indexOf(biomeOf(b)));
+        if (!active.length) return '<p class="text-xs text-gray-400 text-center py-6">Aucune quête pour le moment.</p>';
+        return '<div class="space-y-3">' + active.map(q => {
+            const b = biomeOf(q);
+            const locked = State.hero.level < b.minLvl;
+            const art = q.rewardArtifact ? ARTIFACTS[q.rewardArtifact] : null;
+            return '<div class="bg-black/50 p-4 rounded-xl border ' + (q.completed ? 'border-emerald-500/60' : q.type === 'boss' ? 'border-orange-500/40' : 'border-gray-800') + ' flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">' +
+                '<div>' +
+                    '<div class="flex flex-wrap items-center gap-2">' +
+                        '<span class="text-[10px] px-2 py-0.5 rounded ' + (locked ? 'bg-red-950 text-red-300' : 'bg-gray-900 text-gray-300') + '">' + (locked ? '🔒 ' : '') + b.icon + ' ' + b.name + ' • Niv. ' + b.minLvl + '-' + b.maxLvl + '</span>' +
+                        '<span class="text-sm font-bold ' + (q.type === 'boss' ? 'text-orange-300' : 'text-amber-200') + '">' + (q.type === 'boss' ? '☠️ ' : '🗡️ ') + q.title + '</span>' +
+                    '</div>' +
+                    '<p class="text-xs text-gray-300 mt-0.5">' + q.desc + '</p>' +
+                    '<div class="text-[11px] text-amber-400 mt-1">Progression : ' + q.progress + ' / ' + q.target + ' • Récompense : ' + q.rewardGold + ' Or, ' + q.rewardXp + ' XP' +
+                        (art ? ' • <span class="text-cyan-300">' + art.icon + ' ' + art.name + '</span>' : '') + '</div>' +
+                '</div>' +
+                (q.completed && State.location !== 'town'
+                    ? '<span class="text-xs text-emerald-300 px-3 py-1.5 rounded bg-black/50 shrink-0">Terminée • à valider au camp</span>'
+                    : q.completed
+                    ? '<button onclick="Quests.claim(\'' + q.id + '\')" class="rpg-btn px-4 py-2 rounded-lg text-xs font-bold text-emerald-300 border-emerald-500 shrink-0">Valider la Quête</button>'
+                    : '<span class="text-xs text-gray-500 px-3 py-1.5 rounded bg-black/50 shrink-0">En cours</span>') +
+            '</div>';
+        }).join('') + '</div>';
+    },
+
+    forgeHtml() {
         const h = State.hero;
         const allItems = [
             ...Object.keys(h.equipment).filter(k => h.equipment[k]).map(k => ({ item: h.equipment[k], source: 'Porté' })),
             ...h.inventory.map(it => ({ item: it, source: 'Sac' }))
         ];
         const artKeys = Object.keys(h.artifacts).filter(k => h.artifacts[k] > 0);
-
-        if (allItems.length === 0) {
-            document.getElementById('blacksmithModalBody').innerHTML = '<p class="text-xs text-gray-400 text-center py-6">Aucun équipement à améliorer.</p>';
-            return;
-        }
-
-        document.getElementById('blacksmithModalBody').innerHTML = '<div class="space-y-2.5">' +
-            allItems.map(entry => {
-                const it = entry.item;
-                const cost = 35 + it.upgrade * 45 + it.level * 10;
-                const canUpg = it.upgrade < 10 && h.gold >= cost;
-                return '<div class="bg-black/50 p-3 rounded-xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">' +
-                    '<div>' +
-                        '<div class="text-xs font-bold" style="color:' + RARITIES[it.rarity].color + '">' + it.icon + ' ' + it.name + ' (+' + it.upgrade + '/10) <span class="text-gray-400">[' + entry.source + ']</span></div>' +
-                        '<div class="text-[11px] text-gray-300 mt-0.5">' + this.formatItemStats(it) + '</div>' +
-                    '</div>' +
-                    '<div class="flex flex-wrap items-center gap-2">' +
-                        '<button onclick="Game.upgradeItem(\'' + it.uid + '\', ' + cost + ')" ' + (!canUpg ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-amber-200">⚒️ Renforcer (' + cost + ' Or)</button>' +
-                        (!it.socketed && artKeys.length > 0
-                            ? '<button onclick="Game.socketArtifact(\'' + it.uid + '\', \'' + artKeys[0] + '\')" class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-cyan-300">💎 Sertir ' + ARTIFACTS[artKeys[0]].icon + '</button>'
-                            : '') +
-                    '</div>' +
-                '</div>';
-            }).join('') + '</div>';
+        const intro = '<p class="text-xs text-gray-400 mb-3">Deux crans de renfort par objet (+' + Math.round(UPGRADE_STEP * 100) + ' % dégâts / armure chacun). ' +
+            'Un artefact, gagné en récompense de quête de boss, se sertit une seule fois par objet.</p>' +
+            '<div class="flex flex-wrap gap-2 mb-3">' + (artKeys.length
+                ? artKeys.map(k => '<span class="px-2.5 py-1 rounded-lg bg-amber-950/50 border border-amber-500/40 text-xs text-amber-200">' + ARTIFACTS[k].icon + ' ' + ARTIFACTS[k].name + ' ×' + h.artifacts[k] + ' <span class="text-gray-400">(' + ARTIFACTS[k].label + ')</span></span>').join('')
+                : '<span class="text-xs text-gray-500">Aucun artefact en réserve.</span>') + '</div>';
+        if (!allItems.length) return intro + '<p class="text-xs text-gray-400 text-center py-6">Aucun équipement.</p>';
+        return intro + '<div class="space-y-2.5">' + allItems.map(({ item: it, source }) => {
+            const maxed = it.upgrade >= MAX_UPGRADE;
+            const cost = Game.upgradeCost(it);
+            return '<div class="bg-black/50 p-3 rounded-xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">' +
+                '<div class="min-w-0">' +
+                    '<div class="text-xs font-bold" style="color:' + RARITIES[it.rarity].color + '">' + it.icon + ' ' + it.name + ' <span class="text-amber-300">' + '★'.repeat(it.upgrade) + '☆'.repeat(MAX_UPGRADE - it.upgrade) + '</span> <span class="text-gray-400">[' + source + ']</span></div>' +
+                    '<div class="text-[11px] text-gray-300 mt-0.5">' + this.formatItemStats(it) + '</div>' +
+                '</div>' +
+                '<div class="flex flex-wrap items-center gap-2 shrink-0">' +
+                    (maxed ? '<span class="text-[11px] text-amber-300">Renfort maximal</span>'
+                        : '<button onclick="Game.upgradeItem(\'' + it.uid + '\')" ' + (h.gold < cost ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-amber-200">⚒️ Renforcer (' + cost + ' Or)</button>') +
+                    (it.socketed ? '' : artKeys.map(k =>
+                        '<button onclick="Game.socketArtifact(\'' + it.uid + '\', \'' + k + '\')" title="' + ARTIFACTS[k].label + '" class="rpg-btn px-2.5 py-1.5 rounded-lg text-xs text-cyan-300">💎 ' + ARTIFACTS[k].icon + '</button>').join('')) +
+                '</div>' +
+            '</div>';
+        }).join('') + '</div>';
     },
 
-    renderMerchantModal() {
+    merchantHtml() {
         const h = State.hero;
         this.hideCompare();
         const hover = (fn, idx) => ' onmouseenter="UI.' + fn + '(' + idx + ', event.clientX, event.clientY)" onmousemove="UI.moveTooltip(event.clientX, event.clientY)" onmouseleave="UI.hideCompare()"';
-        const buyHtml = State.shopStock.map((it, idx) => {
+        const buyHtml = State.shopStock.length ? State.shopStock.map((it, idx) => {
             const rar = RARITIES[it.rarity];
             const canBuy = h.gold >= it.price && h.inventory.length < 24;
             return '<div' + hover('showShopCompare', idx) + ' class="bg-black/50 p-2.5 rounded-lg border border-gray-800 hover:border-amber-400 flex justify-between items-center gap-2">' +
-                '<div>' +
-                    '<div class="text-xs font-bold" style="color:' + rar.color + '">' + it.icon + ' ' + it.name + '</div>' +
+                '<div class="min-w-0">' +
+                    '<div class="text-xs font-bold truncate" style="color:' + rar.color + '">' + it.icon + ' ' + it.name + ' <span class="text-gray-500">Niv.' + it.level + '</span></div>' +
                     '<div class="text-[10px] text-gray-400">' + this.formatItemStats(it) + '</div>' +
                 '</div>' +
                 '<button data-shop-idx="' + idx + '" onclick="Game.buyItem(' + idx + ')" ' + (!canBuy ? 'disabled' : '') + ' class="rpg-btn px-2.5 py-1 rounded text-xs text-yellow-300 shrink-0">' + it.price + ' Or</button>' +
             '</div>';
-        }).join('');
+        }).join('') : '<div class="text-xs text-gray-500 text-center py-6">Stock épuisé : revenez après votre prochaine expédition.</div>';
 
         const sellHtml = h.inventory.length === 0
             ? '<div class="text-xs text-gray-500 text-center py-6">Rien à vendre dans le sac.</div>'
-            : h.inventory.map((it, idx) => {
-                const sellVal = Math.max(3, Math.floor(it.price * 0.4));
-                return '<div data-kb-item="1" data-sell-idx="' + idx + '" onclick="Game.sellItem(' + idx + ')"' + hover('showCompare', idx) + ' class="bg-black/50 p-2.5 rounded-lg border border-gray-800 hover:border-amber-400 cursor-pointer flex justify-between items-center">' +
+            : h.inventory.map((it, idx) =>
+                '<div data-kb-item="1" data-sell-idx="' + idx + '" onclick="Game.sellItem(' + idx + ')"' + hover('showCompare', idx) + ' class="bg-black/50 p-2.5 rounded-lg border border-gray-800 hover:border-amber-400 cursor-pointer flex justify-between items-center gap-2">' +
                     '<span class="text-xs font-bold truncate" style="color:' + RARITIES[it.rarity].color + '">' + it.icon + ' ' + it.name + '</span>' +
-                    '<span class="text-xs text-emerald-300">Vendre +' + sellVal + ' Or</span>' +
-                '</div>';
-            }).join('');
+                    '<span class="text-xs text-emerald-300 shrink-0">+' + Game.sellValue(it) + ' Or</span>' +
+                '</div>').join('');
 
-        document.getElementById('merchantModalBody').innerHTML =
-            '<div class="flex flex-wrap gap-2 mb-4 bg-black/50 p-3 rounded-xl border border-gray-800 items-center justify-between">' +
-                '<span class="text-xs text-yellow-300 font-bold">Votre Bourse : 🪙 ' + h.gold + ' Or</span>' +
+        return '<div class="flex flex-wrap gap-2 mb-4 items-center justify-between">' +
+                '<span class="text-xs text-gray-400">Le stock se renouvelle à chaque retour d’expédition. [Entrée] Acheter • [X] Vendre</span>' +
                 '<div class="flex gap-2">' +
-                    '<button onclick="Game.buyPotion(\'hp\')" ' + (h.gold < 40 ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-red-300">+🧪 Potion Vie (40 Or)</button>' +
-                    '<button onclick="Game.buyPotion(\'mp\')" ' + (h.gold < 40 ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-orange-300">+🔥 Potion Fureur (40 Or)</button>' +
+                    '<button onclick="Game.buyPotion(\'hp\')" ' + (h.gold < POTION_PRICE ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-red-300">+🧪 Potion Vie (' + POTION_PRICE + ' Or)</button>' +
+                    '<button onclick="Game.buyPotion(\'mp\')" ' + (h.gold < POTION_PRICE ? 'disabled' : '') + ' class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-orange-300">+🔥 Potion Fureur (' + POTION_PRICE + ' Or)</button>' +
                 '</div>' +
             '</div>' +
             '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
-                '<div><div class="text-xs font-bold uppercase text-amber-300 mb-2">Articles à Acheter</div><div class="space-y-2">' + buyHtml + '</div></div>' +
-                '<div><div class="text-xs font-bold uppercase text-amber-300 mb-2">Votre Sac (Cliquer ou [X] pour vendre)</div><div class="space-y-2 max-h-72 overflow-y-auto">' + sellHtml + '</div></div>' +
+                '<div><div class="text-xs font-bold uppercase text-amber-300 mb-2">À vendre</div><div class="space-y-2">' + buyHtml + '</div></div>' +
+                '<div><div class="text-xs font-bold uppercase text-amber-300 mb-2">Votre sac (' + h.inventory.length + '/24)</div><div class="space-y-2 max-h-80 overflow-y-auto">' + sellHtml + '</div></div>' +
             '</div>';
     },
 
-    renderPortalModal() {
+    expeditionsHtml() {
+        const h = State.hero;
         const diffBtns = [1, 2, 3, 4, 5].map(d =>
-            '<button onclick="State.difficulty=' + d + '; UI.renderPortalModal();" class="rpg-btn px-3 py-1 rounded text-xs ' +
+            '<button onclick="State.difficulty=' + d + '; UI.renderCampModal();" class="rpg-btn px-3 py-1 rounded text-xs ' +
             (State.difficulty === d ? 'border-amber-400 text-amber-300 font-bold' : 'text-gray-400') + '">Menace ' + d + '</button>'
         ).join('');
 
+        const weights = World.expeditionWeights();
+        const total = weights.reduce((n, x) => n + x.w, 0);
         const biomesHtml = BIOMES.map(b => {
-            const art = ARTIFACTS[b.artifactId];
-            const locked = State.hero.level < b.minLvl;
-            const btn = locked
-                ? '<button disabled class="rpg-btn w-full py-1.5 rounded-lg text-xs font-bold text-gray-500 mt-1 cursor-not-allowed">🔒 Niveau ' + b.minLvl + ' requis</button>'
-                : '<button onclick="UI.closeModals(); World.enterDungeon(\'' + b.id + '\');" class="rpg-btn w-full py-1.5 rounded-lg text-xs font-bold text-amber-200 mt-1">Entrer dans le Donjon</button>';
-            return '<div class="bg-black/50 p-3.5 rounded-xl border border-gray-800 flex flex-col justify-between gap-2 ' + (locked ? 'opacity-50' : 'hover:border-amber-400') + '">' +
-                '<div>' +
-                    '<div class="flex justify-between items-center">' +
-                        '<span class="font-cinzel font-bold text-sm text-amber-200">' + b.icon + ' ' + b.name + '</span>' +
-                        '<span class="text-[10px] px-2 py-0.5 rounded ' + (locked ? 'bg-red-950 text-red-300' : 'bg-gray-900 text-gray-300') + '">Niv. ' + b.minLvl + '+</span>' +
-                    '</div>' +
-                    '<div class="text-[11px] text-gray-400 mt-1">Boss : <span class="text-orange-300">' + b.bosses.map(bo => bo.name).join(' ou ') + '</span></div>' +
-                    '<div class="text-[11px] text-cyan-300/90 mt-0.5">Artefact : ' + art.icon + ' ' + art.name + '</div>' +
-                '</div>' + btn +
+            const locked = h.level < b.minLvl;
+            const entry = weights.find(x => x.biome === b);
+            const pct = entry ? Math.round(entry.w / total * 100) : 0;
+            const quest = State.quests.find(q => q.type === 'boss' && !q.claimed && !q.completed && q.biomeId === b.id);
+            const bosses = b.bosses.map(bo => {
+                const killed = h.bossKills[bo.id];
+                const hunted = quest && quest.bossId === bo.id;
+                return '<span class="' + (hunted ? 'text-orange-300 font-bold' : killed ? 'text-emerald-300' : 'text-gray-600') + '">' +
+                    (hunted ? '🎯 ' + bo.name : killed ? '✓ ' + bo.name : '？') + '</span>';
+            }).join('<span class="text-gray-700"> • </span>');
+            return '<div class="bg-black/55 p-3 rounded-xl border ' + (quest ? 'border-orange-500/50' : 'border-gray-800') + (locked ? ' opacity-40' : '') + '">' +
+                '<div class="flex justify-between items-center gap-2">' +
+                    '<span class="font-cinzel font-bold text-sm text-amber-200">' + b.icon + ' ' + b.name + '</span>' +
+                    '<span class="text-[10px] px-2 py-0.5 rounded shrink-0 ' + (locked ? 'bg-red-950 text-red-300' : 'bg-gray-900 text-gray-300') + '">' +
+                        (locked ? '🔒 Niv. ' + b.minLvl : pct + ' % • Niv. ' + b.minLvl + '-' + b.maxLvl) + '</span>' +
+                '</div>' +
+                '<div class="text-[11px] mt-1.5 leading-relaxed">' + bosses + '</div>' +
             '</div>';
         }).join('');
 
-        document.getElementById('portalModalBody').innerHTML =
-            '<div class="flex flex-wrap items-center gap-2 mb-4 bg-black/50 p-3 rounded-xl border border-gray-800">' +
-                '<span class="text-xs font-bold text-amber-300 mr-2">Niveau de Menace :</span>' + diffBtns +
+        return '<div class="flex flex-col items-center gap-2 mb-4">' +
+                '<button onclick="World.startExpedition(); UI.closeModals();" class="px-8 py-3 rounded-xl font-cinzel font-bold text-base text-black bg-gradient-to-b from-amber-300 to-amber-600 hover:from-amber-200 hover:to-amber-500 shadow-lg shadow-amber-900/40">🌀 Partir en exploration</button>' +
+                '<p class="text-[11px] text-gray-400 text-center max-w-xl">Le portail choisit un donjon au hasard parmi ceux accessibles : ceux de vos quêtes en cours sont bien plus probables, ceux que vous avez dépassés presque jamais. Le boss est celui de votre quête (🎯), sinon l’un de ceux déjà vaincus (✓).</p>' +
+                '<div class="flex flex-wrap items-center justify-center gap-2"><span class="text-xs font-bold text-amber-300 mr-1">Menace :</span>' + diffBtns + '</div>' +
             '</div>' +
             '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">' + biomesHtml + '</div>';
     }

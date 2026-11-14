@@ -1,6 +1,8 @@
 'use strict';
 
 // ==================== 9. ACTIONS & SAUVEGARDE ====================
+const POTION_PRICE = 30;
+
 const Game = {
     startNewGame() {
         const classKey = 'warrior';
@@ -23,6 +25,9 @@ const Game = {
         h.equipment = { weapon: null, ranged: null, offhand: null, helm: null, armor: null, gloves: null, boots: null, ring: null, amulet: null };
         h.inventory = [];
         h.artifacts = {};
+        h.bossKills = {};
+        h.talentVersion = 2;
+        h.shield = 0;
         h.potionsHp = 3; // 3 potions de soin de départ
         h.potionsMp = 1;
         h.potionCd = 0;
@@ -66,8 +71,8 @@ const Game = {
     },
 
     returnToTitle() {
-        UI.closeModals();
         State.screen = 'start';
+        UI.closeModals();
         Sound.music(null);
         document.getElementById('hudLayer').classList.add('hidden');
         document.getElementById('startScreen').classList.remove('hidden');
@@ -84,18 +89,38 @@ const Game = {
         this.saveGame();
     },
 
-    learnSkill(skillId, cost) {
-        const h = State.hero;
-        const rank = h.skills[skillId] || 0;
-        if (rank >= 5 || h.skillPoints < cost) return;
-        h.skillPoints -= cost;
-        h.skills[skillId] = rank + 1;
+    // Points investis dans une branche de talents
+    branchPoints(branchId) {
+        return SKILL_TREES.warrior.filter(sk => sk.branch === branchId).reduce((n, sk) => n + (State.hero.skills[sk.id] || 0), 0);
+    },
 
+    canLearnSkill(def) {
+        const h = State.hero, req = BRANCH_REQ[def.tier];
+        return (h.skills[def.id] || 0) < SKILL_MAX_RANK && h.skillPoints > 0 && h.level >= req.lvl && this.branchPoints(def.branch) >= req.pts;
+    },
+
+    learnSkill(skillId) {
+        const h = State.hero;
         const def = findSkillDef(skillId);
-        if (def && !def.passive && !h.skillBar.includes(skillId)) {
+        if (!def || !this.canLearnSkill(def)) return;
+        h.skillPoints--;
+        h.skills[skillId] = (h.skills[skillId] || 0) + 1;
+        if (!def.passive && !h.skillBar.includes(skillId)) {
             const emptySlot = [1, 2, 3, 4, 0].find(s => !h.skillBar[s]);
             if (emptySlot !== undefined) h.skillBar[emptySlot] = skillId;
         }
+        computeHeroStats();
+        UI.renderSkillsModal();
+        UI.updateHud();
+        this.saveGame();
+    },
+
+    // Remise à zéro des talents (gratuite) : tous les points reviennent
+    resetSkills() {
+        const h = State.hero;
+        h.skillPoints += Object.values(h.skills).reduce((n, r) => n + r, 0);
+        h.skills = {};
+        h.skillBar = [null, null, null, null, null];
         computeHeroStats();
         UI.renderSkillsModal();
         UI.updateHud();
@@ -160,11 +185,17 @@ const Game = {
         if (State.activeModal === 'inventoryModal') UI.renderInventoryModal();
     },
 
-    upgradeItem(uid, cost) {
+    // Coût d'amélioration : 1,5× puis 3× la valeur de l'objet
+    upgradeCost(item) {
+        return Math.round(item.price * (item.upgrade === 0 ? 1.5 : 3));
+    },
+
+    upgradeItem(uid) {
         const h = State.hero;
-        if (h.gold < cost) return;
         const item = Object.values(h.equipment).find(x => x && x.uid === uid) || h.inventory.find(x => x.uid === uid);
-        if (!item || item.upgrade >= 10) return;
+        if (!item || item.upgrade >= MAX_UPGRADE) return;
+        const cost = this.upgradeCost(item);
+        if (h.gold < cost) return;
         h.gold -= cost;
         item.upgrade++;
         computeHeroStats();
@@ -204,7 +235,7 @@ const Game = {
         const h = State.hero;
         const it = h.inventory[bagIdx];
         if (!it) return;
-        const val = Math.max(3, Math.floor(it.price * 0.4));
+        const val = this.sellValue(it);
         h.gold += val;
         h.inventory.splice(bagIdx, 1);
         UI.toast('Vendu pour +' + val + ' Or', 'amber');
@@ -213,10 +244,14 @@ const Game = {
         this.saveGame();
     },
 
+    sellValue(it) {
+        return Math.max(2, Math.floor(it.price * 0.25));
+    },
+
     buyPotion(type) {
         const h = State.hero;
-        if (h.gold < 40) return;
-        h.gold -= 40;
+        if (h.gold < POTION_PRICE) return;
+        h.gold -= POTION_PRICE;
         if (type === 'hp') h.potionsHp++;
         else h.potionsMp++;
         UI.renderMerchantModal();
@@ -262,15 +297,34 @@ const Game = {
         }
     },
 
+    // v0.4 : nouvel arbre de talents (points remboursés), 2 crans d'amélioration max,
+    // artefacts réservés aux quêtes (anciennes quêtes de relique retirées)
+    migrateV4() {
+        const h = State.hero;
+        h.bossKills = h.bossKills || {};
+        h.shield = 0;
+        if (h.talentVersion !== 2) {
+            h.skills = {};
+            h.skillBar = [null, null, null, null, null];
+            h.skillPoints = h.level;
+            h.talentVersion = 2;
+        }
+        [...Object.values(h.equipment), ...h.inventory].forEach(it => { if (it && it.upgrade > MAX_UPGRADE) it.upgrade = MAX_UPGRADE; });
+        State.quests = State.quests.filter(q => q.type !== 'artifact');
+        Quests.ensureAvailable();
+    },
+
     loadSavedGame() {
         try {
             const raw = localStorage.getItem('chroniques_abysses_save_v3');
             if (!raw) return;
             const data = JSON.parse(raw.replaceAll('Mana Max', 'Rage Max'));
-            Object.assign(State.hero, data.hero);
+            // Champs absents des anciennes sauvegardes : valeurs neutres, pas celles de la partie en mémoire
+            Object.assign(State.hero, { talentVersion: 0, bossKills: {}, shield: 0 }, data.hero);
             this.migrateToWarrior();
             State.quests = data.quests || [];
             State.difficulty = data.difficulty || 1;
+            this.migrateV4();
             computeHeroStats();
             this.enterGameScreen();
             World.enterTown();

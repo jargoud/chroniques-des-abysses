@@ -23,26 +23,52 @@ const CLASSES = {
     }
 };
 
+// Arbre du Guerrier : 3 branches de 5 talents (rang max 3). Un talent de palier n exige le niveau BRANCH_REQ[n].lvl
+// et BRANCH_REQ[n].pts points déjà investis dans sa branche : impossible de tout apprendre, il faut choisir un style.
+const SKILL_BRANCHES = [
+    { id: 'guard', name: 'Gardien', icon: '🛡️', color: '#60a5fa', desc: 'Défense, contrôle et représailles.' },
+    { id: 'berserk', name: 'Berserker', icon: '🩸', color: '#ef4444', desc: 'Rage, vol de vie et dégâts de zone.' },
+    { id: 'master', name: 'Maître d’armes', icon: '🏹', color: '#4ade80', desc: 'Distance, mobilité et coups critiques.' }
+];
+const BRANCH_REQ = { 1: { lvl: 1, pts: 0 }, 2: { lvl: 3, pts: 1 }, 3: { lvl: 6, pts: 3 }, 4: { lvl: 10, pts: 5 }, 5: { lvl: 14, pts: 7 } };
+const SKILL_MAX_RANK = 3;
+
 const SKILL_TREES = {
     warrior: [
-        { id: 'war_cleave', tier: 1, reqLvl: 1, name: 'Fendoir Sanglant', icon: '🪓', rage: 15, cd: 1.8, desc: 'Large arc d’acier infligeant 145% (+18%/rang) dégâts physiques devant vous.' },
-        { id: 'war_ironskin', tier: 1, reqLvl: 1, name: 'Cuirasse de Fer', icon: '🛡️', rage: 0, cd: 0, passive: true, desc: 'Passif : +12% (+6%/rang) Armure totale et +15 (+10/rang) Vie Max.' },
-        { id: 'war_charge', tier: 2, reqLvl: 5, name: 'Charge Héroïque', icon: '💨', rage: 20, cd: 4.5, desc: 'Bondit vers la cible, infligeant 135% (+20%/rang) dégâts et étourdissant 1.5s.' },
-        { id: 'war_whirlwind', tier: 2, reqLvl: 5, name: 'Tourbillon d’Acier', icon: '🌪️', rage: 25, cd: 4.0, desc: 'Frappe tous les ennemis autour de vous pour 165% (+25%/rang) dégâts.' },
-        { id: 'war_berserk', tier: 3, reqLvl: 10, name: 'Fureur du Titan', icon: '🔥', rage: 0, cd: 0, passive: true, desc: 'Ultime Passif : +15% (+5%/rang) Dégâts physiques et +3% Vol de vie.' },
-        { id: 'war_earthquake', tier: 3, reqLvl: 10, name: 'Séisme Dévastateur', icon: '🌋', rage: 40, cd: 8.0, desc: 'Ultime : Brise le sol sur un large rayon (270% +45%/rang dégâts + étourdissement 2s).' }
+        { id: 'war_bash', branch: 'guard', tier: 1, name: 'Coup de Bouclier', icon: '🛡️', rage: 12, cd: 3.0, desc: 'Frappe courte devant vous : 110% (+25%/rang) dégâts et étourdit 1.2s.' },
+        { id: 'war_ironskin', branch: 'guard', tier: 2, name: 'Cuirasse de Fer', icon: '🪖', passive: true, desc: 'Passif : +12% Armure et +15 Vie Max par rang.' },
+        { id: 'war_thorns', branch: 'guard', tier: 3, name: 'Représailles', icon: '🌵', passive: true, desc: 'Passif : renvoie 25% (+25%/rang) des dégâts de mêlée subis à l’attaquant.' },
+        { id: 'war_rally', branch: 'guard', tier: 4, name: 'Cri de Ralliement', icon: '📯', rage: 30, cd: 14, desc: 'Bouclier absorbant 20% (+10%/rang) de votre Vie Max pendant 6s.' },
+        { id: 'war_bulwark', branch: 'guard', tier: 5, name: 'Rempart Inébranlable', icon: '🏰', passive: true, desc: 'Ultime passif : sous 40% de Vie, dégâts subis réduits de 12% par rang.' },
+
+        { id: 'war_cleave', branch: 'berserk', tier: 1, name: 'Fendoir Sanglant', icon: '🪓', rage: 15, cd: 1.8, desc: 'Large arc d’acier : 145% (+25%/rang) dégâts devant vous.' },
+        { id: 'war_bloodthirst', branch: 'berserk', tier: 2, name: 'Soif de Sang', icon: '🩸', passive: true, desc: 'Passif : +2% Vol de vie et +10% Rage générée par rang.' },
+        { id: 'war_whirlwind', branch: 'berserk', tier: 3, name: 'Tourbillon d’Acier', icon: '🌪️', rage: 25, cd: 4.0, desc: 'Frappe tout autour de vous : 165% (+35%/rang) dégâts.' },
+        { id: 'war_frenzy', branch: 'berserk', tier: 4, name: 'Frénésie', icon: '🔥', passive: true, desc: 'Passif : +10% dégâts par rang tant que la Rage dépasse 50.' },
+        { id: 'war_earthquake', branch: 'berserk', tier: 5, name: 'Séisme Dévastateur', icon: '🌋', rage: 40, cd: 8.0, desc: 'Ultime : brise le sol sur un large rayon, 270% (+60%/rang) dégâts et étourdit 2s.' },
+
+        { id: 'war_pierce', branch: 'master', tier: 1, name: 'Tir Perçant', icon: '🎯', rage: 10, cd: 2.0, desc: 'Projectile qui traverse les ennemis : 130% (+25%/rang) dégâts.' },
+        { id: 'war_swift', branch: 'master', tier: 2, name: 'Pas Léger', icon: '🪶', passive: true, desc: 'Passif : +6% vitesse de déplacement et +3% Esquive par rang.' },
+        { id: 'war_charge', branch: 'master', tier: 3, name: 'Charge Héroïque', icon: '💨', rage: 20, cd: 4.5, desc: 'Bondit vers la cible : 135% (+30%/rang) dégâts et étourdit 1.5s.' },
+        { id: 'war_lynx', branch: 'master', tier: 4, name: 'Œil de Lynx', icon: '👁️', passive: true, desc: 'Passif : +4% Critique et +15% dégâts critiques par rang.' },
+        { id: 'war_arrows', branch: 'master', tier: 5, name: 'Pluie de Flèches', icon: '🌧️', rage: 40, cd: 9.0, desc: 'Ultime : déluge sur la zone visée, 220% (+50%/rang) dégâts.' }
     ]
 };
 
+// Amélioration chez le forgeron : 2 crans seulement, +12 % de dégâts / armure chacun
+const MAX_UPGRADE = 2;
+const UPGRADE_STEP = 0.12;
+
+// minLvl : niveau requis • maxLvl : plafond du niveau des ennemis et du butin (refaire un vieux donjon rapporte peu)
 const BIOMES = [
-    { id: 'dungeon', name: 'Prison Souterraine', icon: '⛓️', minLvl: 1, floor: '#2a2622', wall: '#4a4440', accent: '#a8a29e', artifactId: 'art_iron' },
-    { id: 'castle', name: 'Château en Ruines', icon: '🏰', minLvl: 2, floor: '#3a3f47', wall: '#5b6470', accent: '#94a3b8', artifactId: 'art_crest' },
-    { id: 'crypt', name: 'Caveau Funéraire', icon: '⚰️', minLvl: 4, floor: '#1f1d24', wall: '#3b3842', accent: '#a78bfa', artifactId: 'art_soul' },
-    { id: 'pyramid', name: 'Pyramide Oubliée', icon: '🏜️', minLvl: 6, floor: '#5a4526', wall: '#8a6a35', accent: '#facc15', artifactId: 'art_sun' },
-    { id: 'temple', name: 'Temple Maudit', icon: '⛩️', minLvl: 8, floor: '#2e1a33', wall: '#5b2273', accent: '#e879f9', artifactId: 'art_rune' },
-    { id: 'jungle', name: 'Jungle Luxuriante', icon: '🌴', minLvl: 10, floor: '#3d6b26', wall: '#1f6b2e', accent: '#4ade80', artifactId: 'art_emerald' },
-    { id: 'forest', name: 'Forêt Sombre', icon: '🌲', minLvl: 12, floor: '#1a2a20', wall: '#2f6b45', accent: '#34d399', artifactId: 'art_amber' },
-    { id: 'catacombs', name: 'Catacombes Profondes', icon: '💀', minLvl: 15, floor: '#2b1414', wall: '#5c1a1a', accent: '#f87171', artifactId: 'art_abyss' }
+    { id: 'dungeon', name: 'Prison Souterraine', icon: '⛓️', minLvl: 1, maxLvl: 4, floor: '#2a2622', wall: '#4a4440', accent: '#a8a29e', artifactId: 'art_iron' },
+    { id: 'castle', name: 'Château en Ruines', icon: '🏰', minLvl: 3, maxLvl: 6, floor: '#3a3f47', wall: '#5b6470', accent: '#94a3b8', artifactId: 'art_crest' },
+    { id: 'crypt', name: 'Caveau Funéraire', icon: '⚰️', minLvl: 5, maxLvl: 8, floor: '#1f1d24', wall: '#3b3842', accent: '#a78bfa', artifactId: 'art_soul' },
+    { id: 'pyramid', name: 'Pyramide Oubliée', icon: '🏜️', minLvl: 7, maxLvl: 10, floor: '#5a4526', wall: '#8a6a35', accent: '#facc15', artifactId: 'art_sun' },
+    { id: 'temple', name: 'Temple Maudit', icon: '⛩️', minLvl: 9, maxLvl: 12, floor: '#2e1a33', wall: '#5b2273', accent: '#e879f9', artifactId: 'art_rune' },
+    { id: 'jungle', name: 'Jungle Luxuriante', icon: '🌴', minLvl: 11, maxLvl: 14, floor: '#3d6b26', wall: '#1f6b2e', accent: '#4ade80', artifactId: 'art_emerald' },
+    { id: 'forest', name: 'Forêt Sombre', icon: '🌲', minLvl: 13, maxLvl: 16, floor: '#1a2a20', wall: '#2f6b45', accent: '#34d399', artifactId: 'art_amber' },
+    { id: 'catacombs', name: 'Catacombes Profondes', icon: '💀', minLvl: 15, maxLvl: 20, floor: '#2b1414', wall: '#5c1a1a', accent: '#f87171', artifactId: 'art_abyss' }
 ];
 
 // Ambiance de rendu par biome : style de sol et de mur, extérieur (pas de torches, murs = végétation),
@@ -71,118 +97,6 @@ const ENEMY_KINDS = {
     tank:     { label: 'Colosse', hp: 2.2, dmg: 1.3, speed: 0.6, radius: 22 }
 };
 
-// Durée du télégraphe de chaque attaque spéciale de boss (s)
-const BOSS_WINDUP = { slam: 0.9, nova: 0.7, volley: 0.55, charge: 0.6, summon: 0.8 };
-
-// body : silhouette du sprite (hum = humanoïde, mon = créature, swarm = volant, bomb = boule)
-const BIOME_FOES = {
-    dungeon: {
-        enemies: [
-            { name: 'Geôlier Squelette', kind: 'melee', body: 'hum', color: '#d6d3d1', deco: ['skull'] },
-            { name: 'Rat Géant', kind: 'swarm', body: 'swarm', color: '#a8a29e' },
-            { name: 'Arbalétrier Déchu', kind: 'ranged', body: 'hum', color: '#78716c', deco: ['hood'] },
-            { name: 'Brute Enchaînée', kind: 'charger', body: 'mon', color: '#b45309', deco: ['chains'] },
-            { name: 'Gelée Putride', kind: 'bomber', body: 'bomb', color: '#84cc16' }
-        ],
-        bosses: [
-            { name: 'Malakor le Geôlier', body: 'hum', color: '#f97316', patterns: ['slam', 'summon'], deco: ['helm', 'chains'] },
-            { name: 'Bourreau Krog', body: 'mon', color: '#dc2626', patterns: ['charge', 'slam'], deco: ['hood', 'chains'] }
-        ]
-    },
-    castle: {
-        enemies: [
-            { name: 'Chevalier Déchu', kind: 'tank', body: 'hum', color: '#94a3b8', deco: ['helm'] },
-            { name: 'Arbalétrier Royal', kind: 'ranged', body: 'hum', color: '#60a5fa', deco: ['helm', 'plume'] },
-            { name: 'Gargouille de Pierre', kind: 'charger', body: 'mon', color: '#64748b', deco: ['stone', 'wings'] },
-            { name: 'Chauve-souris des Remparts', kind: 'swarm', body: 'swarm', color: '#7c3aed' },
-            { name: 'Mage de Cour', kind: 'caster', body: 'hum', color: '#818cf8', deco: ['wizard'] }
-        ],
-        bosses: [
-            { name: 'Seigneur Vane', body: 'hum', color: '#e11d48', patterns: ['charge', 'volley'], deco: ['helm', 'crown'] },
-            { name: 'Reine Spectrale Elyndra', body: 'hum', color: '#c4b5fd', patterns: ['nova', 'summon'], deco: ['ghost', 'crown'] }
-        ]
-    },
-    crypt: {
-        enemies: [
-            { name: 'Goule Affamée', kind: 'melee', body: 'mon', color: '#a3a3a3', deco: ['bones'] },
-            { name: 'Spectre Hurleur', kind: 'caster', body: 'mon', color: '#a78bfa', deco: ['ghost'] },
-            { name: 'Nécromancien', kind: 'summoner', body: 'hum', color: '#7c3aed', deco: ['hood', 'runes'] },
-            { name: 'Crâne Volant', kind: 'swarm', body: 'swarm', color: '#e5e7eb', deco: ['skull'] },
-            { name: 'Cadavre Gonflé', kind: 'bomber', body: 'bomb', color: '#65a30d', deco: ['stitches'] }
-        ],
-        bosses: [
-            { name: 'Liche Morvath', body: 'hum', color: '#8b5cf6', patterns: ['nova', 'summon'], deco: ['skull', 'crown', 'runes'] },
-            { name: 'Abomination Cousue', body: 'mon', color: '#be123c', patterns: ['slam', 'charge'], deco: ['stitches', 'bones'] }
-        ]
-    },
-    pyramid: {
-        enemies: [
-            { name: 'Momie Gardienne', kind: 'tank', body: 'hum', color: '#d6c7a1', deco: ['bandage'] },
-            { name: 'Scarabée Géant', kind: 'swarm', body: 'swarm', color: '#0d9488', deco: ['beetle'] },
-            { name: 'Prêtre des Sables', kind: 'caster', body: 'hum', color: '#facc15', deco: ['nemes'] },
-            { name: 'Chacal d’Anubis', kind: 'charger', body: 'mon', color: '#78716c', deco: ['ears'] },
-            { name: 'Archer du Désert', kind: 'ranged', body: 'hum', color: '#d97706', deco: ['hood'] }
-        ],
-        bosses: [
-            { name: 'Pharaon Khépri', body: 'hum', color: '#eab308', patterns: ['volley', 'summon'], deco: ['nemes', 'mask'] },
-            { name: 'Sphinx Ancestral', body: 'mon', color: '#ca8a04', patterns: ['nova', 'charge'], deco: ['nemes', 'wings'] }
-        ]
-    },
-    temple: {
-        enemies: [
-            { name: 'Cultiste Zélote', kind: 'melee', body: 'hum', color: '#c026d3', deco: ['hood'] },
-            { name: 'Idole Animée', kind: 'tank', body: 'mon', color: '#a16207', deco: ['stone', 'runes'] },
-            { name: 'Prêtre de Sang', kind: 'summoner', body: 'hum', color: '#b91c1c', deco: ['hood', 'horns'] },
-            { name: 'Orbe Instable', kind: 'bomber', body: 'bomb', color: '#e879f9', deco: ['runes'] },
-            { name: 'Lanceur de Runes', kind: 'caster', body: 'hum', color: '#22d3ee', deco: ['wizard', 'runes'] }
-        ],
-        bosses: [
-            { name: 'Archonte Xylar', body: 'hum', color: '#d946ef', patterns: ['nova', 'volley'], deco: ['horns', 'runes', 'crown'] },
-            { name: 'Idole Dévoreuse', body: 'mon', color: '#f59e0b', patterns: ['slam', 'summon'], deco: ['stone', 'runes', 'crown'] }
-        ]
-    },
-    jungle: {
-        enemies: [
-            { name: 'Homme-Lézard', kind: 'melee', body: 'mon', color: '#16a34a', deco: ['spikes'] },
-            { name: 'Araignée Venimeuse', kind: 'swarm', body: 'swarm', color: '#4d7c0f', deco: ['spider'] },
-            { name: 'Chaman Sauvage', kind: 'summoner', body: 'hum', color: '#f97316', deco: ['feathers'] },
-            { name: 'Rhino Cuirassé', kind: 'charger', body: 'mon', color: '#78716c', deco: ['tusk'] },
-            { name: 'Sarbacanier', kind: 'ranged', body: 'hum', color: '#65a30d', deco: ['feathers'] }
-        ],
-        bosses: [
-            { name: 'Zul’Gath le Colosse', body: 'mon', color: '#15803d', patterns: ['slam', 'charge'], deco: ['spikes', 'tusk', 'feathers'] },
-            { name: 'Reine Arachnide Nyx', body: 'mon', color: '#7e22ce', patterns: ['summon', 'volley'], deco: ['eyes', 'crown'] }
-        ]
-    },
-    forest: {
-        enemies: [
-            { name: 'Loup-Garou', kind: 'charger', body: 'mon', color: '#57534e', deco: ['ears'] },
-            { name: 'Tréant Corrompu', kind: 'tank', body: 'mon', color: '#3f6212', deco: ['antlers', 'leaves'] },
-            { name: 'Chasseur Maudit', kind: 'ranged', body: 'hum', color: '#047857', deco: ['hood'] },
-            { name: 'Feu Follet', kind: 'bomber', body: 'bomb', color: '#5eead4', deco: ['wisp'] },
-            { name: 'Druide Noir', kind: 'caster', body: 'hum', color: '#166534', deco: ['antlers'] }
-        ],
-        bosses: [
-            { name: 'Sylvanus le Déchu', body: 'mon', color: '#10b981', patterns: ['summon', 'nova'], deco: ['antlers', 'leaves', 'runes'] },
-            { name: 'Grand Loup Fenris', body: 'mon', color: '#9ca3af', patterns: ['charge', 'slam'], deco: ['ears', 'spikes'] }
-        ]
-    },
-    catacombs: {
-        enemies: [
-            { name: 'Démon Mineur', kind: 'swarm', body: 'swarm', color: '#ef4444', deco: ['fire'] },
-            { name: 'Seigneur Squelette', kind: 'tank', body: 'hum', color: '#e7e5e4', deco: ['skull', 'horns'] },
-            { name: 'Cultiste Abyssal', kind: 'summoner', body: 'hum', color: '#7f1d1d', deco: ['hood', 'runes'] },
-            { name: 'Diablotin Explosif', kind: 'bomber', body: 'bomb', color: '#f97316', deco: ['horns'] },
-            { name: 'Sorcier du Néant', kind: 'caster', body: 'hum', color: '#6d28d9', deco: ['wizard', 'runes'] },
-            { name: 'Molosse Infernal', kind: 'charger', body: 'mon', color: '#b91c1c', deco: ['horns', 'fire'] }
-        ],
-        bosses: [
-            { name: 'Azazel, Fléau des Abysses', body: 'mon', color: '#dc2626', patterns: ['nova', 'slam', 'summon'], deco: ['horns', 'wings', 'fire'] },
-            { name: 'Belzéroth le Dévoreur', body: 'mon', color: '#9f1239', patterns: ['charge', 'volley', 'slam'], deco: ['horns', 'spikes', 'fire'] }
-        ]
-    }
-};
-BIOMES.forEach(b => Object.assign(b, BIOME_FOES[b.id]));
 
 const ARTIFACTS = {
     art_iron:    { id: 'art_iron',    name: 'Rune d’Acier Trempé', icon: '🪨', bonusStat: 'dmg', val: 4, label: '+4 Dégâts Physiques' },
@@ -214,6 +128,16 @@ const SLOT_LABELS = {
     gloves: 'Gants', boots: 'Bottes', ring: 'Anneau', amulet: 'Amulette'
 };
 
+// Mode graphique (réglage du navigateur, hors sauvegarde) : 'hd' = rendu moderne lissé, 'pixel' = pixel art 16-bit
+const Gfx = {
+    mode: (() => { try { return localStorage.getItem('chroniques_gfx') || 'hd'; } catch (e) { return 'hd'; } })(),
+    get hd() { return this.mode === 'hd'; },
+    toggle() {
+        this.mode = this.hd ? 'pixel' : 'hd';
+        try { localStorage.setItem('chroniques_gfx', this.mode); } catch (e) { /* stockage indisponible */ }
+    }
+};
+
 // ==================== 2. ÉTAT GLOBAL DU JEU ====================
 const State = {
     screen: 'start',
@@ -242,6 +166,8 @@ const State = {
         },
         inventory: [],
         artifacts: {},
+        bossKills: {}, // id de boss → nombre de victoires
+        talentVersion: 2,
         hp: 115, maxHp: 115,
         // ponytail: champs mp / maxMp conservés pour la compatibilité des sauvegardes, ils portent la Rage
         mp: 0, maxMp: 100,

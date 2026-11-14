@@ -25,8 +25,15 @@ window.addEventListener('keydown', e => {
     if (State.activeModal) {
         if (e.code === 'Escape') {
             e.preventDefault();
-            UI.closeModals();
+            if (State.activeModal === 'campModal') UI.toggleModal('pauseModal');
+            else UI.closeModals();
             return;
+        }
+        // Depuis le menu du camp : fiche, talents et sac restent accessibles au clavier
+        if (State.activeModal === 'campModal') {
+            const shortcut = { KeyC: 'characterModal', KeyK: 'skillsModal', KeyI: 'inventoryModal' }[e.code];
+            if (shortcut) { UI.toggleModal(shortcut); return; }
+            if (e.code === 'KeyM') { Sound.toggleMute(); return; }
         }
         if (e.code === 'ArrowDown' || e.code === 'ArrowRight' || e.code === 'KeyS' || e.code === 'KeyD') {
             e.preventDefault();

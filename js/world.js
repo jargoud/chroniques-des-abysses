@@ -2,78 +2,103 @@
 
 // ==================== 5. SYSTÈMES DE QUÊTES & MONDES ====================
 const Quests = {
+    // Deux sortes de quêtes : chasse (tuer N créatures d'un biome) et boss (abattre un boss précis).
+    // Les boss d'un biome se débloquent dans l'ordre (rang 0 → 3) ; une quête de boss rapporte l'artefact du biome
+    // la première fois : les artefacts ne s'obtiennent plus qu'ainsi.
     generateInitial() {
-        State.quests = [
-            {
-                id: 'q_prison',
-                title: 'Purger la Prison Souterraine',
-                giver: 'Chef Aldebaran',
-                type: 'kill',
-                biomeId: 'dungeon',
-                target: 5,
-                progress: 0,
-                rewardGold: 85,
-                rewardXp: 150,
-                completed: false,
-                claimed: false,
-                desc: 'Éliminez 5 monstres dans la Prison Souterraine pour sécuriser les abords du camp.'
-            },
-            {
-                id: 'q_art_iron',
-                title: 'La Rune du Geôlier',
-                giver: 'Forgeron Thrain',
-                type: 'artifact',
-                artifactId: 'art_iron',
-                target: 1,
-                progress: 0,
-                rewardGold: 120,
-                rewardXp: 220,
-                completed: false,
-                claimed: false,
-                desc: 'Rapportez une Rune d’Acier Trempé obtenue sur le gardien de la Prison Souterraine.'
-            }
-        ];
+        State.quests = [];
+        this.ensureAvailable();
+    },
+
+    bossOf(id) {
+        for (const b of BIOMES) {
+            const tier = b.bosses.findIndex(x => x.id === id);
+            if (tier !== -1) return { biome: b, boss: b.bosses[tier], tier };
+        }
+        return null;
+    },
+
+    unlocked() {
+        return BIOMES.filter(b => b.minLvl <= State.hero.level);
+    },
+
+    // Prochain boss jamais vaincu d'un biome, s'il est déjà à la portée du héros (rang t : niveau minLvl + t)
+    nextBoss(biome) {
+        const kills = State.hero.bossKills;
+        const tier = biome.bosses.findIndex(x => !kills[x.id]);
+        if (tier === -1 || State.hero.level < biome.minLvl + tier) return null;
+        return { boss: biome.bosses[tier], tier };
     },
 
     ensureAvailable() {
-        const active = State.quests.filter(q => !q.claimed);
-        if (active.length >= 3) return;
-        const unlockedBiomes = BIOMES.filter(b => b.minLvl <= State.hero.level);
-        const biome = unlockedBiomes[Math.floor(Math.random() * unlockedBiomes.length)] || BIOMES[0];
-        const isArt = Math.random() < 0.45;
-        if (isArt) {
-            const art = ARTIFACTS[biome.artifactId];
-            State.quests.push({
-                id: 'q_' + Date.now() + Math.random(),
-                title: 'Relique : ' + art.name,
-                giver: 'Chef Aldebaran',
-                type: 'artifact',
-                artifactId: art.id,
-                target: 1,
-                progress: Math.min(1, State.hero.artifacts[art.id] || 0),
-                rewardGold: 110 + biome.minLvl * 25,
-                rewardXp: 210 + biome.minLvl * 45,
-                completed: (State.hero.artifacts[art.id] || 0) >= 1,
-                claimed: false,
-                desc: 'Trouvez ' + art.name + ' dans ' + biome.name + '.'
-            });
-        } else {
-            const count = 5 + Math.floor(Math.random() * 4);
+        const open = () => State.quests.filter(q => !q.claimed);
+        const has = fn => open().some(fn);
+        // Quêtes de boss : jusqu'à 2, en commençant par les biomes les moins avancés
+        for (const biome of this.unlocked()) {
+            if (open().filter(q => q.type === 'boss').length >= 2) break;
+            if (has(q => q.type === 'boss' && q.biomeId === biome.id)) continue;
+            const next = this.nextBoss(biome);
+            if (next) this.addBossQuest(biome, next.boss, next.tier, true);
+        }
+        // Tous les boss accessibles vaincus : contrat de traque sur un boss déjà tombé (sans artefact)
+        if (!has(q => q.type === 'boss')) {
+            const pool = [];
+            this.unlocked().forEach(b => b.bosses.forEach((bo, t) => { if (State.hero.bossKills[bo.id]) pool.push([b, bo, t]); }));
+            if (pool.length) {
+                const [b, bo, t] = pool[Math.floor(Math.random() * pool.length)];
+                this.addBossQuest(b, bo, t, false);
+            }
+        }
+        // Quêtes de chasse : jusqu'à 2, dans les 3 biomes accessibles les plus avancés
+        const top = this.unlocked().slice(-3);
+        for (let guard = 0; open().filter(q => q.type === 'kill').length < 2 && guard < 6; guard++) {
+            const biome = top[Math.floor(Math.random() * top.length)] || BIOMES[0];
+            if (has(q => q.type === 'kill' && q.biomeId === biome.id)) continue;
+            const count = 8 + Math.floor(Math.random() * 5);
             State.quests.push({
                 id: 'q_' + Date.now() + Math.random(),
                 title: 'Chasse : ' + biome.name,
-                giver: 'Chef Aldebaran',
                 type: 'kill',
                 biomeId: biome.id,
                 target: count,
                 progress: 0,
-                rewardGold: 90 + biome.minLvl * 20,
-                rewardXp: 180 + biome.minLvl * 35,
+                rewardGold: 40 + biome.minLvl * 18,
+                rewardXp: 120 + biome.minLvl * 40,
                 completed: false,
                 claimed: false,
                 desc: 'Éliminez ' + count + ' créatures dans ' + biome.name + '.'
             });
         }
+    },
+
+    addBossQuest(biome, boss, tier, first) {
+        State.quests.push({
+            id: 'q_' + Date.now() + Math.random(),
+            title: (first ? 'Tête mise à prix : ' : 'Contrat : ') + boss.name,
+            type: 'boss',
+            biomeId: biome.id,
+            bossId: boss.id,
+            target: 1,
+            progress: 0,
+            rewardGold: Math.round((80 + biome.minLvl * 30 + tier * 25) * (first ? 1 : 0.6)),
+            rewardXp: Math.round((200 + biome.minLvl * 60 + tier * 40) * (first ? 1 : 0.6)),
+            rewardArtifact: first ? biome.artifactId : null,
+            completed: false,
+            claimed: false,
+            desc: (first ? 'Traquez ' : 'Abattez de nouveau ') + boss.name + (boss.title ? ', ' + boss.title + ',' : '') + ' dans ' + biome.name + '.'
+        });
+    },
+
+    // Boss qui gardera ce donjon : celui d'une quête en cours, sinon un boss déjà vaincu, sinon le gardien (rang 0)
+    pickBoss(biome) {
+        const q = State.quests.find(x => x.type === 'boss' && !x.completed && !x.claimed && x.biomeId === biome.id);
+        if (q) {
+            const found = this.bossOf(q.bossId);
+            if (found) return found;
+        }
+        const killed = biome.bosses.map((bo, tier) => ({ biome, boss: bo, tier })).filter(x => State.hero.bossKills[x.boss.id]);
+        if (killed.length) return killed[Math.floor(Math.random() * killed.length)];
+        return { biome, boss: biome.bosses[0], tier: 0 };
     },
 
     onEnemyKilled(biomeId) {
@@ -90,14 +115,15 @@ const Quests = {
         UI.updateHudQuest();
     },
 
-    onArtifactGained(artifactId) {
+    onBossKilled(bossId) {
+        if (!bossId) return;
+        const kills = State.hero.bossKills;
+        kills[bossId] = (kills[bossId] || 0) + 1;
         State.quests.forEach(q => {
-            if (q.claimed || q.completed) return;
-            if (q.type === 'artifact' && q.artifactId === artifactId) {
-                q.progress = 1;
-                q.completed = true;
-                UI.toast('📜 Relique trouvée : ' + q.title + ' !', 'amber');
-            }
+            if (q.claimed || q.completed || q.type !== 'boss' || q.bossId !== bossId) return;
+            q.progress = 1;
+            q.completed = true;
+            UI.toast('📜 Quête accomplie : ' + q.title + ' !', 'amber');
         });
         UI.updateHudQuest();
     },
@@ -112,64 +138,77 @@ const Quests = {
         q.claimed = true;
         State.hero.gold += q.rewardGold;
         Combat.gainXp(q.rewardXp);
+        let msg = 'Récompense reçue : +' + q.rewardGold + ' Or, +' + q.rewardXp + ' XP';
+        if (q.rewardArtifact) {
+            const art = ARTIFACTS[q.rewardArtifact];
+            State.hero.artifacts[art.id] = (State.hero.artifacts[art.id] || 0) + 1;
+            msg += ', ' + art.icon + ' ' + art.name;
+        }
         this.ensureAvailable();
-        UI.toast('Récompense reçue : +' + q.rewardGold + ' Or, +' + q.rewardXp + ' XP', 'amber');
+        UI.toast(msg, 'amber');
         UI.renderQuestsModal();
         UI.updateHud();
         Game.saveGame();
     }
 };
 
+// Plan des donjons par biome (défaut : rooms)
+const BIOME_LAYOUT = { pyramid: 'halls', temple: 'halls', jungle: 'caves', forest: 'caves', catacombs: 'caves' };
+
 const World = {
+    // Le camp est un menu (UI.openCamp) ; la carte se réduit à une petite clairière derrière le décor peint par le rendu
     enterTown() {
         State.location = 'town';
         Sound.music('town');
         State.currentBiome = null;
         const w = State.world;
-        // Camp compact : 15 × 10 tuiles praticables ; 2 = bâtiment (bloque le passage, dessiné à part)
         w.cols = 17;
         w.rows = 12;
-        w.buildings = [
-            { kind: 'hut', c: 2 },    // Chef Aldebaran : hutte au toit de chaume
-            { kind: 'forge', c: 7 },  // Forgeron Thrain : forge en pierre
-            { kind: 'stall', c: 12 }  // Marchand Barnabé : étal sous auvent
-        ];
+        w.buildings = [];
         w.grid = Array.from({ length: w.rows }, (_, r) =>
-            Array.from({ length: w.cols }, (_, c) => (r === 0 || r === w.rows - 1 || c === 0 || c === w.cols - 1) ? 1
-                : (r <= 2 && w.buildings.some(b => c >= b.c && c < b.c + 3)) ? 2 : 0)
-        );
+            Array.from({ length: w.cols }, (_, c) => (r === 0 || r === w.rows - 1 || c === 0 || c === w.cols - 1) ? 1 : 0));
         w.explored = Array.from({ length: w.rows }, () => Array(w.cols).fill(true));
+        w.npcs = [];
         w.enemies = [];
         w.chests = [];
         w.projectiles = [];
         w.lootDrops = [];
         w.particles = [];
         w.portal = null;
-
         w.player.x = 8.5 * w.tileSize;
         w.player.y = 6.5 * w.tileSize;
 
-        // Chaque PNJ se tient devant son bâtiment
-        w.npcs = [
-            { id: 'npc_chief', role: 'quests', name: 'Chef Aldebaran', icon: '📜', x: 3.5 * w.tileSize, y: 3.6 * w.tileSize, color: '#facc15' },
-            { id: 'npc_smith', role: 'blacksmith', name: 'Forgeron Thrain', icon: '⚒️', x: 8.5 * w.tileSize, y: 3.6 * w.tileSize, color: '#fb923c' },
-            { id: 'npc_merch', role: 'merchant', name: 'Marchand Barnabé', icon: '⚖️', x: 13.5 * w.tileSize, y: 3.6 * w.tileSize, color: '#4ade80' },
-            { id: 'npc_portal', role: 'portal', name: 'Portail des Donjons', icon: '🌀', x: 13.5 * w.tileSize, y: 8.5 * w.tileSize, color: '#38bdf8' }
-        ];
-
-        // Camp d'entraînement : mannequins qui encaissent sans riposter
-        [[2.5, 8], [4.5, 8], [3.5, 9.8]].forEach(([c, r]) => {
-            const d = this.spawnEnemy(BIOMES[0], 1, c * w.tileSize, r * w.tileSize, false, false,
-                { name: 'Mannequin d’entraînement', kind: 'melee', body: 'dummy', color: '#d4a64a' });
-            d.dummy = true;
-            d.hp = d.maxHp = computeHeroStats().physDmg * 10; // ~10 coups pour le briser
-        });
-
         State.hero.hp = State.hero.maxHp;
         State.hero.mp = 0;
+        State.hero.shield = 0;
         this.refreshMerchantStock();
         UI.updateHud();
+        UI.openCamp();
         Game.saveGame();
+    },
+
+    // Niveau des ennemis et du butin : niveau du héros borné à la plage du biome (+2 par cran de Menace)
+    biomeLevel(biome) {
+        return Math.min(biome.maxLvl, Math.max(biome.minLvl, State.hero.level)) + (State.difficulty - 1) * 2;
+    },
+
+    // Poids de tirage d'un biome pour « Partir en exploration » : les quêtes ouvertes attirent le tirage,
+    // un biome déjà dépassé par le héros (au-delà de son niveau max) n'est presque plus tiré
+    expeditionWeights() {
+        const h = State.hero;
+        return Quests.unlocked().map(b => {
+            const open = State.quests.filter(q => !q.claimed && !q.completed && q.biomeId === b.id);
+            let w = h.level > b.maxLvl ? 0.15 : 1;
+            w += open.filter(q => q.type === 'boss').length * 3 + open.filter(q => q.type === 'kill').length * 2;
+            return { biome: b, w };
+        });
+    },
+
+    startExpedition() {
+        const list = this.expeditionWeights();
+        let r = Math.random() * list.reduce((n, x) => n + x.w, 0);
+        const pick = list.find(x => (r -= x.w) <= 0) || list[list.length - 1];
+        this.enterDungeon(pick.biome.id);
     },
 
     enterDungeon(biomeId) {
@@ -181,9 +220,10 @@ const World = {
         State.location = 'dungeon';
         Sound.music(biome.id);
         State.currentBiome = biome;
+        State.hero.shield = 0;
 
         const w = State.world;
-        w.cols = 54; // surface ×2 par rapport à la v0.1 (38 × 30)
+        w.cols = 54;
         w.rows = 42;
         w.grid = Array.from({ length: w.rows }, () => Array(w.cols).fill(1));
         w.explored = Array.from({ length: w.rows }, () => Array(w.cols).fill(false));
@@ -197,31 +237,10 @@ const World = {
         w.portal = null;
         w.buildings = [];
 
-        for (let attempt = 0; attempt < 150 && w.rooms.length < 14; attempt++) {
-            const rw = 5 + Math.floor(Math.random() * 4);
-            const rh = 5 + Math.floor(Math.random() * 4);
-            const rx = 2 + Math.floor(Math.random() * (w.cols - rw - 4));
-            const ry = 2 + Math.floor(Math.random() * (w.rows - rh - 4));
-
-            const overlaps = w.rooms.some(r =>
-                rx < r.x + r.w + 1 && rx + rw + 1 > r.x &&
-                ry < r.y + r.h + 1 && ry + rh + 1 > r.y
-            );
-            if (overlaps) continue;
-
-            const room = { x: rx, y: ry, w: rw, h: rh, cx: Math.floor(rx + rw / 2), cy: Math.floor(ry + rh / 2) };
-            for (let y = ry; y < ry + rh; y++) {
-                for (let x = rx; x < rx + rw; x++) {
-                    w.grid[y][x] = 0;
-                }
-            }
-
-            if (w.rooms.length > 0) {
-                const prev = w.rooms[w.rooms.length - 1];
-                this.carveCorridor(prev.cx, prev.cy, room.cx, room.cy);
-            }
-            w.rooms.push(room);
-        }
+        // Plan propre au biome : salles et couloirs, grandes salles hypostyles, ou cavernes organiques
+        const layout = BIOME_LAYOUT[biome.id] || 'rooms';
+        if (layout === 'caves') this.carveCaves();
+        else this.carveRooms(layout === 'halls');
 
         if (w.rooms.length < 2) {
             for (let y = 4; y < 12; y++) for (let x = 4; x < 24; x++) w.grid[y][x] = 0;
@@ -232,35 +251,113 @@ const World = {
         w.player.x = (startRoom.cx + 0.5) * w.tileSize;
         w.player.y = (startRoom.cy + 0.5) * w.tileSize;
 
-        const scaledLvl = Math.max(biome.minLvl, State.hero.level) + (State.difficulty - 1) * 3;
+        const lvl = this.biomeLevel(biome);
 
         for (let i = 1; i < w.rooms.length - 1; i++) {
             const room = w.rooms[i];
             const pack = 2 + Math.floor(Math.random() * 3);
             for (let m = 0; m < pack; m++) {
-                const ex = (room.x + 1 + Math.random() * (room.w - 2)) * w.tileSize;
-                const ey = (room.y + 1 + Math.random() * (room.h - 2)) * w.tileSize;
-                const isElite = m === 0 && Math.random() < 0.4;
-                this.spawnEnemy(biome, scaledLvl, ex, ey, false, isElite);
+                const pt = this.roomPoint(room);
+                this.spawnEnemy(biome, lvl, pt.x, pt.y, false, m === 0 && Math.random() < 0.3);
             }
-            if (Math.random() < 0.45) {
+            if (Math.random() < 0.35) {
                 w.chests.push({
                     uid: 'chest_' + i,
                     x: (room.cx + 0.5) * w.tileSize,
                     y: (room.cy + 0.5) * w.tileSize,
                     opened: false,
                     trapped: Math.random() < 0.3,
-                    level: scaledLvl
+                    level: lvl
                 });
             }
         }
 
         const bossRoom = w.rooms[w.rooms.length - 1];
-        this.spawnEnemy(biome, scaledLvl + 1, (bossRoom.cx + 0.5) * w.tileSize, (bossRoom.cy + 0.5) * w.tileSize, true, true);
-        this.spawnEnemy(biome, scaledLvl, (bossRoom.x + 1.5) * w.tileSize, (bossRoom.y + 1.5) * w.tileSize, false, false);
+        const pick = Quests.pickBoss(biome);
+        const boss = this.spawnEnemy(biome, lvl + 1 + pick.tier, (bossRoom.cx + 0.5) * w.tileSize, (bossRoom.cy + 0.5) * w.tileSize, true, true, pick.boss);
+        boss.tier = pick.tier;
+        const guard = this.roomPoint(bossRoom);
+        this.spawnEnemy(biome, lvl, guard.x, guard.y, false, false);
 
-        UI.toast('Exploration : ' + biome.name + ' (Menace ' + State.difficulty + ')', 'amber');
+        UI.toast('Exploration : ' + biome.name + ' (Niv. ' + lvl + ') • Boss : ' + pick.boss.name, 'amber');
         UI.updateHud();
+    },
+
+    // Point praticable au hasard dans une salle (centre en dernier recours)
+    roomPoint(room) {
+        const T = State.world.tileSize;
+        for (let i = 0; i < 12; i++) {
+            const x = (room.x + 1 + Math.random() * Math.max(1, room.w - 2)) * T;
+            const y = (room.y + 1 + Math.random() * Math.max(1, room.h - 2)) * T;
+            if (this.isWalkable(x, y)) return { x, y };
+        }
+        return { x: (room.cx + 0.5) * T, y: (room.cy + 0.5) * T };
+    },
+
+    // Salles rectangulaires reliées en chaîne ; halls = salles plus vastes et moins nombreuses, couloirs larges
+    carveRooms(halls) {
+        const w = State.world;
+        const max = halls ? 9 : 14;
+        for (let attempt = 0; attempt < 200 && w.rooms.length < max; attempt++) {
+            const rw = halls ? 7 + Math.floor(Math.random() * 5) : 5 + Math.floor(Math.random() * 4);
+            const rh = halls ? 6 + Math.floor(Math.random() * 4) : 5 + Math.floor(Math.random() * 4);
+            const rx = 2 + Math.floor(Math.random() * (w.cols - rw - 4));
+            const ry = 2 + Math.floor(Math.random() * (w.rows - rh - 4));
+            if (w.rooms.some(r => rx < r.x + r.w + 1 && rx + rw + 1 > r.x && ry < r.y + r.h + 1 && ry + rh + 1 > r.y)) continue;
+            const room = { x: rx, y: ry, w: rw, h: rh, cx: Math.floor(rx + rw / 2), cy: Math.floor(ry + rh / 2) };
+            for (let y = ry; y < ry + rh; y++) for (let x = rx; x < rx + rw; x++) w.grid[y][x] = 0;
+            // Halls : rangées de piliers
+            if (halls && rw >= 8 && rh >= 7) {
+                for (let y = ry + 2; y < ry + rh - 2; y += 3) for (let x = rx + 2; x < rx + rw - 2; x += 4) {
+                    if (Math.abs(x - room.cx) > 1 || Math.abs(y - room.cy) > 1) w.grid[y][x] = 1;
+                }
+            }
+            if (w.rooms.length > 0) {
+                const prev = w.rooms[w.rooms.length - 1];
+                this.carveCorridor(prev.cx, prev.cy, room.cx, room.cy);
+                if (halls) this.carveCorridor(prev.cx + 1, prev.cy + 1, room.cx + 1, room.cy + 1);
+            }
+            w.rooms.push(room);
+        }
+    },
+
+    // Cavernes : clairières aux bords irréguliers reliées par des tunnels sinueux, puis lissage
+    carveCaves() {
+        const w = State.world, g = w.grid;
+        const dig = (cx, cy, r) => {
+            for (let y = Math.floor(cy - r); y <= cy + r; y++) for (let x = Math.floor(cx - r); x <= cx + r; x++) {
+                if (y < 1 || x < 1 || y >= w.rows - 1 || x >= w.cols - 1) continue;
+                if (Math.hypot(x - cx, (y - cy) * 1.15) <= r + (Math.random() - 0.5) * 1.4) g[y][x] = 0;
+            }
+        };
+        for (let attempt = 0; attempt < 200 && w.rooms.length < 13; attempt++) {
+            const r = 3 + Math.random() * 2;
+            const cx = Math.round(5 + Math.random() * (w.cols - 10));
+            const cy = Math.round(5 + Math.random() * (w.rows - 10));
+            if (w.rooms.some(o => Math.hypot(o.cx - cx, o.cy - cy) < r + 6)) continue;
+            dig(cx, cy, r);
+            if (w.rooms.length) {
+                const prev = w.rooms[w.rooms.length - 1];
+                let x = prev.cx, y = prev.cy;
+                for (let i = 0; i < 400 && (Math.abs(x - cx) > 1 || Math.abs(y - cy) > 1); i++) {
+                    if (Math.random() < 0.7) { x += Math.sign(cx - x); y += Math.sign(cy - y) * (Math.random() < 0.5 ? 1 : 0); }
+                    else { x += Math.random() < 0.5 ? 1 : -1; y += Math.random() < 0.5 ? 1 : -1; }
+                    x = Math.max(2, Math.min(w.cols - 3, x));
+                    y = Math.max(2, Math.min(w.rows - 3, y));
+                    dig(x, y, 1.3);
+                }
+            }
+            const rr = Math.ceil(r);
+            w.rooms.push({ x: cx - rr, y: cy - rr, w: rr * 2 + 1, h: rr * 2 + 1, cx, cy });
+        }
+        // Lissage : bouche les murs isolés et ouvre les recoins d'une tuile
+        for (let y = 1; y < w.rows - 1; y++) for (let x = 1; x < w.cols - 1; x++) {
+            let walls = 0;
+            for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && g[y + dy][x + dx]) walls++;
+            if (g[y][x] && walls <= 2) g[y][x] = 0;
+            else if (!g[y][x] && walls >= 7) g[y][x] = 1;
+        }
+        w.rooms.forEach(r => { g[r.cy][r.cx] = 0; });
     },
 
     carveCorridor(x1, y1, x2, y2) {
@@ -287,7 +384,8 @@ const World = {
 
         // Ajustement de la difficulté du premier combat (Niveau 1-2 plus clément)
         const isEarlyGame = level <= 2;
-        const hpMult = (isBoss ? 7.0 : (isElite ? 2.3 : (isEarlyGame ? 0.75 : 1.1)) * k.hp) * diffScale;
+        const tier = isBoss ? Math.max(0, biome.bosses.indexOf(def)) : 0;
+        const hpMult = (isBoss ? 7.0 + tier * 1.5 : (isElite ? 2.3 : (isEarlyGame ? 0.75 : 1.1)) * k.hp) * diffScale;
         const dmgMult = (isBoss ? 2.0 : (isElite ? 1.35 : (isEarlyGame ? 0.7 : 1.05)) * k.dmg) * (1 + (State.difficulty - 1) * 0.25);
 
         // Croissance avec le niveau calquée sur celle du héros (équipement ×(1+0,14/niv), attributs ≈ +5 %/niv) :
@@ -314,6 +412,8 @@ const World = {
             speed,
             kind,
             body: def.body,
+            look: def.look,
+            bossId: def.id,
             patterns: def.patterns || [],
             patternIdx: 0,
             specialCd: kind === 'charger' ? 0.3 : 1.5 + Math.random() * 1.5,
@@ -353,13 +453,13 @@ const World = {
         en.aggro = true;
     },
 
+    // Stock du marchand : objets un niveau sous le héros, rarement rares, vendus 1,5× leur valeur
     refreshMerchantStock() {
-        const lvl = State.hero.level;
-        State.shopStock = [];
-        const slots = ['weapon', 'ranged', 'armor', 'helm', 'boots', 'ring', 'offhand'];
-        slots.forEach(sl => {
-            const rar = Math.random() < 0.22 ? 'rare' : (Math.random() < 0.58 ? 'magic' : 'common');
-            State.shopStock.push(ItemGen.create(lvl, rar, sl));
+        const lvl = Math.max(1, State.hero.level - 1);
+        State.shopStock = ['weapon', 'ranged', 'armor', 'helm', 'gloves', 'boots', 'ring', 'offhand'].map(sl => {
+            const it = ItemGen.create(lvl, Math.random() < 0.12 ? 'rare' : (Math.random() < 0.5 ? 'magic' : 'common'), sl);
+            it.price = Math.round(it.price * 1.5);
+            return it;
         });
     },
 

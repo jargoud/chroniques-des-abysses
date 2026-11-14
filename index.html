@@ -49,6 +49,9 @@
                     </button>
                 </div>
             </div>
+            <div class="text-center mt-4">
+                <button id="startGfxBtn" onclick="UI.toggleGfx()" class="rpg-btn px-3 py-1.5 rounded-lg text-xs text-violet-300"></button>
+            </div>
         </div>
     </div>
 
@@ -176,7 +179,7 @@
             <div class="flex justify-between items-center border-b border-amber-500/30 pb-3 mb-4">
                 <div>
                     <h2 class="font-cinzel text-xl font-bold text-amber-300">🌳 Arbre de Compétences</h2>
-                    <p class="text-xs text-gray-400">Paliers débloqués aux niveaux 1, 5 et 10 • 1 pt par rang.</p>
+                    <p class="text-xs text-gray-400">3 branches, 5 paliers : chaque palier exige un niveau et des points investis dans sa branche.</p>
                 </div>
                 <button onclick="UI.closeModals()" class="rpg-btn px-3 py-1 rounded-lg text-xs">Fermer [Échap]</button>
             </div>
@@ -195,49 +198,31 @@
             <div id="inventoryModalBody"></div>
         </div>
 
-        <!-- 4. Journal de Quêtes / Chef Aldebaran [J] -->
+        <!-- 4. Journal de Quêtes [J] (hors du camp) -->
         <div id="questsModal" class="hidden rpg-panel w-full max-w-2xl rounded-2xl p-5 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-amber-500/30 pb-3 mb-4">
-                <h2 class="font-cinzel text-xl font-bold text-amber-300">📜 Chef Aldebaran — Quêtes du Camp</h2>
+                <h2 class="font-cinzel text-xl font-bold text-amber-300">📜 Journal de Quêtes</h2>
                 <button onclick="UI.closeModals()" class="rpg-btn px-3 py-1 rounded-lg text-xs">Fermer [Échap]</button>
             </div>
             <div id="questsModalBody"></div>
         </div>
 
-        <!-- 5. Forgeron Thrain (Amélioration & Sertissage d'Artefacts) -->
-        <div id="blacksmithModal" class="hidden rpg-panel w-full max-w-3xl rounded-2xl p-5 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b border-amber-500/30 pb-3 mb-4">
+        <!-- 5. Camp d'Oakhaven : menu à onglets (expéditions, quêtes, marchand, forge) -->
+        <div id="campModal" class="hidden rpg-panel w-full max-w-5xl rounded-2xl p-5 max-h-[92vh] overflow-y-auto">
+            <div class="flex flex-wrap justify-between items-center gap-3 border-b border-amber-500/30 pb-3 mb-3">
                 <div>
-                    <h2 class="font-cinzel text-xl font-bold text-amber-300">⚒️ Forgeron Thrain — Forge Runique</h2>
-                    <p class="text-xs text-gray-400">Renforcez vos objets (+1 à +10) et fusionnez des artefacts élémentaires.</p>
+                    <h2 class="font-cinzel text-xl font-bold text-amber-300">🏕️ Camp d’Oakhaven</h2>
+                    <p class="text-xs text-gray-400">Vie restaurée • 🪙 <span id="campGold" class="text-yellow-300 font-bold">0</span> Or <span id="campQuestBadge" class="ml-2 text-emerald-300 font-semibold"></span></p>
                 </div>
-                <button onclick="UI.closeModals()" class="rpg-btn px-3 py-1 rounded-lg text-xs">Fermer [Échap]</button>
-            </div>
-            <div id="blacksmithModalBody"></div>
-        </div>
-
-        <!-- 6. Marchand Barnabé -->
-        <div id="merchantModal" class="hidden rpg-panel w-full max-w-4xl rounded-2xl p-5 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b border-amber-500/30 pb-3 mb-4">
-                <div>
-                    <h2 class="font-cinzel text-xl font-bold text-amber-300">⚖️ Marchand Barnabé — Échoppe & Potions</h2>
-                    <p class="text-xs text-gray-400">[Entrée] Acheter • [X] Vendre un objet de votre sac</p>
+                <div class="flex flex-wrap gap-1.5">
+                    <button onclick="UI.toggleModal('characterModal')" class="rpg-btn px-2.5 py-1 rounded-lg text-xs text-amber-200">👤 Héros [C]</button>
+                    <button onclick="UI.toggleModal('skillsModal')" class="rpg-btn px-2.5 py-1 rounded-lg text-xs text-amber-200">🌳 Talents [K]</button>
+                    <button onclick="UI.toggleModal('inventoryModal')" class="rpg-btn px-2.5 py-1 rounded-lg text-xs text-amber-200">🎒 Sac [I]</button>
+                    <button onclick="UI.toggleModal('pauseModal')" class="rpg-btn px-2.5 py-1 rounded-lg text-xs text-gray-300">⚙️ Menu [Échap]</button>
                 </div>
-                <button onclick="UI.closeModals()" class="rpg-btn px-3 py-1 rounded-lg text-xs">Fermer [Échap]</button>
             </div>
-            <div id="merchantModalBody"></div>
-        </div>
-
-        <!-- 7. Portail des Donjons (8 Biomes) -->
-        <div id="portalModal" class="hidden rpg-panel w-full max-w-4xl rounded-2xl p-5 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b border-amber-500/30 pb-3 mb-4">
-                <div>
-                    <h2 class="font-cinzel text-xl font-bold text-amber-300">🌀 Portail des Abysses — Sélection du Donjon</h2>
-                    <p class="text-xs text-gray-400">Chaque biome possède son bestiaire, ses pièges et son artefact unique.</p>
-                </div>
-                <button onclick="UI.closeModals()" class="rpg-btn px-3 py-1 rounded-lg text-xs">Fermer [Échap]</button>
-            </div>
-            <div id="portalModalBody"></div>
+            <div id="campTabs" class="flex flex-wrap gap-1.5 mb-4"></div>
+            <div id="campModalBody"></div>
         </div>
 
         <!-- 8. Menu Pause -->
@@ -248,6 +233,7 @@
                 <button onclick="UI.closeModals()" class="rpg-btn py-2.5 rounded-lg font-semibold text-amber-200">Reprendre l'Aventure</button>
                 <button id="returnCampBtn" onclick="World.enterTown(); UI.closeModals();" class="rpg-btn py-2.5 rounded-lg font-semibold text-cyan-300">🌀 Téléportation au Camp</button>
                 <button onclick="Sound.toggleMute()" class="rpg-btn py-2.5 rounded-lg font-semibold text-amber-200">🔊 Couper / Activer le Son [M]</button>
+                <button id="gfxToggleBtn" onclick="UI.toggleGfx()" class="rpg-btn py-2.5 rounded-lg font-semibold text-violet-300">🎨 Graphismes</button>
                 <button onclick="Game.saveGame(); UI.toast('Partie sauvegardée !', 'amber');" class="rpg-btn py-2.5 rounded-lg font-semibold text-emerald-300">💾 Sauvegarder Manuellement</button>
                 <button onclick="Game.returnToTitle()" class="rpg-btn py-2.5 rounded-lg font-semibold text-red-300">🚪 Écran Titre</button>
             </div>
@@ -261,9 +247,11 @@
     <div id="itemTooltip" class="hidden fixed z-[60] pointer-events-none rpg-panel rounded-xl p-3 w-80 text-xs"></div>
 
 <script src="js/data.js"></script>
+<script src="js/foes.js"></script>
 <script src="js/hero.js"></script>
 <script src="js/world.js"></script>
 <script src="js/combat.js"></script>
+<script src="js/art.js"></script>
 <script src="js/render.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/game.js"></script>

@@ -4,6 +4,7 @@
 const _ = null;
 // Pistes : mesures de 16 doubles-croches. lead = notes MIDI (_ = silence/tenue), bass = fondamentale par mesure,
 // bassPattern = intervalle joué sur chaque pas, pad/arp/hat = volumes (0 = absent), leadType / leadVol = timbre du lead (défaut : pulse, 0.1)
+// Thèmes : chaque lieu en a plusieurs, enchaînés via PLAYLISTS (plus bas)
 const MUSIC = {
     town: {
         bpm: 100,
@@ -192,6 +193,176 @@ const MUSIC = {
         pad: 0.03, arp: 0.032, kick: [0, 4, 8, 12], snare: [4, 12], hatEvery: 1, hat: 0.025, fill: true
     }
 };
+// ---- Thèmes supplémentaires (notation compacte) ----
+// mel : 8 croches par mesure (« | » sépare les mesures, « - » = tenue / silence), notes « c#5 », « bb4 »…
+// chords : accords par mesure (« Am », « F#m », « Bb », « Bdim ») ; la basse suit la fondamentale.
+// inst / arpInst / padInst / harmInst : instruments (voir INSTRUMENTS) • tom : pas des toms graves
+const NOTE_IDX = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 };
+const noteMidi = t => {
+    const m = /^([a-g])([#b]?)(\d)$/.exec(t);
+    return 12 * (Number(m[3]) + 1) + NOTE_IDX[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0);
+};
+const mel = str => str.split(/[\s|]+/).filter(Boolean).flatMap(t => [t === '-' ? _ : noteMidi(t), _]);
+const chords = str => str.split(/\s+/).map(c => {
+    const m = /^([A-G])([#b]?)(m|dim)?$/.exec(c);
+    const r = 48 + (((NOTE_IDX[m[1].toLowerCase()] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0)) % 12) + 12) % 12;
+    return [r, r + (m[3] ? 3 : 4), r + (m[3] === 'dim' ? 6 : 7)];
+});
+const theme = o => Object.assign({ bass: o.chords.map(c => c[0] - 12), kick: [], snare: [], hatEvery: 4, hat: 0, pad: 0, arp: 0 }, o);
+const B_SLOW = [0, _, _, _, _, _, _, _, 7, _, _, _, _, _, _, _];
+const B_WALK = [0, _, _, _, 7, _, _, _, 12, _, _, _, 7, _, _, _];
+const B_DRIVE = [0, _, 0, _, 12, _, 0, _, 0, _, 0, _, 12, _, 7, _];
+
+Object.assign(MUSIC, {
+    // ---- Camp ----
+    town2: theme({ // Ballade du luthier, sol majeur
+        bpm: 92, inst: 'pluck', padInst: 'strings', pad: 0.02, bassPattern: B_WALK, kick: [0, 8], hatEvery: 4, hat: 0.012,
+        chords: chords('G D Em C G D C D'),
+        lead: mel('g4 b4 d5 - b4 d5 g5 - | f#5 - e5 d5 a4 - d5 - | e5 - g5 - f#5 e5 b4 - | c5 - e5 - g5 - e5 c5 | d5 - b4 d5 g5 - a5 b5 | a5 - f#5 - d5 - e5 f#5 | g5 - e5 - c5 - e5 d5 | d5 - - - a4 - c5 -')
+    }),
+    town3: theme({ // Nocturne au coin du feu, fa majeur : flûte et harpe
+        bpm: 70, inst: 'flute', arpInst: 'pluck', arp: 0.05, padInst: 'strings', pad: 0.018, bassPattern: B_SLOW, bassLen: 6,
+        chords: chords('F Dm Bb C F Am Bb C'),
+        lead: mel('a4 - c5 - f5 - - e5 | d5 - - - a4 - d5 f5 | f5 - d5 - bb4 - d5 - | e5 - - - g5 - - - | a5 - g5 f5 c5 - f5 - | e5 - c5 - a4 - c5 e5 | d5 - f5 - bb5 - a5 g5 | g5 - - - e5 - - -')
+    }),
+    // ---- Prison ----
+    dungeon2: theme({ // Gouttes dans l'ombre, ré mineur : cloches et cordes
+        bpm: 70, inst: 'bell', padInst: 'strings', pad: 0.03, bassPattern: B_SLOW, bassLen: 8, tom: [8],
+        chords: chords('Dm Dm Bb A Dm Gm A A'),
+        lead: mel('d5 - - - f5 - - - | e5 - a4 - - - - - | bb4 - - - d5 - f5 - | e5 - c#5 - - - a4 - | d5 - f5 - a5 - - - | g5 - bb4 - d5 - g5 - | f5 - e5 - c#5 - e5 - | a4 - - - - - - -')
+    }),
+    dungeon3: theme({ // Chaînes et forge, mi mineur : cuivres et toms
+        bpm: 92, inst: 'brass', pad: 0.025, arp: 0.016, bassPattern: B_DRIVE, bassLen: 1, kick: [0, 6, 8], snare: [4, 12], tom: [14, 15], hatEvery: 2, hat: 0.015,
+        chords: chords('Em Em C D Em Em C B'),
+        lead: mel('e4 - g4 - b4 - e5 - | d5 - b4 - g4 - a4 b4 | c5 - - - e5 - c5 - | d5 - f#5 - a5 - f#5 d5 | e5 - - - g5 - f#5 e5 | b4 - - - e5 - g5 - | e5 - c5 - g4 - c5 e5 | d#5 - - - f#5 - b4 -')
+    }),
+    // ---- Château ----
+    castle2: theme({ // Danse de cour, ré dorien : clavecin
+        bpm: 112, inst: 'harpsi', arpInst: 'pluck', arp: 0.035, pad: 0.015, bassPattern: B_WALK, kick: [0, 8], snare: [12], hatEvery: 2, hat: 0.014,
+        chords: chords('Dm G Dm C F C G A'),
+        lead: mel('d5 e5 f5 - a5 - f5 d5 | b4 - d5 - g5 - b4 - | a4 - d5 f5 e5 d5 c5 - | e5 - g5 - c5 - e5 - | f5 g5 a5 - c6 - a5 f5 | g5 - e5 - c5 - g4 - | b4 c5 d5 - g5 - f5 e5 | c#5 - e5 - a4 - - -')
+    }),
+    castle3: theme({ // Couloirs hantés, la mineur : cordes et orgue
+        bpm: 70, inst: 'strings', padInst: 'organ', pad: 0.035, arpInst: 'bell', arp: 0.022, bassPattern: B_SLOW, bassLen: 6, kick: [0],
+        chords: chords('Am Dm F E Am Dm E E'),
+        lead: mel('a4 - - - c5 - e5 - | f5 - - - e5 - d5 - | c5 - - - a4 - c5 - | b4 - - - g#4 - - - | e5 - - - a5 - g5 - | f5 - - - d5 - f5 - | e5 - d5 - c5 - b4 - | g#4 - - - - - - -')
+    }),
+    // ---- Caveau ----
+    crypt2: theme({ // Boîte à musique, la mineur
+        bpm: 84, inst: 'bell', padInst: 'choir', pad: 0.022, bassPattern: B_SLOW, bassLen: 6,
+        chords: chords('Am Am Dm E Am C Dm E'),
+        lead: mel('a5 - c6 - b5 - a5 - | e5 - - - a5 - b5 - | c6 - b5 - a5 - f5 - | g#5 - - - e5 - - - | a5 - c6 - e6 - d6 c6 | b5 - g5 - e5 - g5 - | a5 - f5 - d5 - f5 a5 | g#5 - - - b5 - - -')
+    }),
+    crypt3: theme({ // Lamentation des morts, mi phrygien : chœur et orgue
+        bpm: 60, inst: 'choir', padInst: 'organ', pad: 0.028, bassPattern: B_SLOW, bassLen: 8, tom: [0, 10],
+        chords: chords('Em F Em Dm C Dm F Em'),
+        lead: mel('e4 - - - g4 - b4 - | c5 - - - a4 - f4 - | g4 - - - e4 - - - | f4 - a4 - d5 - c5 - | e5 - - - g5 - e5 - | f5 - - - d5 - a4 - | c5 - - - a4 - f4 - | e4 - - - - - - -')
+    }),
+    // ---- Pyramide ----
+    pyramid2: theme({ // Marché des sables, ré hijaz : oud et darbouka
+        bpm: 104, inst: 'oud', arpInst: 'pluck', arp: 0.03, pad: 0.015, bassPattern: [0, _, _, 0, _, _, 7, _, 0, _, _, 0, _, _, 12, _], bassLen: 1,
+        kick: [0, 3, 8, 11], snare: [4, 12, 14], tom: [6], hatEvery: 1, hat: 0.012,
+        chords: chords('D Eb D Cm D Eb Gm D'),
+        lead: mel('d5 eb5 f#5 - eb5 d5 - a4 | g4 - bb4 - eb5 - d5 eb5 | f#5 - g5 - a5 - g5 f#5 | g5 - eb5 - c5 - eb5 - | a5 - bb5 a5 g5 f#5 g5 - | eb5 - g5 - f#5 - eb5 d5 | d5 - bb4 - g4 - bb4 c5 | d5 - - - eb5 d5 - -')
+    }),
+    pyramid3: theme({ // Nuit sur les dunes, la hijaz : flûte ney
+        bpm: 70, inst: 'flute', padInst: 'strings', pad: 0.02, bassPattern: B_SLOW, bassLen: 6, tom: [0, 7, 10],
+        chords: chords('A Bb A Gm A Dm Bb A'),
+        lead: mel('e5 - - - f5 - e5 - | d5 - - - bb4 - d5 - | c#5 - - - e5 - a5 - | g5 - - - f5 - d5 - | e5 - f5 - g5 - a5 - | f5 - - - d5 - a4 - | bb4 - d5 - f5 - e5 d5 | c#5 - - - - - - -')
+    }),
+    // ---- Temple ----
+    temple2: theme({ // Gamelan des idoles : marimba et cloches
+        bpm: 96, inst: 'marimba', arpInst: 'bell', arp: 0.03, pad: 0.015, bassPattern: B_WALK, kick: [0, 10], tom: [6, 14], hatEvery: 4, hat: 0.012,
+        chords: chords('Cm Ab Cm G Cm Fm Ab G'),
+        lead: mel('c5 eb5 g5 - eb5 c5 - g4 | ab4 - c5 - eb5 - c5 - | g5 - ab5 g5 eb5 - c5 - | d5 - g4 - b4 - d5 - | c6 - g5 - eb5 - g5 ab5 | f5 - c5 - ab4 - c5 - | eb5 - c5 - ab4 - eb5 - | d5 - - - g4 - - -')
+    }),
+    temple3: theme({ // Chant rituel, do mineur : chœur et tambours
+        bpm: 66, inst: 'choir', padInst: 'organ', pad: 0.025, bassPattern: B_SLOW, bassLen: 6, kick: [0], tom: [3, 8, 12],
+        chords: chords('Cm Cm Ab Bb Cm Eb Fm G'),
+        lead: mel('c4 - - - eb4 - - - | g4 - - - f4 - eb4 - | c4 - - - ab4 - - - | bb4 - - - g4 - f4 - | g4 - - - c5 - - - | bb4 - - - g4 - eb4 - | f4 - - - ab4 - c5 - | b4 - - - g4 - - -')
+    }),
+    // ---- Jungle ----
+    jungle2: theme({ // Marimba des lianes, fa mixolydien
+        bpm: 126, inst: 'marimba', arpInst: 'pluck', arp: 0.03, bassPattern: [0, _, 12, _, 0, _, 7, _, 0, _, 12, _, 0, 7, _, 12], bassLen: 1,
+        kick: [0, 3, 6, 10, 12], snare: [4, 12], tom: [14], hatEvery: 1, hat: 0.02,
+        chords: chords('F Eb Bb F F Eb C F'),
+        lead: mel('f5 - a5 c6 - a5 f5 - | g5 - eb5 - g5 bb5 - g5 | f5 - d5 - bb4 - d5 f5 | a5 - - - c6 - a5 - | c6 - a5 - f5 - a5 c6 | bb5 - g5 - eb5 - g5 - | e5 - g5 - c6 - bb5 - | a5 - - - f5 - - -')
+    }),
+    jungle3: theme({ // Flûte de pan, la pentatonique
+        bpm: 104, inst: 'flute', arpInst: 'marimba', arp: 0.03, bassPattern: B_WALK, kick: [0, 6, 10], snare: [4, 12], tom: [7, 15], hatEvery: 2, hat: 0.015,
+        chords: chords('Am G Am Em F G Am Am'),
+        lead: mel('a4 - c5 - d5 - e5 - | d5 - - - b4 - g4 - | a4 - e5 - g5 - e5 d5 | e5 - - - b4 - - - | c5 - d5 - e5 - a5 - | g5 - e5 - d5 - b4 - | c5 - b4 - a4 - g4 - | a4 - - - - - - -')
+    }),
+    // ---- Forêt ----
+    forest2: theme({ // Harpe des clairières, mi mineur : cordes et harpe
+        bpm: 80, inst: 'strings', arpInst: 'pluck', arp: 0.05, pad: 0.02, bassPattern: B_SLOW, bassLen: 4, kick: [0],
+        chords: chords('Em C G D Em C D B'),
+        lead: mel('b4 - - - e5 - g5 - | g5 - - - e5 - c5 - | d5 - - - g5 - b5 - | a5 - - - f#5 - d5 - | e5 - g5 - b5 - - - | c6 - b5 - g5 - e5 - | d5 - f#5 - a5 - f#5 - | d#5 - - - - - - -')
+    }),
+    forest3: theme({ // Cors dans la brume, si mineur
+        bpm: 64, inst: 'brass', padInst: 'strings', pad: 0.03, bassPattern: B_SLOW, bassLen: 8, tom: [0, 12],
+        chords: chords('Bm G Em F# Bm D Em F#'),
+        lead: mel('f#4 - - - b4 - - - | d5 - - - b4 - g4 - | e4 - - - g4 - b4 - | c#5 - - - a#4 - - - | b4 - - - d5 - f#5 - | e5 - - - d5 - a4 - | b4 - - - g4 - e4 - | f#4 - - - - - - -')
+    }),
+    // ---- Catacombes ----
+    catacombs2: theme({ // Orgue infernal, ré mineur (sixte napolitaine)
+        bpm: 100, inst: 'organ', padInst: 'choir', pad: 0.028, bassPattern: B_DRIVE, bassLen: 1, kick: [0, 8, 10], snare: [4, 12], tom: [14, 15], hatEvery: 2, hat: 0.016,
+        chords: chords('Dm Bb Gm A Dm Bb Eb A'),
+        lead: mel('d5 - a5 - d6 - a5 - | bb5 - f5 - d5 - f5 - | g5 - d5 - bb4 - d5 g5 | a5 - c#6 - e6 - c#6 a5 | d6 - c6 - a5 - f5 - | f5 - d5 - bb4 - d5 - | eb5 - g5 - bb5 - g5 - | c#5 - e5 - a5 - - -')
+    }),
+    // Rock'n'roll des Enfers : guitare saturée, rythmique en galop
+    catacombs4: theme({ // Riff des Enfers, mi mineur
+        bpm: 138, inst: 'guitar', chug: [0, 2, 3, 6, 8, 10, 11, 14], bassPattern: B_DRIVE, bassLen: 1,
+        kick: [0, 3, 8, 10], snare: [4, 12], hatEvery: 2, hat: 0.022,
+        chords: chords('Em Em C D Em Em Am B'),
+        lead: mel('e5 g5 a5 - b5 - a5 g5 | e5 - - - d5 e5 - - | c5 - e5 g5 c6 - b5 g5 | a5 - f#5 - d5 - f#5 a5 | b5 - b5 a5 g5 - e5 g5 | a5 - g5 e5 d5 - e5 - | c6 - b5 a5 e5 - a5 c6 | b5 - - - d#6 - f#5 -')
+    }),
+    catacombs5: theme({ // Boogie du Diable, la blues
+        bpm: 150, inst: 'guitar', chug: [0, 4, 8, 12], bassPattern: [0, _, 4, _, 7, _, 9, _, 10, _, 9, _, 7, _, 4, _], bassLen: 1,
+        kick: [0, 8], snare: [4, 12], hatEvery: 2, hat: 0.022,
+        chords: chords('A A D A E D A E'),
+        lead: mel('a5 - c6 - a5 c6 - a5 | e5 g5 a5 - c6 - a5 - | d6 - c6 a5 - g5 a5 - | a5 - - - e5 g5 a5 - | b5 - - - g#5 e5 b5 - | a5 - f#5 d5 - a5 - c6 | a5 g5 e5 - a5 - - - | e5 - g#5 - b5 - e6 -')
+    }),
+    catacombs3: theme({ // Marche des damnés, do mineur : chœur, cuivres et toms
+        bpm: 120, inst: 'choir', harmInst: 'brass', pad: 0.03, bassPattern: B_DRIVE, bassLen: 1, kick: [0, 4, 8, 12], snare: [4, 12], tom: [6, 14, 15], hatEvery: 2, hat: 0.018,
+        chords: chords('Cm Cm Ab Ab Fm G Cm G'),
+        lead: mel('c5 - - - g4 - c5 eb5 | d5 - - - b4 - g4 - | ab4 - c5 - eb5 - - - | f5 - eb5 - c5 - ab4 - | f5 - - - ab5 - g5 f5 | g5 - - - d5 - b4 - | c5 - eb5 - g5 - c6 - | b5 - - - g5 - d5 -')
+    })
+});
+
+// Playlists : chaque lieu enchaîne ses thèmes au hasard (2 boucles par thème)
+const PLAYLISTS = {
+    town: ['town', 'town2', 'town3'],
+    dungeon: ['dungeon', 'dungeon2', 'dungeon3'],
+    castle: ['castle', 'castle2', 'castle3'],
+    crypt: ['crypt', 'crypt2', 'crypt3'],
+    pyramid: ['pyramid', 'pyramid2', 'pyramid3'],
+    temple: ['temple', 'temple2', 'temple3'],
+    jungle: ['jungle', 'jungle2', 'jungle3'],
+    forest: ['forest', 'forest2', 'forest3'],
+    catacombs: ['catacombs', 'catacombs2', 'catacombs3', 'catacombs4', 'catacombs5'],
+    boss: ['boss']
+};
+
+// Instruments synthétisés : options de Sound.voice (partials = harmoniques [rapport, gain])
+const INSTRUMENTS = {
+    pulse:    { type: 'pulse', vol: 0.1, detune: 7, vibrato: true, cutoff: 3400 },
+    flute:    { type: 'sine', vol: 0.15, attack: 0.06, detune: 3, vibrato: true, partials: [[1, 1], [2, 0.12], [3, 0.04]] },
+    pluck:    { type: 'triangle', vol: 0.2, attack: 0.004, sustain: 0.08, release: 0.35, cutoff: 2800, partials: [[1, 1], [2, 0.3], [3, 0.1]] },
+    harpsi:   { type: 'square', vol: 0.07, attack: 0.003, sustain: 0.1, release: 0.25, cutoff: 3500 },
+    bell:     { type: 'sine', vol: 0.13, attack: 0.003, sustain: 0.15, release: 0.9, partials: [[1, 1], [2.76, 0.35], [5.4, 0.12]] },
+    marimba:  { type: 'sine', vol: 0.2, attack: 0.003, sustain: 0.05, release: 0.3, partials: [[1, 1], [4, 0.25]] },
+    organ:    { type: 'sine', vol: 0.09, attack: 0.03, sustain: 0.9, release: 0.15, partials: [[1, 1], [2, 0.6], [3, 0.3], [4, 0.15]] },
+    brass:    { type: 'sawtooth', vol: 0.06, attack: 0.07, sustain: 0.8, release: 0.15, detune: 5, cutoff: 1500, vibrato: true },
+    strings:  { type: 'sawtooth', vol: 0.05, attack: 0.18, sustain: 0.9, release: 0.4, detune: 12, cutoff: 2200, vibrato: true },
+    choir:    { type: 'triangle', vol: 0.12, attack: 0.25, sustain: 0.9, release: 0.5, detune: 14, cutoff: 1600, vibrato: true },
+    oud:      { type: 'sawtooth', vol: 0.08, attack: 0.004, sustain: 0.12, release: 0.3, cutoff: 2000 },
+    // Guitares saturées (passent par la distorsion partagée)
+    guitar:   { type: 'sawtooth', vol: 0.05, attack: 0.005, sustain: 0.8, release: 0.15, detune: 6, vibrato: true, cutoff: 3200, dist: true },
+    chug:     { type: 'sawtooth', vol: 0.06, attack: 0.003, sustain: 0.3, release: 0.06, detune: 4, cutoff: 1400, dist: true }
+};
+const instOpts = (name, vol) => Object.assign({}, INSTRUMENTS[name], vol === undefined ? {} : { vol });
+
 const ARP_ORDER = [0, 1, 2, 3, 2, 1];
 
 const Sound = {
@@ -253,6 +424,20 @@ const Sound = {
         echoOut.gain.value = 0.25;
         this.echo.connect(fb).connect(this.echo);
         this.echo.connect(echoTone).connect(echoOut).connect(this.musicBus);
+
+        // Distorsion des guitares : saturation douce puis filtre passe-bas (coupe le grésillement)
+        const shaper = this.ctx.createWaveShaper(), curve = new Float32Array(1024);
+        for (let i = 0; i < 1024; i++) { const x = i / 512 - 1; curve[i] = Math.tanh(x * 8); }
+        shaper.curve = curve;
+        shaper.oversample = '4x';
+        this.distIn = this.ctx.createGain();
+        this.distIn.gain.value = 1.5;
+        const cab = this.ctx.createBiquadFilter();
+        cab.type = 'lowpass';
+        cab.frequency.value = 3800;
+        const distOut = this.ctx.createGain();
+        distOut.gain.value = 0.16;
+        this.distIn.connect(shaper).connect(cab).connect(distOut).connect(this.musicBus);
 
         setInterval(() => this.schedule(), 30);
         if (this.pendingTrack) this.music(this.pendingTrack);
@@ -322,11 +507,25 @@ const Sound = {
         }
     },
 
+    // name : playlist (PLAYLISTS) ; un thème au hasard, puis un autre toutes les 2 boucles
     music(name) {
         if (!this.ctx) { this.pendingTrack = name; return; }
-        if (this.track === (MUSIC[name] || null)) return;
-        this.track = MUSIC[name] || null;
+        if (this.listName === name) return;
+        this.listName = name;
+        this.playTheme(this.pickTheme(name, null));
+    },
+
+    pickTheme(list, current) {
+        const names = (PLAYLISTS[list] || [list]).filter(n => MUSIC[n]);
+        const pool = names.length > 1 ? names.filter(n => n !== current) : names;
+        return pool[Math.floor(Math.random() * pool.length)] || null;
+    },
+
+    playTheme(themeName) {
+        this.themeName = themeName;
+        this.track = themeName ? MUSIC[themeName] : null;
         this.step = 0;
+        this.loops = 0;
         // Fondu d'entrée du nouveau morceau
         const t = this.ctx.currentTime;
         this.musicBus.gain.cancelScheduledValues(t);
@@ -354,26 +553,31 @@ const Sound = {
             gn.connect(f);
             out = f;
         }
-        out.connect(this.musicBus);
+        out.connect(o.dist ? this.distIn : this.musicBus);
         if (o.echo) out.connect(this.echo);
-        (o.detune ? [-o.detune, o.detune] : [0]).forEach(dt => {
+        (o.detune ? [-o.detune, o.detune] : [0]).forEach(dt => (o.partials || [[1, 1]]).forEach(([ratio, pg]) => {
             const osc = c.createOscillator();
             if (o.type === 'pulse') osc.setPeriodicWave(this.pulse); else osc.type = o.type;
-            osc.frequency.value = freq;
+            osc.frequency.value = freq * ratio;
             osc.detune.value = dt;
             if (o.vibrato && dur > 0.25) {
                 const lfo = c.createOscillator(), depth = c.createGain();
                 lfo.frequency.value = 5.5;
                 depth.gain.setValueAtTime(0, t);
-                depth.gain.linearRampToValueAtTime(freq * 0.012, t + 0.3);
+                depth.gain.linearRampToValueAtTime(freq * ratio * 0.012, t + 0.3);
                 lfo.connect(depth).connect(osc.frequency);
                 lfo.start(t);
                 lfo.stop(end);
             }
-            osc.connect(gn);
+            if (pg === 1) osc.connect(gn);
+            else {
+                const pgn = c.createGain();
+                pgn.gain.value = pg;
+                osc.connect(pgn).connect(gn);
+            }
             osc.start(t);
             osc.stop(end);
-        });
+        }));
     },
 
     // Note d'accord la plus haute sous la mélodie (seconde voix)
@@ -402,33 +606,57 @@ const Sound = {
                 let len = 1;
                 while (len < 12 && tr.lead[(s + len) % tr.lead.length] === _) len++;
                 const dur = sd * len * 0.92;
-                this.voice(this.midi(note), t, dur, { type: tr.leadType || 'pulse', vol: tr.leadVol || 0.1, detune: 7, vibrato: true, echo: true, cutoff: 3400 });
+                const lead = tr.inst ? instOpts(tr.inst) : { type: tr.leadType || 'pulse', vol: tr.leadVol || 0.1, detune: 7, vibrato: true, cutoff: 3400 };
+                this.voice(this.midi(note), t, dur, Object.assign(lead, { echo: true }));
                 const harm = this.harmony(note, chord);
-                if (harm) this.voice(this.midi(harm), t, dur, { type: 'triangle', vol: 0.07, cutoff: 2200 });
+                if (harm) this.voice(this.midi(harm), t, dur, tr.harmInst ? instOpts(tr.harmInst, INSTRUMENTS[tr.harmInst].vol * 0.6) : { type: 'triangle', vol: 0.07, cutoff: 2200 });
             }
 
             const bp = tr.bassPattern[b];
             if (bp !== _) this.voice(this.midi(tr.bass[bar] - 12 + bp), t, sd * (tr.bassLen || 1.6), { type: 'triangle', vol: 0.36, sustain: 0.5, release: 0.05 });
 
             if (b === 0 && tr.pad) {
-                chord.forEach(n => this.voice(this.midi(n), t, sd * 15, { type: 'sawtooth', vol: tr.pad, attack: 0.5, sustain: 0.85, release: 0.7, detune: 9, cutoff: 900 }));
+                chord.forEach(n => this.voice(this.midi(n), t, sd * 15, tr.padInst
+                    ? Object.assign(instOpts(tr.padInst, tr.pad), { attack: 0.5, release: 0.7 })
+                    : { type: 'sawtooth', vol: tr.pad, attack: 0.5, sustain: 0.85, release: 0.7, detune: 9, cutoff: 900 }));
             }
             if (tr.arp) {
                 const tones = [...chord, chord[0] + 12];
-                this.voice(this.midi(tones[ARP_ORDER[b % ARP_ORDER.length]] + 12), t, sd * 0.7, { type: 'square', vol: tr.arp, sustain: 0.4, release: 0.05, cutoff: 2600 });
+                this.voice(this.midi(tones[ARP_ORDER[b % ARP_ORDER.length]] + 12), t, sd * 0.7, tr.arpInst
+                    ? instOpts(tr.arpInst, tr.arp)
+                    : { type: 'square', vol: tr.arp, sustain: 0.4, release: 0.05, cutoff: 2600 });
             }
 
+            // Rythmique rock : quinte (power chord) étouffée
+            if (tr.chug && tr.chug.includes(b)) {
+                const root = this.midi(chord[0] - 12);
+                [1, 1.5, 2].forEach(r => this.voice(root * r, t, sd * 0.8, INSTRUMENTS.chug));
+            }
             if (tr.kick.includes(b)) this.tone(150, 0.14, 'sine', 0.55, 40, t, bus);
+            if (tr.tom && tr.tom.includes(b)) {
+                this.tone(105, 0.32, 'sine', 0.45, 52, t, bus);
+                this.noise(0.08, 0.06, 'lowpass', 400, t, bus);
+            }
             if (tr.snare.includes(b)) {
                 this.noise(0.14, 0.2, 'bandpass', 1800, t, bus);
                 this.tone(220, 0.06, 'triangle', 0.12, 120, t, bus);
             } else if (tr.fill && bar === bars - 1 && b >= 12) {
                 this.noise(0.08, 0.06 + (b - 12) * 0.03, 'bandpass', 2200, t, bus);
             }
-            if (b % tr.hatEvery === 0) this.noise(0.03, tr.hat * (b % 4 === 2 ? 1.6 : 1), 'highpass', 7500, t, bus);
+            if (tr.hat && b % tr.hatEvery === 0) this.noise(0.03, tr.hat * (b % 4 === 2 ? 1.6 : 1), 'highpass', 7500, t, bus);
 
             this.nextTime += sd;
             this.step = (s + 1) % tr.lead.length;
+            // Fin de boucle : thème suivant de la playlist toutes les 2 boucles
+            if (this.step === 0 && ++this.loops >= 2) {
+                const next = this.pickTheme(this.listName, this.themeName);
+                if (next && next !== this.themeName) {
+                    this.themeName = next;
+                    this.track = MUSIC[next];
+                    this.loops = 0;
+                    return;
+                }
+            }
         }
     }
 };

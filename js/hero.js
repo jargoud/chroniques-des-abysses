@@ -62,10 +62,10 @@ const ItemGen = {
         let rarityKey = forcedRarity;
         if (!rarityKey) {
             const r = Math.random();
-            if (r < 0.64) rarityKey = 'common';
-            else if (r < 0.89) rarityKey = 'magic';
-            else if (r < 0.985) rarityKey = 'rare';
-            else rarityKey = 'legendary';
+            // Butin ordinaire : jamais de légendaire (réservé aux boss)
+            if (r < 0.7) rarityKey = 'common';
+            else if (r < 0.95) rarityKey = 'magic';
+            else rarityKey = 'rare';
         }
         const rar = RARITIES[rarityKey];
         const scale = rar.mult * (1 + (level - 1) * 0.14);
@@ -149,7 +149,7 @@ function computeHeroStats() {
     Object.entries(h.equipment).forEach(([slot, item]) => {
         if (!item) return;
         if ((slot === 'weapon' || slot === 'ranged') && slot !== active) return; // arme rangée : ignorée
-        const upgMult = 1 + item.upgrade * 0.14;
+        const upgMult = 1 + item.upgrade * UPGRADE_STEP;
         if (slot === active) {
             weaponDmg = Math.round(item.dmg * upgMult);
             weaponRange = item.weaponRange;
@@ -184,21 +184,23 @@ function computeHeroStats() {
         }
     });
 
-    if (h.skills.war_ironskin) {
-        bonusHp += 15 + 10 * h.skills.war_ironskin;
-        armor = Math.round(armor * (1 + 0.12 + 0.06 * h.skills.war_ironskin));
+    const sk = h.skills;
+    if (sk.war_ironskin) {
+        bonusHp += 15 * sk.war_ironskin;
+        armor = Math.round(armor * (1 + 0.12 * sk.war_ironskin));
     }
-    if (h.skills.war_berserk) {
-        bonusDmg += 4 + 3 * h.skills.war_berserk;
-        lifesteal += 3;
-    }
+    if (sk.war_bloodthirst) lifesteal += 2 * sk.war_bloodthirst;
+    if (sk.war_swift) { moveSpeed *= 1 + 0.06 * sk.war_swift; dodge += 3 * sk.war_swift; }
+    if (sk.war_lynx) { critChance += 4 * sk.war_lynx; critMult += 0.15 * sk.war_lynx; }
     // Base PV augmentée légèrement pour fluidifier les premiers combats
     // Bonus de classe pure (+10 % PV, +15 % dégâts), toujours actif depuis que seul le Guerrier existe
     const maxHp = Math.round((55 + vit * 8 + h.level * 8 + bonusHp) * 1.10);
     // Rage : jauge fixe de 100 (+ bonus d'objets) ; l'Intelligence accélère son remplissage
     const maxMp = 100 + bonusMp;
-    const rageGain = 1 + int * 0.02;
-    const physDmg = Math.round(Math.max(3, Math.round((weaponDmg + bonusDmg) * (1 + str * 0.026 + dex * 0.012))) * 1.15);
+    const rageGain = (1 + int * 0.02) * (1 + 0.1 * (sk.war_bloodthirst || 0));
+    // Frénésie : bonus de dégâts tant que la Rage dépasse 50
+    const frenzy = sk.war_frenzy && h.mp >= 50 ? 1 + 0.1 * sk.war_frenzy : 1;
+    const physDmg = Math.round(Math.max(3, Math.round((weaponDmg + bonusDmg) * (1 + str * 0.026 + dex * 0.012))) * 1.15 * frenzy);
     // Puissance élémentaire : dégâts élémentaires des objets / artefacts, amplifiés par l'Intelligence, ajoutés aux talents
     const elemPower = Math.round(elemDmg * (1 + int * 0.04) * 1.15);
 

@@ -54,23 +54,52 @@ const Combat = {
         const power = stats.physDmg + stats.elemPower;
 
         switch (skillId) {
+            case 'war_bash':
+                this.meleeArc(p.x, p.y, angle, 72, Math.PI * 0.8, Math.round(power * (0.85 + 0.25 * rank)), '#60a5fa', { stun: 1.2 });
+                break;
+            case 'war_rally':
+                h.shield = Math.round(h.maxHp * (0.1 + 0.1 * rank));
+                h.shieldT = 6;
+                this.spawnParticles(p.x, p.y, '#93c5fd', 24);
+                FX.rings.push({ x: p.x, y: p.y, radius: 60, color: '#60a5fa', life: 0.4, max: 0.4 });
+                this.floatingText(p.x, p.y - 34, '🛡️ +' + h.shield, '#93c5fd', true);
+                break;
             case 'war_cleave':
-                this.meleeArc(p.x, p.y, angle, 88, Math.PI * 1.1, Math.round(power * (1.27 + 0.18 * rank)), '#ef4444');
+                this.meleeArc(p.x, p.y, angle, 88, Math.PI * 1.1, Math.round(power * (1.2 + 0.25 * rank)), '#ef4444');
+                break;
+            case 'war_whirlwind':
+                this.aoe(p.x, p.y, 118, Math.round(power * (1.3 + 0.35 * rank)), '#f87171');
+                break;
+            case 'war_earthquake':
+                this.aoe(p.x, p.y, 185, Math.round(power * (2.1 + 0.6 * rank)), '#ea580c', { stun: 2.0 });
+                break;
+            case 'war_pierce':
+                State.world.projectiles.push({
+                    x: p.x, y: p.y, vx: Math.cos(angle) * 760, vy: Math.sin(angle) * 760,
+                    dmg: Math.round(power * (1.05 + 0.25 * rank)), color: '#4ade80', radius: 7, life: 0.6,
+                    fromHero: true, pierce: true, hitList: []
+                });
+                Sound.play('bow');
                 break;
             case 'war_charge': {
                 const dist = Math.min(230, Math.hypot(aim.x - p.x, aim.y - p.y));
                 const nx = p.x + Math.cos(angle) * dist;
                 const ny = p.y + Math.sin(angle) * dist;
                 if (World.isWalkable(nx, ny)) { p.x = nx; p.y = ny; }
-                this.aoe(p.x, p.y, 92, Math.round(power * (1.15 + 0.2 * rank)), '#f97316', { stun: 1.5 });
+                this.aoe(p.x, p.y, 92, Math.round(power * (1.05 + 0.3 * rank)), '#f97316', { stun: 1.5 });
                 break;
             }
-            case 'war_whirlwind':
-                this.aoe(p.x, p.y, 118, Math.round(power * (1.4 + 0.25 * rank)), '#f87171');
+            case 'war_arrows': {
+                // Zone visée, à 320 px au plus du héros
+                const d = Math.min(320, Math.hypot(aim.x - p.x, aim.y - p.y));
+                const ax = p.x + Math.cos(angle) * d, ay = p.y + Math.sin(angle) * d;
+                for (let i = 0; i < 18; i++) {
+                    const a = Math.random() * Math.PI * 2, r = Math.random() * 100;
+                    this.spawnParticles(ax + Math.cos(a) * r, ay + Math.sin(a) * r, '#bbf7d0', 2);
+                }
+                this.aoe(ax, ay, 115, Math.round(power * (1.7 + 0.5 * rank)), '#4ade80');
                 break;
-            case 'war_earthquake':
-                this.aoe(p.x, p.y, 185, Math.round(power * (2.25 + 0.45 * rank)), '#ea580c', { stun: 2.0 });
-                break;
+            }
         }
     },
 
@@ -81,7 +110,7 @@ const Combat = {
     },
 
     // Renvoie le nombre d'ennemis touchés
-    meleeArc(x, y, angle, radius, arcWidth, dmg, color) {
+    meleeArc(x, y, angle, radius, arcWidth, dmg, color, effects) {
         this.spawnParticles(x + Math.cos(angle) * (radius * 0.6), y + Math.sin(angle) * (radius * 0.6), color, 10);
         let hits = 0;
         State.world.enemies.slice().forEach(en => {
@@ -91,6 +120,7 @@ const Combat = {
                 let diff = Math.abs(aToEn - angle);
                 if (diff > Math.PI) diff = Math.PI * 2 - diff;
                 if (en.hp > 0 && diff <= arcWidth / 2 && World.hasLineOfSight(x, y, en.x, en.y)) {
+                    if (effects && effects.stun) en.stunTimer = Math.max(en.stunTimer, effects.stun);
                     this.damageEnemy(en, dmg, false, color);
                     hits++;
                 }
@@ -135,32 +165,7 @@ const Combat = {
         this.spawnParticles(en.x, en.y, color || '#facc15', isCrit ? 12 : 6);
         this.floatingText(en.x, en.y - en.radius - 6, (isCrit ? '💥 ' : '') + dmg, isCrit ? '#facc15' : '#ffffff', isCrit);
 
-        // Mannequin : XP à chaque coup (≈ 60 coups par niveau) tant que le héros est sous TRAINING_MAX_LVL
-        if (en.dummy) {
-            en.aggro = false;
-            const trainee = h.level < TRAINING_MAX_LVL;
-            if (trainee) this.gainXp(Math.max(1, Math.round(h.xpNext / 60)));
-            if (en.hp <= 0) this.breakDummy(en, trainee);
-            return;
-        }
-
         if (en.hp <= 0) this.onEnemyDeath(en);
-    },
-
-    // Mannequin brisé : bonus d'XP et or ou potion (bas niveau seulement), puis réapparition
-    breakDummy(en, trainee) {
-        en.respawn = 8;
-        this.spawnParticles(en.x, en.y, '#d4a64a', 18);
-        Sound.play('death');
-        this.floatingText(en.x, en.y - 30, 'Mannequin brisé !', '#fcd34d');
-        if (!trainee) return;
-        this.gainXp(Math.round(State.hero.xpNext / 15));
-        const w = State.world, potion = Math.random() < 0.3, isHp = Math.random() < 0.65;
-        const gold = 4 + State.hero.level * 3 + Math.floor(Math.random() * 6);
-        w.lootDrops.push(potion
-            ? { uid: 'drop_' + Math.random(), type: isHp ? 'potion_hp' : 'potion_mp', x: en.x, y: en.y + 14,
-                color: isHp ? '#ef4444' : '#f97316', label: isHp ? 'Potion Vie' : 'Potion Fureur' }
-            : { uid: 'drop_' + Math.random(), type: 'gold', amount: gold, x: en.x, y: en.y + 14, color: '#facc15', label: gold + ' Or' });
     },
 
     onEnemyDeath(en) {
@@ -183,14 +188,17 @@ const Combat = {
         if (en.minion || en.selfDestruct) return;
 
         const biome = State.currentBiome;
-        const baseXp = 14 + Math.floor(Math.random() * 12) + en.level * 4;
-        const xpGain = Math.round(baseXp * (en.isBoss ? 8 : (en.isElite ? 3 : 1)));
-        this.gainXp(xpGain);
+        // XP réduite de 20 % par niveau d'écart quand le héros dépasse l'ennemi (plancher 10 %)
+        const gap = Math.max(0, State.hero.level - en.level);
+        const baseXp = (10 + Math.floor(Math.random() * 6) + en.level * 3) * Math.max(0.1, 1 - 0.2 * gap);
+        this.gainXp(Math.max(1, Math.round(baseXp * (en.isBoss ? 10 : (en.isElite ? 3 : 1)))));
 
         if (biome) Quests.onEnemyKilled(biome.id);
+        if (en.isBoss) Quests.onBossKilled(en.bossId);
 
-        if (en.isBoss || en.isElite || Math.random() < 0.55) {
-            const gold = Math.round((5 + en.level * 2.5) * (en.isBoss ? 8 : (en.isElite ? 2.5 : 1)));
+        // Or rare en exploration : l'essentiel vient des récompenses de quêtes
+        if (en.isBoss || en.isElite || Math.random() < 0.3) {
+            const gold = Math.round((2 + en.level) * (en.isBoss ? 10 : (en.isElite ? 3 : 1)));
             w.lootDrops.push({
                 uid: 'drop_' + Math.random(), type: 'gold', amount: gold,
                 x: en.x + (Math.random() - 0.5) * 18, y: en.y + (Math.random() - 0.5) * 18,
@@ -198,7 +206,7 @@ const Combat = {
             });
         }
 
-        if (Math.random() < (en.isBoss ? 0.85 : (en.isElite ? 0.26 : 0.08))) {
+        if (Math.random() < (en.isBoss ? 0.85 : (en.isElite ? 0.22 : 0.06))) {
             const isHp = Math.random() < 0.65;
             w.lootDrops.push({
                 uid: 'drop_' + Math.random(), type: isHp ? 'potion_hp' : 'potion_mp',
@@ -207,9 +215,11 @@ const Combat = {
             });
         }
 
-        const itemChance = en.isBoss ? 1.0 : (en.isElite ? 0.35 : 0.06);
+        // Objets : légendaires réservés aux boss, d'autant plus probables que le boss est de haut rang
+        const itemChance = en.isBoss ? 1.0 : (en.isElite ? 0.3 : 0.04);
         if (Math.random() < itemChance) {
-            const forcedRar = en.isBoss ? (Math.random() < 0.28 ? 'legendary' : 'rare') : (en.isElite ? (Math.random() < 0.4 ? 'rare' : 'magic') : null);
+            const legChance = 0.1 + 0.1 * (en.tier || 0);
+            const forcedRar = en.isBoss ? (Math.random() < legChance ? 'legendary' : 'rare') : (en.isElite ? (Math.random() < 0.3 ? 'rare' : 'magic') : null);
             const item = ItemGen.create(en.level, forcedRar);
             w.lootDrops.push({
                 uid: 'drop_' + Math.random(), type: 'item', item,
@@ -218,23 +228,14 @@ const Combat = {
             });
         }
 
-        if (biome && (en.isBoss || (en.isElite && Math.random() < 0.22))) {
-            const art = ARTIFACTS[biome.artifactId];
-            if (art) {
-                w.lootDrops.push({
-                    uid: 'drop_' + Math.random(), type: 'artifact', artifactId: art.id,
-                    x: en.x + 14, y: en.y - 14, color: '#fb923c', label: art.icon + ' ' + art.name
-                });
-            }
-        }
-
         if (en.isBoss) {
             w.portal = { x: en.x, y: en.y - 45 };
             UI.toast('🏆 ' + en.name + ' vaincu ! Portail vers le camp ouvert.', 'amber');
         }
     },
 
-    damagePlayer(rawDmg) {
+    // source : ennemi au corps-à-corps (déclenche Représailles)
+    damagePlayer(rawDmg, source) {
         const h = State.hero;
         const stats = computeHeroStats();
 
@@ -245,7 +246,20 @@ const Combat = {
         }
 
         const reduction = stats.armor / (stats.armor + 55 + h.level * 10);
-        const dmg = Math.max(1, Math.round(rawDmg * (1 - reduction)));
+        let dmg = Math.max(1, Math.round(rawDmg * (1 - reduction)));
+        if (h.skills.war_bulwark && h.hp < h.maxHp * 0.4) dmg = Math.max(1, Math.round(dmg * (1 - 0.12 * h.skills.war_bulwark)));
+        if (source && h.skills.war_thorns && source.hp > 0) {
+            this.damageEnemy(source, Math.max(1, Math.round(dmg * 0.25 * (1 + h.skills.war_thorns))), false, '#a3e635');
+        }
+        if (h.shield > 0) {
+            const absorbed = Math.min(h.shield, dmg);
+            h.shield -= absorbed;
+            dmg -= absorbed;
+            if (dmg <= 0) {
+                this.floatingText(State.world.player.x, State.world.player.y - 22, 'Absorbé', '#93c5fd');
+                return 0;
+            }
+        }
         h.hp = Math.max(0, h.hp - dmg);
         State.world.player.hitFlash = 0.18;
         Sound.play('hurt');
@@ -326,11 +340,6 @@ const Combat = {
             this.floatingText(w.player.x, w.player.y - 22, '+1 Potion Fureur', '#fb923c');
             w.lootDrops.splice(index, 1);
             UI.renderSkillBar();
-        } else if (drop.type === 'artifact') {
-            h.artifacts[drop.artifactId] = (h.artifacts[drop.artifactId] || 0) + 1;
-            Quests.onArtifactGained(drop.artifactId);
-            UI.toast('Artefact : ' + drop.label, 'amber');
-            w.lootDrops.splice(index, 1);
         } else if (drop.type === 'item') {
             if (h.inventory.length < 24) {
                 h.inventory.push(drop.item);
@@ -362,7 +371,7 @@ const Combat = {
                 this.floatingText(chest.x, chest.y - 20, '💥 Coffre Piégé !', '#f97316', true);
                 this.damagePlayer(10 + chest.level * 4);
             }
-            const item = ItemGen.create(chest.level, Math.random() < 0.38 ? 'rare' : 'magic');
+            const item = ItemGen.create(chest.level, Math.random() < 0.25 ? 'rare' : 'magic');
             w.lootDrops.push({
                 uid: 'drop_' + Math.random(), type: 'item', item,
                 x: chest.x, y: chest.y + 18, color: RARITIES[item.rarity].color, label: item.name
@@ -372,15 +381,6 @@ const Combat = {
 
         if (w.portal && Math.hypot(p.x - w.portal.x, p.y - w.portal.y) < 75) {
             World.enterTown();
-            return;
-        }
-
-        const npc = w.npcs.find(n => Math.hypot(p.x - n.x, p.y - n.y) < 85);
-        if (npc) {
-            if (npc.role === 'quests') UI.toggleModal('questsModal');
-            else if (npc.role === 'blacksmith') UI.toggleModal('blacksmithModal');
-            else if (npc.role === 'merchant') UI.toggleModal('merchantModal');
-            else if (npc.role === 'portal') UI.toggleModal('portalModal');
         }
     },
 
@@ -430,11 +430,6 @@ const EnemyAI = {
     update(en, dt) {
         const p = State.world.player;
         if (en.hitFlash > 0) en.hitFlash -= dt;
-        // Mannequin : inerte ; réapparaît 8 s après avoir été brisé
-        if (en.dummy) {
-            if (en.hp <= 0 && (en.respawn -= dt) <= 0) en.hp = en.maxHp = computeHeroStats().physDmg * 10;
-            return;
-        }
         if (en.attackAnim > 0) en.attackAnim -= dt;
         if (en.stunTimer > 0) { en.stunTimer -= dt; en.action = null; return; }
         if (en.attackCd > 0) en.attackCd -= dt;
@@ -486,7 +481,7 @@ const EnemyAI = {
         } else if (en.attackCd <= 0) {
             en.attackCd = (en.affix && en.affix.id === 'fast') ? 0.8 : 1.15;
             en.attackAnim = 0.25;
-            const dealt = Combat.damagePlayer(en.dmg);
+            const dealt = Combat.damagePlayer(en.dmg, en);
             if (dealt > 0 && en.affix && en.affix.id === 'vampiric') {
                 const heal = Math.round(dealt * 0.4);
                 en.hp = Math.min(en.maxHp, en.hp + heal);
@@ -505,7 +500,7 @@ const EnemyAI = {
             if (Math.random() < 0.6) Combat.spawnParticles(en.x, en.y + en.radius * 0.6, '#a8a29e', 1);
             if (!a.hit && dToP < en.radius + p.radius + 6) {
                 a.hit = true;
-                Combat.damagePlayer(Math.round(en.dmg * 1.2));
+                Combat.damagePlayer(Math.round(en.dmg * 1.2), en);
             }
             if (a.t <= 0) en.action = null;
             return;
@@ -589,6 +584,7 @@ function updateSimulation(dt) {
         if ((FX.rings[i].life -= dt) <= 0) FX.rings.splice(i, 1);
     }
     if (h.potionCd > 0) h.potionCd = Math.max(0, h.potionCd - dt);
+    if (h.shieldT > 0 && (h.shieldT -= dt) <= 0) h.shield = 0;
     Object.keys(State.cooldowns).forEach(k => {
         if (State.cooldowns[k] > 0) State.cooldowns[k] = Math.max(0, State.cooldowns[k] - dt);
     });

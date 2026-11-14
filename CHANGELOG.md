@@ -4,6 +4,39 @@ Toutes les évolutions notables du projet sont consignées dans ce fichier.
 
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
+## [0.4.0] - 2026-11-14
+
+### Ajouté
+
+- Graphismes modernes (par défaut) : rendu lissé en pleine résolution, créatures dessinées en vectoriel, tuiles, décors, effets et lumières affinés. Le pixel art 16-bit reste disponible : bouton « Graphismes » sur l'écran titre et dans le menu pause.
+- Biomes bien plus variés : 8 variantes de sol et jusqu'à 10 de mur par biome, zones de matière à grande échelle (flaques, herbe envahissante, dunes, mosaïques dorées, boue, tapis de feuilles, coulées de lave…), une trentaine de détails au sol, et météo ou ambiance propre à chaque biome (brouillard, pluie, sable, encens, lucioles, braises).
+- Silhouette propre à chaque ennemi de chaque biome, en mode moderne comme en pixel art.
+- 32 boss (4 par biome, du gardien au plus redoutable), chacun avec son apparence. Le boss d'un donjon est celui de la quête en cours ; sans quête, l'un de ceux déjà vaincus (le gardien la première fois). Plus le boss est de haut rang, plus il est coriace et plus il a de chances de lâcher un légendaire.
+- Quêtes de boss : les boss d'un biome se débloquent dans l'ordre, au fil des niveaux. La première victoire sur chacun rapporte l'artefact du biome ; ensuite, des contrats de traque sans artefact.
+- Arbre de talents en 3 branches de 5 talents (rang max 3) : Gardien (Coup de Bouclier, Cuirasse de Fer, Représailles, Cri de Ralliement, Rempart Inébranlable), Berserker (Fendoir, Soif de Sang, Tourbillon, Frénésie, Séisme) et Maître d'armes (Tir Perçant, Pas Léger, Charge, Œil de Lynx, Pluie de Flèches). Chaque palier exige un niveau et des points investis dans sa branche. Réinitialisation gratuite.
+- Musiques : 3 thèmes par biome et 3 pour le camp (30 thèmes avec le boss et les 2 thèmes rock), enchaînés au hasard toutes les 2 boucles. Aux Catacombes, 2 thèmes rock'n'roll en plus (riff métal en galop, boogie blues) à la guitare saturée. Nouveaux instruments synthétisés : flûte, luth, clavecin, cloches, marimba, orgue, cuivres, cordes, chœur, oud, et toms graves.
+- Plans de donjon propres au biome : salles et couloirs (Prison, Château, Caveau), grandes salles à piliers (Pyramide, Temple), cavernes organiques (Jungle, Forêt, Catacombes).
+
+### Modifié
+
+- Camp d'Oakhaven : un menu à onglets (Expéditions, Quêtes, Marchand, Forge) remplace la carte à parcourir. Fiche, talents et sac restent accessibles depuis le camp.
+- Expéditions : un seul bouton « Partir en exploration » tire le donjon au hasard parmi les biomes accessibles. Une quête de boss ouverte ajoute +3 au poids du biome, une quête de chasse +2, et un biome dépassé par le héros ne pèse plus que 0,15. Les chances de chaque biome s'affichent dans l'onglet.
+- Chaque biome a une plage de niveaux (Prison 1-4, Château 3-6, Caveau 5-8, Pyramide 7-10, Temple 9-12, Jungle 11-14, Forêt 13-16, Catacombes 15-20) : ennemis et butin plafonnent au maximum du biome, +2 niveaux par cran de Menace. L'XP baisse de 20 % par niveau d'avance du héros sur l'ennemi.
+- Amélioration limitée à 2 crans par objet (+12 % chacun), pour 1,5× puis 3× la valeur de l'objet.
+- Artefacts obtenus uniquement en récompense de quête de boss ; sertissage au choix de l'artefact.
+- Or : moins fréquent et moins abondant en exploration, l'essentiel vient des quêtes. Revente à 25 % de la valeur, potions à 30 Or, marchand un niveau sous le héros et plus cher.
+- Butin : légendaires réservés aux boss, objets rares moins fréquents.
+- Progression plus lente : moins d'XP par ennemi, quêtes de chasse plus longues (8 à 12 créatures).
+
+### Retiré
+
+- Camp d'entraînement et mannequins.
+- Quêtes de reliques et artefacts lâchés par les ennemis.
+
+### Migration des sauvegardes
+
+- Les talents sont remboursés (1 point par niveau), les objets améliorés au-delà de +2 ramenés à +2, les anciennes quêtes de relique retirées.
+
 ## [0.3.0] - 2026-11-13
 
 ### Ajouté
